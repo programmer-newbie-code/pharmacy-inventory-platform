@@ -34,7 +34,10 @@ jobs:
           # (`void main()` + a trivial MaterialApp wrapper); the app's real behavior
           # is exercised via HomeScreen's widget test, so it's excluded too, per
           # common Flutter convention.
-          lcov --remove coverage/lcov.info '**/*.g.dart' 'lib/l10n/app_localizations*.dart' 'lib/data/database.dart' 'lib/main.dart' -o coverage/lcov_filtered.info
+          # lib/main.dart isn't excluded here — no test imports it, so it never
+          # appears in lcov.info in the first place; an explicit exclude pattern
+          # matching zero files makes lcov error out ("pattern is unused").
+          lcov --remove coverage/lcov.info '**/*.g.dart' 'lib/l10n/app_localizations*.dart' 'lib/data/database.dart' -o coverage/lcov_filtered.info
           lcov --summary coverage/lcov_filtered.info
           # fix ci: previous grep matched the literal dots in lcov's "lines......:"
           # padding instead of the percentage. Match the "N.N%" token directly.
