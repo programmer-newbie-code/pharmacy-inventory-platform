@@ -67,6 +67,7 @@ products
   cost_price_per_base_unit, margin_pct
   reorder_threshold    -- base_unit qty; low-stock alert fires at/below this
   is_controlled        -- true = "obat keras"/daftar G, requires prescription
+  national_drug_code?  -- BPOM/Kemenkes registration no. (NIE), optional, nullable
   storage_location_id (FK, nullable)
   category
   created_by, updated_by, created_at, updated_at, device_id
@@ -186,3 +187,47 @@ implementation detail, not fixed here.
 - Single store/branch in v1.
 - Internet is available at least daily (for the backup upload); the app itself is
   fully offline-capable otherwise.
+
+## 11. Usability Principles (Non-Technical Users)
+
+Primary users are pharmacy staff with little to no tech background, so every screen
+follows these rules — treated as acceptance criteria, not nice-to-haves:
+
+- **Default locale: Indonesian.** English available via a visible toggle (i18n already
+  in the stack from section 2), but `id` is what staff see on first launch.
+- **One task per screen, linear flow.** POS flow is a straight line: scan → confirm
+  item/qty → total → pay → done. No nested menus, no settings buried more than one
+  level deep.
+- **Icon + text together, never icon-only.** Non-technical users recognize words
+  faster than abstract icons.
+- **Minimize typing.** Scan-first for products; pick-from-list/search-select instead
+  of free-text entry wherever a fixed option exists. A large on-screen numeric keypad
+  for qty/price entry instead of relying on the OS keyboard.
+- **Color-coded status everywhere.** Green = ok, yellow = expiring/low soon, red =
+  expired/out of stock — consistent across inventory list, notifications, and reports.
+- **Plain-language feedback.** Errors and confirmations use everyday words ("Yakin
+  mau hapus? Data ini tidak bisa dikembalikan.") — never raw error codes or stack
+  traces.
+- **Large touch targets and text.** Minimum 48dp tap targets, minimum 16sp body text,
+  so it works equally well on a desktop mouse and a small Android phone screen.
+- **Confirm before anything destructive** (delete product, void a completed sale),
+  with a plain-language warning — no silent deletes.
+
+These aren't a separate work item — they're a constraint applied while building every
+feature screen in section 2's `features/` layer.
+
+## 12. Future Integration Note — External Health Platforms (e.g. Alodokter)
+
+Not built in v1 — no concrete partner API/contract exists yet to design against. Two
+things are done now, cheaply, so this doesn't require rework later:
+
+- `products.national_drug_code` (added in section 3) gives a standard reference point
+  for matching local stock against an external drug catalog.
+- The `data/` layer (section 2) already isolates all external I/O (Google Drive client
+  today) behind repository interfaces defined in `domain/`. A future "incoming orders"
+  adapter (e.g. pulling e-pharmacy orders from a partner and turning them into
+  `sale_transactions`) plugs in at the same seam, without touching business logic in
+  `domain/` or the POS/inventory screens.
+
+When a real integration is scoped, it gets its own design doc — the shape of a
+partner's order API, auth, and data format aren't guessable today.
