@@ -92,7 +92,9 @@ class SaleItems extends Table {
 
 class AuditLogs extends Table {
   IntColumn get id => integer().autoIncrement()();
-  TextColumn get tableName => text()();
+  // fix ci: named `entityTable`, not `tableName` — the latter collides with
+  // drift's own `Table.tableName` getter (used to override the SQL table name).
+  TextColumn get entityTable => text()();
   IntColumn get recordId => integer()();
   TextColumn get action => text()(); // create|update|delete
   TextColumn get oldValue => text().nullable()();

@@ -1,3 +1,6 @@
 arb-dir: lib/l10n
 template-arb-file: app_en.arb
 output-localization-file: app_localizations.dart
+# fix ci: stable Flutter no longer registers the synthetic `flutter_gen` package;
+# generate straight into the app package and import it by its real path instead.
+synthetic-package: false
