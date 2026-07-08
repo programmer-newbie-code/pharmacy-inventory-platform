@@ -33,6 +33,51 @@ on the existing project, which is the documented-safe way to add platform suppor
 without touching already-existing `lib/`/`pubspec.yaml`. This avoids hand-writing
 Gradle/CMake boilerplate that can't be verified locally. Revisit once a native
 customization (app icon, camera permission, code signing) requires committing those
+folders — noted as a `ponytail:` comment in `.gitignore`. **Update after execution:**
+a local Flutter SDK + Android SDK were installed after this plan was first executed
+(see the memory note on local dev toolchain paths) specifically so the final CI fix
+could be verified locally before pushing — future plans on this repo can assume local
+`flutter analyze`/`test`/`build windows`/`build apk` all work.
+
+### Task dependency
+
+```mermaid
+flowchart TD
+    T1[Task 1: manifest + lint config] --> T2[Task 2: unit conversion]
+    T1 --> T3[Task 3: drift schema]
+    T1 --> T4[Task 4: i18n arb files]
+    T4 --> T5[Task 5: home screen + main.dart]
+    T2 --> T6[Task 6: CI pipeline]
+    T3 --> T6
+    T5 --> T6
+    T6 --> T7[Task 7: README]
+    T7 --> T8[Task 8: push, PR, CI green, merge]
+```
+
+### How it was actually executed — CEO/org-chart delegation
+
+```mermaid
+flowchart TD
+    CEO["CEO (main session)<br/>bootstraps GitHub repo directly"]
+    TL["Tech Lead<br/>Task 1 (shared config, alone — no parallel-write races)"]
+    BE["Backend Engineer<br/>Task 2 + 3 (domain + drift schema)"]
+    FE["Frontend Engineer<br/>Task 4 + 5 (i18n + home screen)"]
+    DO["DevOps Engineer<br/>Task 6 + 7 (CI + README)"]
+    QA["QA<br/>commits everything in order, owns Task 8:<br/>push / PR / watch CI / fix-forward (capped at 5 tries) / merge"]
+
+    CEO --> TL --> BE
+    TL --> FE
+    TL --> DO
+    BE --> QA
+    FE --> QA
+    DO --> QA
+    QA --> CEO
+```
+
+Engineers wrote files in parallel (disjoint paths, so no conflicts) but did **not**
+commit — git commits aren't safe to run concurrently from multiple agents against the
+same working tree. QA committed everything sequentially afterward, then owned the
+ship/verify loop.
 folders — noted as a `ponytail:` comment in `.gitignore`.
 
 ---
