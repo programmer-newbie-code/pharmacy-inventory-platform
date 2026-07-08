@@ -58,14 +58,22 @@ Flutter (stable) · `drift` (SQLite) · `flutter_riverpod` · ARB-based i18n
 ## Workflow — non-negotiable
 
 1. **Every change goes through a PR.** No direct commits to `main`.
-2. **CI must be fully green before merge** (`flutter analyze`, coverage-gated tests,
+2. **PR titles follow [react-spectrum's naming guide](https://github.com/adobe/react-spectrum/wiki/Pull-Request-Naming-Guide):**
+   `type(scope): summary` — e.g. `feat(auth): add login screen and session provider`,
+   `fix(pos): correct FEFO batch selection when two batches share an expiry date`.
+   Type is one of: `feat`, `fix`, `build`, `chore`, `docs`, `test`, `refactor`, `ci`,
+   `localize`, `bump`, `revert`. Scope is optional, a noun for the affected area (not
+   an issue number). Summary is lowercase, imperative, readable at a glance. PR
+   **description** always has a `## Summary` (what and why, not a line-by-line diff
+   recap) and a `## Test plan` checklist — a title alone is never enough.
+3. **CI must be fully green before merge** (`flutter analyze`, coverage-gated tests,
    Windows build, Android build). Watch with `gh pr checks --watch`; if red, read the
    exact failing log (`gh run view <run-id> --log-failed`) and fix the specific
    reported error — don't guess broadly.
-3. Branch protection on `main` is **not currently enforced** — this repo is private
-   on GitHub's free plan, which doesn't support the branch-protection API (403). Rule
-   1 and 2 above are enforced by convention, not the server, until the plan changes.
-4. Use `context7` for current library/API docs when unsure — training data may be
+4. Branch protection on `main` is **not currently enforced** — this repo is private
+   on GitHub's free plan, which doesn't support the branch-protection API (403). Rules
+   1-3 above are enforced by convention, not the server, until the plan changes.
+5. Use `context7` for current library/API docs when unsure — training data may be
    stale, especially for a fast-moving Flutter/drift ecosystem.
 
 ## Docs map
