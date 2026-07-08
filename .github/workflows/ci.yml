@@ -24,9 +24,13 @@ jobs:
       - name: Enforce 80% line coverage
         run: |
           sudo apt-get update && sudo apt-get install -y lcov
-          lcov --remove coverage/lcov.info '**/*.g.dart' -o coverage/lcov_filtered.info
+          # fix ci: also exclude generated l10n code (boilerplate, not authored/tested
+          # directly), same rationale as excluding drift's *.g.dart.
+          lcov --remove coverage/lcov.info '**/*.g.dart' 'lib/l10n/app_localizations*.dart' -o coverage/lcov_filtered.info
           lcov --summary coverage/lcov_filtered.info
-          COVERAGE=$(lcov --summary coverage/lcov_filtered.info | grep -Eo 'lines\.*: [0-9.]+%' | grep -Eo '[0-9.]+')
+          # fix ci: previous grep matched the literal dots in lcov's "lines......:"
+          # padding instead of the percentage. Match the "N.N%" token directly.
+          COVERAGE=$(lcov --summary coverage/lcov_filtered.info | grep -oE '[0-9]+\.[0-9]+%' | tr -d '%')
           echo "Line coverage: $COVERAGE%"
           awk -v cov="$COVERAGE" 'BEGIN { if (cov + 0 < 80) { print "Coverage below 80%"; exit 1 } }'
 
