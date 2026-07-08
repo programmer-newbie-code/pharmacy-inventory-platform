@@ -17,8 +17,8 @@ class PharmacyInventoryApp extends StatelessWidget {
       title: 'Pharmacy Inventory Platform',
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
-      locale: const Locale('id'),
-      home: const HomeScreen(),
+      locale: Locale('id'),
+      home: HomeScreen(),
     );
   }
 }
