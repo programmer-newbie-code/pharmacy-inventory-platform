@@ -29,16 +29,24 @@ customization requires hand-editing it (see `.gitignore`).
 
 ## Architecture
 
+```mermaid
+graph TD
+    Features["features/<br/>(pos, inventory, auth, reports, backup, notifications)"]
+    Domain["domain/<br/>(entities, use-cases, repository interfaces)"]
+    Data["data/<br/>(drift database, repository impls, Google Drive client)"]
+    Core["core/<br/>(shared utils)"]
+
+    Features --> Domain
+    Data -.implements interfaces of.-> Domain
+    Features --> Core
+    Data --> Core
 ```
-lib/
-  domain/     # business logic — pure Dart, no Flutter/drift dependency
-  data/       # drift database (schema + generated code)
-  features/   # one folder per screen/feature
-  core/       # shared utilities (empty until a second feature needs one)
-```
+
+See [`AGENT.md`](AGENT.md) for the full coding standards this structure implies.
 
 ## Contributing
 
 All changes go through a PR. CI must be green (`flutter analyze`, tests at ≥80% line
-coverage, Windows build, Android build) before merge — branch protection enforces
-this on `main`.
+coverage, Windows build, Android build) before merge. This is enforced by convention,
+not branch protection — the repo is private on GitHub's free plan, which doesn't
+support the branch-protection API. See [`AGENT.md`](AGENT.md) for details.
