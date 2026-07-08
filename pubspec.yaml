@@ -1,0 +1,30 @@
+name: pharmacy_inventory_platform
+description: Offline-first inventory and POS platform for small pharmacies.
+publish_to: 'none'
+version: 0.1.0
+
+environment:
+  sdk: '>=3.4.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+  intl: any
+  flutter_riverpod: ^2.5.1
+  drift: ^2.20.2
+  sqlite3_flutter_libs: ^0.5.24
+  path_provider: ^2.1.4
+  path: ^1.9.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+  build_runner: ^2.4.11
+  drift_dev: ^2.20.2
+
+flutter:
+  generate: true
+  uses-material-design: true
