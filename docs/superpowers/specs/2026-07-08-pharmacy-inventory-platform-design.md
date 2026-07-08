@@ -42,6 +42,22 @@ lib/
 Domain layer has no dependency on `data`, so business rules (unit conversion, pricing,
 FEFO selection, permission checks) are unit-testable without a database.
 
+```mermaid
+graph TD
+    Features["features/<br/>(screens: pos, inventory, auth, reports, backup, notifications)"]
+    Domain["domain/<br/>(entities, use-cases, repository interfaces)"]
+    Data["data/<br/>(drift database, repository impls, Google Drive client)"]
+    Core["core/<br/>(shared utils: unit conversion, permission checker, DI)"]
+
+    Features --> Domain
+    Data -.implements interfaces of.-> Domain
+    Features --> Core
+    Data --> Core
+```
+
+Arrows are dependency direction. `domain/` depends on nothing else in `lib/` — that's
+what lets business rules be tested with plain Dart, no widget tree or real database.
+
 ### Single-active-device model
 
 Only one device is authoritative at a time (either the Windows PC or one Android
@@ -99,6 +115,74 @@ backup_log
 All stock math (deduction, remaining, min-price) operates only in `base_unit`.
 Conversion from `purchase_unit` happens once, at the moment a batch is recorded.
 
+```mermaid
+erDiagram
+    USERS ||--o{ SALE_TRANSACTIONS : "cashier_id"
+    USERS ||--o{ AUDIT_LOG : "user_id"
+    STORAGE_LOCATIONS ||--o{ PRODUCTS : "storage_location_id"
+    PRODUCTS ||--o{ STOCK_BATCHES : "product_id"
+    PRODUCTS ||--o{ SALE_ITEMS : "product_id"
+    STOCK_BATCHES ||--o{ SALE_ITEMS : "batch_id"
+    SALE_TRANSACTIONS ||--o{ SALE_ITEMS : "transaction_id"
+
+    USERS {
+        int id PK
+        string username
+        string role "admin|inventory|kasir|audit"
+    }
+    STORAGE_LOCATIONS {
+        int id PK
+        string code
+        string name
+    }
+    PRODUCTS {
+        int id PK
+        string barcode
+        string name
+        string base_unit
+        string purchase_unit
+        int units_per_purchase_unit
+        real cost_price_per_base_unit
+        bool is_controlled
+        int storage_location_id FK
+    }
+    STOCK_BATCHES {
+        int id PK
+        int product_id FK
+        string batch_no
+        datetime expiry_date
+        int qty_received
+        int qty_remaining
+    }
+    SALE_TRANSACTIONS {
+        int id PK
+        string txn_no
+        int cashier_id FK
+        real total_amount
+        bool has_prescription
+    }
+    SALE_ITEMS {
+        int id PK
+        int transaction_id FK
+        int product_id FK
+        int batch_id FK
+        int qty_sold
+    }
+    AUDIT_LOG {
+        int id PK
+        string table_name
+        int record_id
+        string action
+        int user_id FK
+    }
+    BACKUP_LOG {
+        int id PK
+        datetime timestamp
+        string destination
+        string status
+    }
+```
+
 ### Why expiry tracking is per-batch, not per-product
 
 The same product received on different dates has different expiry dates and
@@ -127,6 +211,25 @@ paper prescription doesn't always exist.
 `min_sell_price = cost_price_per_base_unit * (1 + margin_pct)`. The POS screen warns
 (non-blocking) if a cashier enters a price below this so a sale below cost is a
 deliberate choice, not an accident.
+
+```mermaid
+sequenceDiagram
+    participant Kasir
+    participant POS as POS screen
+    participant DB as Local SQLite (drift)
+
+    Kasir->>POS: scan barcode (USB/BT scanner or camera)
+    POS->>DB: find product by barcode
+    DB-->>POS: product + all stock_batches (qty_remaining > 0)
+    POS->>POS: pick batch with earliest expiry_date (FEFO)
+    Kasir->>POS: enter quantity (can be partial, e.g. a few tablets)
+    POS->>POS: check price >= min_sell_price (warn if not, non-blocking)
+    Kasir->>POS: confirm sale
+    POS->>DB: insert sale_transactions + sale_items row
+    POS->>DB: decrement stock_batches.qty_remaining on the chosen batch
+    POS->>DB: insert audit_log row (action=create, table=sale_transactions)
+    POS-->>Kasir: receipt / confirmation
+```
 
 ## 5. Roles & Permissions
 
@@ -164,6 +267,24 @@ Shown as an in-app badge/list on open; no OS-level push in v1.
   visible in-app, not silent.
 - Restore: pick a backup file (local or Drive) → overwrites the local database. This
   is also the mechanism for moving to a different device (Windows ⇄ tablet/phone).
+
+```mermaid
+flowchart LR
+    A[App opens] --> B{Backed up today already?}
+    B -- yes --> Z[Skip]
+    B -- no --> C[Export SQLite db file]
+    C --> D[Copy to local backup folder]
+    C --> E[Upload to Google Drive]
+    D --> F[Write backup_log row]
+    E --> F
+    F --> G{Any destination failed?}
+    G -- yes --> H[Show in-app failure notice]
+    G -- no --> Z
+
+    subgraph Restore [Restore — e.g. moving Windows to tablet]
+      R1[Pick backup file: local or Drive] --> R2[Overwrite local database]
+    end
+```
 
 ## 8. Reporting
 
