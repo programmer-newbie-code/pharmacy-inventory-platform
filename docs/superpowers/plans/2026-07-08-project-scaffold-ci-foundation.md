@@ -781,19 +781,22 @@ git commit -m "docs: add README"
 
 ### Task 8: Push, open PR, get CI green, merge
 
-- [ ] **Step 1: Create the GitHub repository**
+**Precondition (done once, before this task, not by the coding agents):** local
+default branch renamed `master` → `main`, GitHub repo created from it via
+`gh repo create programmer-newbie-code/pharmacy-inventory-platform --private
+--source=. --remote=origin --push`, so `main` already exists on GitHub with the
+docs-only history (design spec + this plan) before any scaffold code is written.
+This makes branch protection (Step 3 below) work on the first try — no 404 fallback
+needed.
 
-Run: `gh repo create programmer-newbie-code/pharmacy-inventory-platform --private --source=. --remote=origin`
-Expected: `✓ Created repository programmer-newbie-code/pharmacy-inventory-platform on GitHub`
-
-- [ ] **Step 2: Push the scaffold on a feature branch**
+- [ ] **Step 1: Create and push the scaffold branch**
 
 ```bash
 git checkout -b scaffold/project-foundation
 git push -u origin scaffold/project-foundation
 ```
 
-- [ ] **Step 3: Open the PR**
+- [ ] **Step 2: Open the PR**
 
 Run:
 ```bash
@@ -813,7 +816,7 @@ EOF
 )"
 ```
 
-- [ ] **Step 4: Set branch protection on `main`**
+- [ ] **Step 3: Set branch protection on `main`**
 
 Run:
 ```bash
@@ -828,19 +831,19 @@ gh api repos/programmer-newbie-code/pharmacy-inventory-platform/branches/main/pr
   -f restrictions=null
 ```
 
-Expected: JSON response echoing the protection rule (200 OK). If this returns a 404,
-`main` doesn't exist as a branch yet — push the initial commit to `main` first via
-`git push origin scaffold/project-foundation:main`, or apply this after the first
-merge instead.
+Expected: JSON response echoing the protection rule (200 OK) — works on the first try
+since `main` already exists (see Precondition above).
 
-- [ ] **Step 5: Watch CI and fix forward until green**
+- [ ] **Step 4: Watch CI and fix forward until green**
 
 Run: `gh pr checks --watch`
 Expected: all three checks report `pass`. If any fails:
-`gh run view --log-failed` → fix the specific reported error → commit → push → repeat.
-Do not merge with a red or pending check.
+`gh run view <run-id> --log-failed` → fix the specific reported error → commit → push
+→ repeat, up to 5 attempts. Do not merge with a red or pending check. If still red
+after 5 attempts, stop and report the exact failing log instead of continuing to
+guess.
 
-- [ ] **Step 6: Merge**
+- [ ] **Step 5: Merge**
 
 Run: `gh pr merge --squash --delete-branch`
 Expected: `✓ Squashed and merged pull request ...`, branch deleted.
