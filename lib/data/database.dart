@@ -122,7 +122,7 @@ class BackupLogs extends Table {
   BackupLogs,
 ])
 class AppDatabase extends _$AppDatabase {
-  AppDatabase(QueryExecutor e) : super(e);
+  AppDatabase(super.e);
 
   factory AppDatabase.defaultConnection() => AppDatabase(_openConnection());
 
