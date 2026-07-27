@@ -16,5 +16,11 @@
   "restoreConfirmTitle": "Konfirmasi Pemulihan Data",
   "restoreConfirmMessage": "Apakah Anda yakin ingin memulihkan data? Data saat ini akan ditimpa oleh data dari berkas cadangan.",
   "cancelButton": "Batal",
-  "confirmButton": "Konfirmasi Pulihkan"
+  "confirmButton": "Konfirmasi Pulihkan",
+  "userManagementTitle": "Manajemen Karyawan & Pengguna",
+  "addUserButton": "Tambah Akun Karyawan",
+  "roleLabel": "Peran Pengguna",
+  "changeRoleButton": "Ubah Peran",
+  "resetPasswordButton": "Reset Kata Sandi",
+  "newPasswordLabel": "Kata Sandi Baru"
 }

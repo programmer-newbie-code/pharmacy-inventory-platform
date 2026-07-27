@@ -35,4 +35,28 @@ void main() {
   test('findByUsername returns null for a username that does not exist', () async {
     expect(await repo.findByUsername('nobody'), isNull);
   });
+
+  test('listUsers returns all users ordered by username', () async {
+    await repo.createUser(username: 'siti', passwordHash: 'hash', role: 'kasir');
+    await repo.createUser(username: 'andi', passwordHash: 'hash', role: 'inventory');
+
+    final users = await repo.listUsers();
+    expect(users, hasLength(2));
+    expect(users.first.username, equals('andi'));
+    expect(users.last.username, equals('siti'));
+  });
+
+  test('updateUserRole and updateUserPassword modify user details', () async {
+    final id = await repo.createUser(username: 'budi', passwordHash: 'old-hash', role: 'kasir');
+    
+    final roleUpdated = await repo.updateUserRole(userId: id, newRole: 'admin');
+    expect(roleUpdated, isTrue);
+
+    final passUpdated = await repo.updateUserPassword(userId: id, newPasswordHash: 'new-hash');
+    expect(passUpdated, isTrue);
+
+    final user = await repo.findByUsername('budi');
+    expect(user!.role, equals('admin'));
+    expect(user.passwordHash, equals('new-hash'));
+  });
 }
