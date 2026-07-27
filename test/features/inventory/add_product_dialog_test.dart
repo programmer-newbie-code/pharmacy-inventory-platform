@@ -35,8 +35,10 @@ void main() {
     await tester.enterText(find.byKey(const Key('productBarcodeInput')), '8998888777666');
     await tester.enterText(find.byKey(const Key('productInternalCodeInput')), 'IBU-400');
     await tester.enterText(find.byKey(const Key('activeIngredientInput')), 'Ibuprofen');
+    await tester.ensureVisible(find.byKey(const Key('isControlledCheckbox')));
     await tester.tap(find.byKey(const Key('isControlledCheckbox')));
 
+    await tester.ensureVisible(find.byKey(const Key('saveProductButton')));
     await tester.tap(find.byKey(const Key('saveProductButton')));
     await tester.pumpAndSettle();
 

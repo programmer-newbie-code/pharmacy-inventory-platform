@@ -60,6 +60,7 @@ void main() {
 
     expect(find.text('= 50 tablets total stock'), findsOneWidget);
 
+    await tester.ensureVisible(find.byKey(const Key('saveBatchButton')));
     await tester.tap(find.byKey(const Key('saveBatchButton')));
     await tester.pumpAndSettle();
 
