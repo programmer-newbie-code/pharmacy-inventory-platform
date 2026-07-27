@@ -1,60 +1,183 @@
 <!DOCTYPE html>
-<html>
-<head>
-  <!--
-    If you are serving your web app in a path other than the root, change the
-    href value below to reflect the base path you are serving from.
+<html lang="en-US">
+  <head>
+    <meta charset="UTF-8">
 
-    The path provided below has to start and end with a slash "/" in order for
-    it to work correctly.
+<!-- Begin Jekyll SEO tag v2.9.0 -->
+<title>Pharmacy Inventory Platform — Documentation &amp; User Guide | Pharmacy Inventory Platform</title>
+<meta name="generator" content="Jekyll v4.4.1" />
+<meta property="og:title" content="Pharmacy Inventory Platform — Documentation &amp; User Guide" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="Offline-first Pharmacy Inventory Management &amp; FEFO POS System" />
+<meta name="twitter:description" property="og:description" content="Offline-first Pharmacy Inventory Management &amp; FEFO POS System" />
+<meta property="og:site_name" content="Pharmacy Inventory Platform" />
+<meta property="og:type" content="website" />
+<meta name="twitter:card" content="summary" />
+<meta name="twitter:title" content="Pharmacy Inventory Platform — Documentation &amp; User Guide" />
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebSite","description":"Offline-first Pharmacy Inventory Management &amp; FEFO POS System","headline":"Pharmacy Inventory Platform — Documentation &amp; User Guide","name":"Pharmacy Inventory Platform","url":"/"}</script>
+<!-- End Jekyll SEO tag -->
 
-    For more details:
-    * https://developer.mozilla.org/en-US/docs/Web/HTML/Element/base
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <link rel="preload" href="https://fonts.googleapis.com/css?family=Open+Sans:400,700&display=swap" as="style" type="text/css" crossorigin>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#157878">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="stylesheet" href="/assets/css/style.css?v=">
+    <!-- start custom head snippets, customize with your own _includes/head-custom.html file -->
 
-    This is a placeholder for base href that will be replaced by the value of
-    the `--base-href` argument provided to `flutter build`.
-  -->
-  <base href="/pharmacy-inventory-platform/">
+<!-- Setup Google Analytics -->
 
-  <meta charset="UTF-8">
-  <meta content="IE=Edge" http-equiv="X-UA-Compatible">
-  <meta name="description" content="A new Flutter project.">
 
-  <!-- iOS meta tags & icons -->
-  <meta name="mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black">
-  <meta name="apple-mobile-web-app-title" content="pharmacy_inventory_platform">
-  <link rel="apple-touch-icon" href="icons/Icon-192.png">
 
-  <!-- Favicon -->
-  <link rel="icon" type="image/png" href="favicon.png"/>
+<!-- You can set your favicon here -->
+<!-- link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" -->
 
-  <title>pharmacy_inventory_platform</title>
-  <link rel="manifest" href="manifest.json">
-  <!-- Load sql.js WebAssembly SQLite engine for Drift WebDatabase -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/sql-wasm.js"></script>
-  <script>
-    if (window.initSqlJs) {
-      const origInit = window.initSqlJs;
-      window.initSqlJs = function(options) {
-        options = options || {};
-        options.locateFile = function(file) {
-          return 'https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/' + file;
-        };
-        return origInit(options);
-      };
-    }
-  </script>
-</head>
-<body>
-  <!--
-    You can customize the "flutter_bootstrap.js" script.
-    This is useful to provide a custom configuration to the Flutter loader
-    or to give the user feedback during the initialization process.
+<!-- end custom head snippets -->
 
-    For more details:
-    * https://docs.flutter.dev/platform-integration/web/initialization
-  -->
-  <script src="flutter_bootstrap.js" async></script>
-</body>
+  </head>
+  <body>
+    <a id="skip-to-content" href="#content">Skip to the content.</a>
+
+    <header class="page-header" role="banner">
+      <h1 class="project-name">Pharmacy Inventory Platform — Documentation & User Guide</h1>
+      <h2 class="project-tagline">Offline-first Pharmacy Inventory Management & FEFO POS System</h2>
+      
+        <a href="https://github.com/programmer-newbie-code/pharmacy-inventory-platform" class="btn">View on GitHub</a>
+      
+      
+        <a href="" class="btn">Download .zip</a>
+        <a href="" class="btn">Download .tar.gz</a>
+      
+    </header>
+
+    <main id="content" class="main-content" role="main">
+      <h1 id="-pharmacy-inventory-platform">💊 Pharmacy Inventory Platform</h1>
+
+<p>Welcome to the official documentation for the <strong>Pharmacy Inventory Platform</strong> — a secure, offline-first inventory management and Point-of-Sale (POS) counter system built for pharmacies, clinics, and drugstores.</p>
+
+<table>
+  <tbody>
+    <tr>
+      <td><a href="https://github.com/programmer-newbie-code/pharmacy-inventory-platform/releases/latest">📥 Download Windows App (.zip)</a>  </td>
+      <td>  <a href="https://github.com/programmer-newbie-code/pharmacy-inventory-platform/releases/latest">📱 Download Android APK (.apk)</a>  </td>
+      <td>  <a href="#-user-guide--manual">📖 User Manual</a></td>
+    </tr>
+  </tbody>
+</table>
+
+<hr />
+
+<h2 id="-key-system-features">✨ Key System Features</h2>
+
+<h3 id="-1-pos-counter--automatic-fefo-stock-deduction">🛒 1. POS Counter &amp; Automatic FEFO Stock Deduction</h3>
+<ul>
+  <li><strong>First-Expired, First-Out (FEFO)</strong>: When sales are checked out, inventory is automatically allocated and deducted from the earliest expiring stock batch first.</li>
+  <li><strong>Controlled Drug Verification</strong>: Mandatory doctor name, patient name, and prescription verification check for controlled drugs (<code class="language-plaintext highlighter-rouge">isControlled</code>).</li>
+  <li><strong>Minimum Price Safeguard</strong>: Warns cashiers if an item’s sell price is accidentally set below base unit cost.</li>
+  <li><strong>Digital Receipt</strong>: Generates printable sales transaction receipts.</li>
+</ul>
+
+<h3 id="-2-multi-unit-inventory-catalog">📦 2. Multi-Unit Inventory Catalog</h3>
+<ul>
+  <li><strong>Unit Conversion</strong>: Flexible conversion rules (e.g., 1 Box = 100 Tablets).</li>
+  <li><strong>Batch Receipt</strong>: Track supplier name, batch number, purchase cost, selling price, and expiry dates per delivery batch.</li>
+  <li><strong>Storage Location Tracking</strong>: Assign products to shelf, bin, or refrigerator locations.</li>
+</ul>
+
+<h3 id="️-3-expiry--low-stock-alerts">⚠️ 3. Expiry &amp; Low-Stock Alerts</h3>
+<ul>
+  <li><strong>Expiry Watchlist</strong>: Highlights batches expiring within 30, 60, 90, or 180 days with color-coded badges.</li>
+  <li><strong>Reorder Thresholds</strong>: Alerts pharmacists when product stock levels drop below configured reorder thresholds.</li>
+</ul>
+
+<h3 id="-4-role-based-employee-management">👥 4. Role-Based Employee Management</h3>
+<ul>
+  <li>Admin-managed staff accounts with granular roles: <code class="language-plaintext highlighter-rouge">Admin</code>, <code class="language-plaintext highlighter-rouge">Inventory</code> (Pharmacist), <code class="language-plaintext highlighter-rouge">Kasir</code> (Cashier), and <code class="language-plaintext highlighter-rouge">Audit</code> (Auditor).</li>
+  <li>Secure SHA-256 password hashing with random salt.</li>
+</ul>
+
+<h3 id="-5-database-backup--bpom-compliance">💾 5. Database Backup &amp; BPOM Compliance</h3>
+<ul>
+  <li><strong>Atomic Backup &amp; Restore</strong>: Full JSON dataset export and atomic SQLite database restoration inside single transactions.</li>
+  <li><strong>BPOM Regulatory CSV Export</strong>: One-click export of prescription sales logs for regulatory reporting.</li>
+</ul>
+
+<hr />
+
+<h2 id="-user-guide--manual">📖 User Guide &amp; Manual</h2>
+
+<h3 id="1-first-time-administrator-setup">1. First-Time Administrator Setup</h3>
+<p>When launching the platform for the first time on Windows or Android:</p>
+<ol>
+  <li>Enter your full name, desired username, and a strong password.</li>
+  <li>Click <strong>Create Administrator Account</strong>. The system will set up the SQLite database and log you into the Admin dashboard.</li>
+</ol>
+
+<h3 id="2-managing-employee-accounts">2. Managing Employee Accounts</h3>
+<ol>
+  <li>Log in as an <strong>Admin</strong>.</li>
+  <li>Click <strong>User Management</strong> on the main dashboard.</li>
+  <li>Click <strong>Add Employee Account</strong>, enter username, initial password, and select role (<code class="language-plaintext highlighter-rouge">Kasir</code>, <code class="language-plaintext highlighter-rouge">Inventory</code>, or <code class="language-plaintext highlighter-rouge">Audit</code>).</li>
+</ol>
+
+<h3 id="3-processing-pos-counter-sales">3. Processing POS Counter Sales</h3>
+<ol>
+  <li>Navigate to <strong>POS Sales Counter</strong>.</li>
+  <li>Search for items by name or scan barcode using a USB/Bluetooth scanner.</li>
+  <li>Adjust item quantities in the cart.</li>
+  <li>For prescription drugs, fill out doctor and patient details.</li>
+  <li>Click <strong>Complete Sale (Checkout)</strong> to finish the transaction. Stock is automatically deducted following FEFO logic.</li>
+</ol>
+
+<h3 id="4-receiving-stock-batches">4. Receiving Stock Batches</h3>
+<ol>
+  <li>Open <strong>Inventory Catalog</strong> -&gt; Select Product.</li>
+  <li>Click <strong>Receive Stock Batch</strong>.</li>
+  <li>Input Batch Number, Supplier, Expiry Date, Received Quantity, Cost Price, and Selling Price.</li>
+</ol>
+
+<hr />
+
+<h2 id="-tech-stack--architecture">💻 Tech Stack &amp; Architecture</h2>
+
+<ul>
+  <li><strong>Framework</strong>: Flutter (Dart)</li>
+  <li><strong>Local Database</strong>: Drift (SQLite) with reactive streams</li>
+  <li><strong>State Management</strong>: Flutter Riverpod</li>
+  <li><strong>Localization</strong>: Flutter Gen L10n (Indonesian <code class="language-plaintext highlighter-rouge">id</code> &amp; English <code class="language-plaintext highlighter-rouge">en</code>)</li>
+  <li><strong>Security</strong>: SHA-256 password hashing with random salt</li>
+  <li><strong>CI/CD Pipeline</strong>: Automated linting, unit testing (80% coverage gate), multiplatform release builds (Windows &amp; Android), and Jekyll documentation hosting on GitHub Pages.</li>
+</ul>
+
+<hr />
+
+<h2 id="-developer-getting-started">🚀 Developer Getting Started</h2>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># 1. Clone repository</span>
+git clone https://github.com/programmer-newbie-code/pharmacy-inventory-platform.git
+<span class="nb">cd </span>pharmacy-inventory-platform
+
+<span class="c"># 2. Install dependencies</span>
+flutter pub get
+
+<span class="c"># 3. Generate database code</span>
+dart run build_runner build <span class="nt">--delete-conflicting-outputs</span>
+
+<span class="c"># 4. Run tests</span>
+flutter <span class="nb">test</span>
+
+<span class="c"># 5. Run application</span>
+flutter run <span class="nt">-d</span> windows
+</code></pre></div></div>
+
+
+      <footer class="site-footer">
+        
+          <span class="site-footer-owner"><a href="https://github.com/programmer-newbie-code/pharmacy-inventory-platform"></a> is maintained by <a href=""></a>.</span>
+        
+        <span class="site-footer-credits">This page was generated by <a href="https://pages.github.com">GitHub Pages</a>.</span>
+      </footer>
+    </main>
+  </body>
 </html>
