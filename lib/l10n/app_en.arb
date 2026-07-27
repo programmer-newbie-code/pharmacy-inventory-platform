@@ -16,5 +16,11 @@
   "restoreConfirmTitle": "Confirm Restore Data",
   "restoreConfirmMessage": "Are you sure you want to restore? Current database records will be overwritten by the backup archive.",
   "cancelButton": "Cancel",
-  "confirmButton": "Confirm Restore"
+  "confirmButton": "Confirm Restore",
+  "userManagementTitle": "Employee & User Management",
+  "addUserButton": "Add Employee Account",
+  "roleLabel": "User Role",
+  "changeRoleButton": "Change Role",
+  "resetPasswordButton": "Reset Password",
+  "newPasswordLabel": "New Password"
 }

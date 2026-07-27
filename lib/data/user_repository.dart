@@ -1,3 +1,5 @@
+import 'package:drift/drift.dart';
+
 import 'database.dart';
 
 class UserRepository {
@@ -26,5 +28,31 @@ class UserRepository {
             role: role,
           ),
         );
+  }
+
+  Future<List<User>> listUsers() {
+    return (_db.select(_db.users)
+          ..orderBy([(tbl) => OrderingTerm.asc(tbl.username)]))
+        .get();
+  }
+
+  Future<bool> updateUserRole({
+    required int userId,
+    required String newRole,
+  }) async {
+    final updated = await (_db.update(_db.users)
+          ..where((tbl) => tbl.id.equals(userId)))
+        .write(UsersCompanion(role: Value(newRole)));
+    return updated > 0;
+  }
+
+  Future<bool> updateUserPassword({
+    required int userId,
+    required String newPasswordHash,
+  }) async {
+    final updated = await (_db.update(_db.users)
+          ..where((tbl) => tbl.id.equals(userId)))
+        .write(UsersCompanion(passwordHash: Value(newPasswordHash)));
+    return updated > 0;
   }
 }
