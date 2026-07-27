@@ -8,6 +8,8 @@ import '../alerts/alerts_screen.dart';
 import '../inventory/product_list_screen.dart';
 import '../pos/pos_screen.dart';
 
+import '../help/quick_guide_dialog.dart';
+
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
 
@@ -18,6 +20,16 @@ class HomeScreen extends ConsumerWidget {
       appBar: AppBar(
         title: Text(l10n.appTitle),
         actions: [
+          IconButton(
+            key: const Key('helpButton'),
+            icon: const Icon(Icons.help_outline),
+            onPressed: () {
+              showDialog(
+                context: context,
+                builder: (_) => const QuickGuideDialog(),
+              );
+            },
+          ),
           IconButton(
             key: const Key('logoutButton'),
             icon: const Icon(Icons.logout),
