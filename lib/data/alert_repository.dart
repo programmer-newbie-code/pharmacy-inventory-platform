@@ -35,7 +35,7 @@ class AlertRepository {
     final thresholdDate = now.add(Duration(days: daysThreshold));
 
     final query = _db.select(_db.stockBatches).join([
-      innerJoin(_db.products, _db.products.id.equalsExpr(_db.stockBatches.productId)),
+      innerJoin(_db.products, _db.products.id.equalsExp(_db.stockBatches.productId)),
     ])
       ..where(
         _db.stockBatches.qtyRemaining.isBiggerThanValue(0) &

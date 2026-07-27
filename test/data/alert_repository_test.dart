@@ -54,7 +54,7 @@ void main() {
     final expiring = await alertRepo.listExpiringBatches(daysThreshold: 90);
     expect(expiring, hasLength(1));
     expect(expiring.first.batch.batchNo, equals('BATCH-EXP-SOON'));
-    expect(expiring.first.daysUntilExpiry, isLessThanOrEqualTo(15));
+    expect(expiring.first.daysUntilExpiry, lessThanOrEqualTo(15));
 
     final lowStock = await alertRepo.listLowStockProducts();
     expect(lowStock, hasLength(1));
