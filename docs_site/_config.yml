@@ -1,0 +1,7 @@
+title: Pharmacy Inventory Platform
+description: Offline-first Pharmacy Inventory Management & FEFO POS System
+theme: jekyll-theme-cayman
+show_downloads: true
+github:
+  is_project_page: true
+  repository_url: https://github.com/programmer-newbie-code/pharmacy-inventory-platform
