@@ -171,7 +171,7 @@ class _AddProductDialogState extends ConsumerState<AddProductDialog> {
               ),
               if (_locations.isNotEmpty)
                 DropdownButtonFormField<int>(
-                  value: _selectedStorageLocationId,
+                  initialValue: _selectedStorageLocationId,
                   decoration: const InputDecoration(labelText: 'Storage Location'),
                   items: _locations
                       .map((loc) => DropdownMenuItem<int>(
