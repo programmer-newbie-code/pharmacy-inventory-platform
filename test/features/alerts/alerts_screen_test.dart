@@ -63,7 +63,7 @@ void main() {
     expect(find.text('Alert Test Medicine'), findsOneWidget);
 
     // Switch to Low Stock tab
-    await tester.tap(find.textContaining('Low Stock'));
+    await tester.tap(find.byIcon(Icons.warning_amber));
     await tester.pumpAndSettle();
 
     expect(find.text('Alert Test Medicine'), findsOneWidget);
