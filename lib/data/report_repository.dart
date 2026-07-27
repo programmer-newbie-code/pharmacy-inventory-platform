@@ -79,4 +79,65 @@ class ReportRepository {
 
     return buffer.toString();
   }
+
+  /// Fetches detailed line items for Excel breakdown.
+  Future<List<DetailedSaleRow>> getDetailedSalesRows({
+    required DateTime startDate,
+    required DateTime endDate,
+  }) async {
+    final txns = await (_db.select(_db.saleTransactions)
+          ..where((tbl) =>
+              tbl.createdAt.isBiggerOrEqual(Variable(startDate)) &
+              tbl.createdAt.isSmallerOrEqual(Variable(endDate))))
+        .get();
+
+    final rows = <DetailedSaleRow>[];
+    for (final txn in txns) {
+      final items = await (_db.select(_db.saleItems)
+            ..where((tbl) => tbl.transactionId.equals(txn.id)))
+          .get();
+
+      for (final item in items) {
+        final product = await (_db.select(_db.products)
+              ..where((tbl) => tbl.id.equals(item.productId)))
+            .getSingleOrNull();
+
+        rows.add(
+          DetailedSaleRow(
+            txnNo: txn.txnNo,
+            createdAt: txn.createdAt,
+            hasPrescription: txn.hasPrescription,
+            doctorName: txn.doctorName,
+            productName: product?.name ?? 'Unknown Product',
+            qtySold: item.qtySold,
+            unitPrice: item.unitPrice,
+            subtotal: item.subtotal,
+          ),
+        );
+      }
+    }
+    return rows;
+  }
+}
+
+class DetailedSaleRow {
+  DetailedSaleRow({
+    required this.txnNo,
+    required this.createdAt,
+    required this.hasPrescription,
+    required this.doctorName,
+    required this.productName,
+    required this.qtySold,
+    required this.unitPrice,
+    required this.subtotal,
+  });
+
+  final String txnNo;
+  final DateTime createdAt;
+  final bool hasPrescription;
+  final String? doctorName;
+  final String productName;
+  final int qtySold;
+  final double unitPrice;
+  final double subtotal;
 }

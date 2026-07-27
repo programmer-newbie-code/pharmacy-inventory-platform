@@ -22,5 +22,7 @@
   "roleLabel": "User Role",
   "changeRoleButton": "Change Role",
   "resetPasswordButton": "Reset Password",
-  "newPasswordLabel": "New Password"
+  "newPasswordLabel": "New Password",
+  "exportExcelButton": "Export Excel (.xlsx)",
+  "exportCsvButton": "Export Prescription CSV"
 }

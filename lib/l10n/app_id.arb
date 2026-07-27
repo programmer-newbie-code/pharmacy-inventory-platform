@@ -22,5 +22,7 @@
   "roleLabel": "Peran Pengguna",
   "changeRoleButton": "Ubah Peran",
   "resetPasswordButton": "Reset Kata Sandi",
-  "newPasswordLabel": "Kata Sandi Baru"
+  "newPasswordLabel": "Kata Sandi Baru",
+  "exportExcelButton": "Ekspor Excel (.xlsx)",
+  "exportCsvButton": "Ekspor Resep CSV"
 }
