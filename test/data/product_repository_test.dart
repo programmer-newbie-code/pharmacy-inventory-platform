@@ -32,7 +32,7 @@ void main() {
     expect(locations.first.code, equals('RAK-A1'));
   });
 
-  test('creates and retrieves product by barcode and search query', () async {
+  test('creates, retrieves, updates, and searches products', () async {
     final locId = await repository.createStorageLocation(
       code: 'RAK-B1',
       name: 'Shelf B1',
@@ -54,6 +54,7 @@ void main() {
       storageLocationId: locId,
       category: 'Analgesik',
       createdBy: 'admin',
+      userIdForAudit: 1,
     );
 
     expect(prodId, isPositive);
@@ -62,7 +63,27 @@ void main() {
     expect(found, isNotNull);
     expect(found!.name, equals('Paracetamol 500mg'));
 
-    final searchResult = await repository.listProducts(searchQuery: 'Paracetamol');
+    final byId = await repository.getProductById(prodId);
+    expect(byId, isNotNull);
+    expect(byId!.id, equals(prodId));
+
+    // Test update
+    final updated = byId.copyWith(name: 'Paracetamol Extra 500mg');
+    final success = await repository.updateProduct(
+      updated,
+      updatedBy: 'admin',
+      userIdForAudit: 1,
+    );
+    expect(success, isTrue);
+
+    final reFetched = await repository.getProductById(prodId);
+    expect(reFetched!.name, equals('Paracetamol Extra 500mg'));
+
+    // Test list & search filters
+    final searchResult = await repository.listProducts(
+      searchQuery: 'Paracetamol',
+      category: 'Analgesik',
+    );
     expect(searchResult, hasLength(1));
 
     final controlledOnly =

@@ -50,6 +50,7 @@ void main() {
       costPricePerBaseUnit: 500.0,
       supplier: 'PT Kimia Farma',
       createdBy: 'admin',
+      userIdForAudit: 1,
     );
 
     final batchSooner = await batchRepo.createStockBatch(
@@ -61,6 +62,7 @@ void main() {
       costPricePerBaseUnit: 500.0,
       supplier: 'PT Kimia Farma',
       createdBy: 'admin',
+      userIdForAudit: 1,
     );
 
     expect(batchLater, isPositive);
@@ -68,15 +70,18 @@ void main() {
 
     final batches = await batchRepo.listBatchesForProduct(productId);
     expect(batches, hasLength(2));
-    // FEFO order check: batchSooner (exp: Oct 2026) must come before batchLater (exp: Dec 2027)
     expect(batches.first.batchNo, equals('BATCH-2026-A'));
     expect(batches.last.batchNo, equals('BATCH-2026-B'));
 
     final totalStock = await batchRepo.getTotalStockForProduct(productId);
     expect(totalStock, equals(150));
+
+    final expiring = await batchRepo.listExpiringBatches(DateTime(2026, 11, 1));
+    expect(expiring, hasLength(1));
+    expect(expiring.first.batchNo, equals('BATCH-2026-A'));
   });
 
-  test('deducts batch stock correctly', () async {
+  test('deducts batch stock correctly and handles invalid deductions', () async {
     final batchId = await batchRepo.createStockBatch(
       productId: productId,
       batchNo: 'BATCH-DEDUCT',
@@ -93,5 +98,13 @@ void main() {
 
     final batches = await batchRepo.listBatchesForProduct(productId);
     expect(batches.first.qtyRemaining, equals(30));
+
+    // Attempting to deduct more stock than remaining must return false
+    final overDeduct = await batchRepo.deductBatchStock(batchId, 100);
+    expect(overDeduct, isFalse);
+
+    // Non-existent batch ID must return false
+    final invalidBatch = await batchRepo.deductBatchStock(99999, 10);
+    expect(invalidBatch, isFalse);
   });
 }
