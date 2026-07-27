@@ -13,6 +13,9 @@ import '../data/sale_repository.dart';
 
 import '../data/alert_repository.dart';
 
+import '../data/report_repository.dart';
+import '../data/backup_service.dart';
+
 final databaseProvider = Provider<AppDatabase>((ref) {
   final db = AppDatabase.defaultConnection();
   ref.onDispose(db.close);
@@ -52,9 +55,18 @@ final alertRepositoryProvider = Provider<AlertRepository>(
   (ref) => AlertRepository(ref.watch(databaseProvider)),
 );
 
+final reportRepositoryProvider = Provider<ReportRepository>(
+  (ref) => ReportRepository(ref.watch(databaseProvider)),
+);
+
+final backupServiceProvider = Provider<BackupService>(
+  (ref) => BackupService(ref.watch(databaseProvider)),
+);
+
 final passwordHasherProvider = Provider<PasswordHasher>((ref) => PasswordHasher());
 
 final permissionCheckerProvider = Provider<PermissionChecker>((ref) => PermissionChecker());
+
 
 
 
