@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
 import '../../data/database.dart';
-import '../../data/sale_repository.dart';
 
 class ReceiptDialog extends StatelessWidget {
   const ReceiptDialog({

@@ -284,7 +284,7 @@ class _PosScreenState extends ConsumerState<PosScreen> {
                   ),
                 Container(
                   padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
+                  decoration: const BoxDecoration(
                     color: Colors.white,
                     boxShadow: [
                       BoxShadow(color: Colors.black12, blurRadius: 4, offset: Offset(0, -2)),
