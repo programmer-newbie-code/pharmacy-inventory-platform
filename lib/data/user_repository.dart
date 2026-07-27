@@ -1,5 +1,3 @@
-import 'package:drift/drift.dart';
-
 import 'database.dart';
 
 class UserRepository {
