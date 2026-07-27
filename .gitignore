@@ -18,7 +18,6 @@ lib/l10n/app_localizations*.dart
 /ios/
 /macos/
 /linux/
-/web/
 
 # IDE
 .idea/
