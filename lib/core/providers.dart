@@ -11,6 +11,8 @@ import '../data/stock_batch_repository.dart';
 
 import '../data/sale_repository.dart';
 
+import '../data/alert_repository.dart';
+
 final databaseProvider = Provider<AppDatabase>((ref) {
   final db = AppDatabase.defaultConnection();
   ref.onDispose(db.close);
@@ -46,8 +48,13 @@ final saleRepositoryProvider = Provider<SaleRepository>(
   ),
 );
 
+final alertRepositoryProvider = Provider<AlertRepository>(
+  (ref) => AlertRepository(ref.watch(databaseProvider)),
+);
+
 final passwordHasherProvider = Provider<PasswordHasher>((ref) => PasswordHasher());
 
 final permissionCheckerProvider = Provider<PermissionChecker>((ref) => PermissionChecker());
+
 
 

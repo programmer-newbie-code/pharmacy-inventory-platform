@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../l10n/app_localizations.dart';
 import '../auth/auth_session.dart';
 
+import '../alerts/alerts_screen.dart';
 import '../inventory/product_list_screen.dart';
 import '../pos/pos_screen.dart';
 
@@ -45,6 +46,17 @@ class HomeScreen extends ConsumerWidget {
             onPressed: () {
               Navigator.of(context).push(
                 MaterialPageRoute(builder: (_) => const ProductListScreen()),
+              );
+            },
+          ),
+          const SizedBox(height: 12),
+          ElevatedButton.icon(
+            key: const Key('navAlertsBtn'),
+            icon: const Icon(Icons.warning_amber),
+            label: const Text('Expiry & Low Stock Alerts'),
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const AlertsScreen()),
               );
             },
           ),
