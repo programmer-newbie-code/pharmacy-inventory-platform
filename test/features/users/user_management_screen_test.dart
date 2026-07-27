@@ -39,10 +39,33 @@ void main() {
     expect(find.text('Manajemen Karyawan & Pengguna'), findsOneWidget);
     expect(find.text('admin_test'), findsOneWidget);
 
+    // 1. Test Add User Dialog
     await tester.tap(find.byKey(const Key('addUserFab')));
     await tester.pumpAndSettle();
 
-    expect(find.byKey(const Key('addUsernameInput')), findsOneWidget);
-    expect(find.byKey(const Key('addPasswordInput')), findsOneWidget);
+    await tester.enterText(find.byKey(const Key('addUsernameInput')), 'new_kasir');
+    await tester.enterText(find.byKey(const Key('addPasswordInput')), 'kasir123');
+    await tester.tap(find.byKey(const Key('submitAddUserBtn')));
+    await tester.pumpAndSettle();
+
+    expect(find.text('new_kasir'), findsOneWidget);
+
+    // 2. Test Reset Password Dialog
+    final user = await container.read(userRepositoryProvider).findByUsername('new_kasir');
+    expect(user, isNotNull);
+
+    await tester.tap(find.byKey(Key('resetPasswordBtn_${user!.id}')));
+    await tester.pumpAndSettle();
+
+    await tester.enterText(find.byKey(const Key('resetPasswordInput')), 'newpass123');
+    await tester.tap(find.byKey(const Key('submitResetPassBtn')));
+    await tester.pumpAndSettle();
+
+    // 3. Test Change Role Dialog
+    await tester.tap(find.byKey(Key('changeRoleBtn_${user.id}')));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const Key('submitChangeRoleBtn')));
+    await tester.pumpAndSettle();
   });
 }

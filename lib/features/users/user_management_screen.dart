@@ -237,11 +237,13 @@ class _UserManagementScreenState extends ConsumerState<UserManagementScreen> {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       IconButton(
+                        key: Key('changeRoleBtn_${user.id}'),
                         tooltip: l10n.changeRoleButton,
                         icon: const Icon(Icons.admin_panel_settings_outlined),
                         onPressed: () => _showChangeRoleDialog(user),
                       ),
                       IconButton(
+                        key: Key('resetPasswordBtn_${user.id}'),
                         tooltip: l10n.resetPasswordButton,
                         icon: const Icon(Icons.lock_reset),
                         onPressed: () => _showResetPasswordDialog(user),
