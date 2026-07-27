@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ page.title | default: site.title }}</title>
+  <meta name="description" content="{{ site.description }}">
+
+  <!-- Google Fonts: Inter & Outfit -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg-gradient-start: #0f172a;
+      --bg-gradient-mid: #1e1b4b;
+      --bg-gradient-end: #312e81;
+      --primary-accent: #6366f1;
+      --primary-light: #818cf8;
+      --emerald-accent: #10b981;
+      --cyan-accent: #06b6d4;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --card-bg: rgba(30, 41, 59, 0.7);
+      --card-border: rgba(255, 255, 255, 0.1);
+      --card-hover-border: rgba(99, 102, 241, 0.4);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: #090d16;
+      color: var(--text-main);
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    /* Hero Section */
+    .hero {
+      background: radial-gradient(circle at 50% 0%, #1e1b4b 0%, #0f172a 70%, #090d16 100%);
+      padding: 5rem 1.5rem 4rem;
+      text-align: center;
+      position: relative;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .badge-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: rgba(99, 102, 241, 0.15);
+      border: 1px solid rgba(99, 102, 241, 0.3);
+      color: #a5b4fc;
+      padding: 0.4rem 1rem;
+      border-radius: 9999px;
+      font-size: 0.875rem;
+      font-weight: 600;
+      margin-bottom: 1.5rem;
+      letter-spacing: 0.025em;
+    }
+
+    .badge-pulse {
+      width: 8px;
+      height: 8px;
+      background-color: var(--emerald-accent);
+      border-radius: 50%;
+      box-shadow: 0 0 8px var(--emerald-accent);
+    }
+
+    .hero-title {
+      font-family: 'Outfit', sans-serif;
+      font-size: clamp(2.5rem, 5vw, 4rem);
+      font-weight: 800;
+      line-height: 1.15;
+      background: linear-gradient(135deg, #ffffff 0%, #cbd5e1 50%, #818cf8 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      max-width: 900px;
+      margin: 0 auto 1.25rem;
+      letter-spacing: -0.02em;
+    }
+
+    .hero-subtitle {
+      font-size: clamp(1.1rem, 2vw, 1.35rem);
+      color: var(--text-muted);
+      max-width: 750px;
+      margin: 0 auto 2.5rem;
+      font-weight: 300;
+    }
+
+    /* CTA Buttons */
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.6rem;
+      padding: 0.85rem 1.75rem;
+      border-radius: 12px;
+      font-weight: 600;
+      font-size: 1rem;
+      text-decoration: none;
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      cursor: pointer;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+      color: #ffffff;
+      box-shadow: 0 4px 20px rgba(99, 102, 241, 0.35);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(99, 102, 241, 0.5);
+      background: linear-gradient(135deg, #818cf8 0%, #6366f1 100%);
+    }
+
+    .btn-emerald {
+      background: linear-gradient(135deg, #059669 0%, #047857 100%);
+      color: #ffffff;
+      box-shadow: 0 4px 20px rgba(16, 185, 129, 0.3);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .btn-emerald:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(16, 185, 129, 0.45);
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    }
+
+    .btn-secondary {
+      background: rgba(30, 41, 59, 0.8);
+      color: #e2e8f0;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      backdrop-filter: blur(8px);
+    }
+
+    .btn-secondary:hover {
+      transform: translateY(-2px);
+      background: rgba(51, 65, 85, 0.9);
+      border-color: rgba(255, 255, 255, 0.25);
+    }
+
+    /* Main Container */
+    .container {
+      max-width: 1150px;
+      margin: 0 auto;
+      padding: 4rem 1.5rem;
+    }
+
+    .section-title {
+      font-family: 'Outfit', sans-serif;
+      font-size: 2rem;
+      font-weight: 700;
+      text-align: center;
+      margin-bottom: 0.75rem;
+      color: #ffffff;
+    }
+
+    .section-subtitle {
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 1.05rem;
+      margin-bottom: 3rem;
+    }
+
+    /* Feature Cards Grid */
+    .grid-features {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 5rem;
+    }
+
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 1.75rem;
+      backdrop-filter: blur(12px);
+      transition: all 0.3s ease;
+    }
+
+    .card:hover {
+      transform: translateY(-4px);
+      border-color: var(--card-hover-border);
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.3);
+    }
+
+    .card-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .icon-indigo { background: rgba(99, 102, 241, 0.15); color: #818cf8; }
+    .icon-emerald { background: rgba(16, 185, 129, 0.15); color: #34d399; }
+    .icon-amber { background: rgba(245, 158, 11, 0.15); color: #fbbf24; }
+    .icon-rose { background: rgba(244, 63, 94, 0.15); color: #f43f5e; }
+    .icon-cyan { background: rgba(6, 182, 212, 0.15); color: #22d3ee; }
+    .icon-purple { background: rgba(168, 85, 247, 0.15); color: #c084fc; }
+
+    .card-title {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: #ffffff;
+      margin-bottom: 0.5rem;
+    }
+
+    .card-text {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+      line-height: 1.55;
+    }
+
+    /* Content Styling (User Guide & Manual) */
+    .content-box {
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 20px;
+      padding: 2.5rem;
+      backdrop-filter: blur(10px);
+    }
+
+    .content-box h2 {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.6rem;
+      color: #ffffff;
+      margin: 2rem 0 1rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .content-box h2:first-child {
+      margin-top: 0;
+    }
+
+    .content-box h3 {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.2rem;
+      color: #e2e8f0;
+      margin: 1.5rem 0 0.75rem;
+    }
+
+    .content-box p, .content-box ul, .content-box ol {
+      color: #cbd5e1;
+      font-size: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .content-box ul, .content-box ol {
+      padding-left: 1.5rem;
+    }
+
+    .content-box li {
+      margin-bottom: 0.4rem;
+    }
+
+    pre {
+      background: #090d16;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      padding: 1.25rem;
+      overflow-x: auto;
+      margin: 1.25rem 0;
+    }
+
+    code {
+      font-family: 'Consolas', 'Fira Code', monospace;
+      color: #38bdf8;
+      font-size: 0.9rem;
+    }
+
+    pre code {
+      color: #e2e8f0;
+    }
+
+    /* Footer */
+    footer {
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      padding: 3rem 1.5rem;
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+
+    footer a {
+      color: var(--primary-light);
+      text-decoration: none;
+    }
+
+    footer a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Hero Header -->
+  <header class="hero">
+    <div class="badge-pill">
+      <span class="badge-pulse"></span>
+      <span>v1.0.0 Release — Production Ready</span>
+    </div>
+    <h1 class="hero-title">Pharmacy Inventory & POS Platform</h1>
+    <p class="hero-subtitle">
+      Offline-first inventory management and Point-of-Sale counter system designed specifically for pharmacies, clinics, and drugstores.
+    </p>
+
+    <div class="hero-actions">
+      <a href="https://github.com/programmer-newbie-code/pharmacy-inventory-platform/releases/latest" class="btn btn-primary">
+        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+        Download Windows App (.zip)
+      </a>
+      <a href="https://github.com/programmer-newbie-code/pharmacy-inventory-platform/releases/latest" class="btn btn-emerald">
+        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 002-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
+        Download Android APK (.apk)
+      </a>
+      <a href="https://github.com/programmer-newbie-code/pharmacy-inventory-platform" class="btn btn-secondary">
+        <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+        GitHub Repository
+      </a>
+    </div>
+  </header>
+
+  <!-- Content Section -->
+  <main class="container">
+    <h2 class="section-title">Key Capabilities</h2>
+    <p class="section-subtitle">Engineered for accuracy, BPOM compliance, and lightning-fast POS checkout.</p>
+
+    <!-- 6 Feature Cards Grid -->
+    <div class="grid-features">
+      <div class="card">
+        <div class="card-icon icon-indigo">🛒</div>
+        <h3 class="card-title">FEFO Stock Allocation</h3>
+        <p class="card-text">
+          Automatic First-Expired, First-Out (FEFO) stock deduction during POS checkout ensures earlier expiring batches are sold first.
+        </p>
+      </div>
+
+      <div class="card">
+        <div class="card-icon icon-emerald">💊</div>
+        <h3 class="card-title">Controlled Drug Verification</h3>
+        <p class="card-text">
+          Enforces mandatory doctor name, patient name, and prescription checks before checking out controlled medicines.
+        </p>
+      </div>
+
+      <div class="card">
+        <div class="card-icon icon-amber">⚠️</div>
+        <h3 class="card-title">Expiry & Low Stock Alerts</h3>
+        <p class="card-text">
+          Color-coded watchlists for batches expiring in 30, 60, 90, or 180 days, plus automatic reorder threshold notifications.
+        </p>
+      </div>
+
+      <div class="card">
+        <div class="card-icon icon-purple">👥</div>
+        <h3 class="card-title">Role-Based Access</h3>
+        <p class="card-text">
+          Granular employee permission roles (`Admin`, `Pharmacist`, `Cashier`, `Auditor`) with SHA-256 password hashing.
+        </p>
+      </div>
+
+      <div class="card">
+        <div class="card-icon icon-cyan">💾</div>
+        <h3 class="card-title">Atomic Backup & Restore</h3>
+        <p class="card-text">
+          Full JSON database export and single-transaction atomic restoration with comprehensive audit logging.
+        </p>
+      </div>
+
+      <div class="card">
+        <div class="card-icon icon-rose">📄</div>
+        <h3 class="card-title">BPOM Regulatory CSV Export</h3>
+        <p class="card-text">
+          Instant structured CSV exports of prescription and sales transactions for BPOM and ministry compliance reporting.
+        </p>
+      </div>
+    </div>
+
+    <!-- User Guide Content -->
+    <div class="content-box">
+      {{ content }}
+    </div>
+  </main>
+
+  <footer>
+    <p>Pharmacy Inventory Platform &copy; 2026. Built with Flutter, Drift &amp; Jekyll Cayman Theme.</p>
+    <p><a href="https://github.com/programmer-newbie-code/pharmacy-inventory-platform">View Source on GitHub</a></p>
+  </footer>
+
+</body>
+</html>
