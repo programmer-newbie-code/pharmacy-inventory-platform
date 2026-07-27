@@ -31,6 +31,7 @@ void main() {
     );
 
     expect(find.text('Platform Inventaris Apotek'), findsWidgets);
+    expect(find.byKey(const Key('navBackupBtn')), findsOneWidget);
   });
 
   testWidgets('logout button clears the session', (tester) async {

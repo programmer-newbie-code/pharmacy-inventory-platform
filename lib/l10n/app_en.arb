@@ -8,5 +8,13 @@
   "setupAdminError": "Could not create the account. Try a different username.",
   "loginTitle": "Log in",
   "loginButton": "Log in",
-  "loginError": "Wrong username or password. Try again."
+  "loginError": "Wrong username or password. Try again.",
+  "backupTitle": "Database Backup & Restore",
+  "createBackupButton": "Create Local Backup",
+  "restoreBackupButton": "Restore from File",
+  "backupHistoryTitle": "Backup Logs History",
+  "restoreConfirmTitle": "Confirm Restore Data",
+  "restoreConfirmMessage": "Are you sure you want to restore? Current database records will be overwritten by the backup archive.",
+  "cancelButton": "Cancel",
+  "confirmButton": "Confirm Restore"
 }
