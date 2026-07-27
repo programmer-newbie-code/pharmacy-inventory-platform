@@ -4,6 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../l10n/app_localizations.dart';
 import '../auth/auth_session.dart';
 
+import '../inventory/product_list_screen.dart';
+
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
 
@@ -21,7 +23,21 @@ class HomeScreen extends ConsumerWidget {
           ),
         ],
       ),
-      body: Center(child: Text(l10n.appTitle)),
+      body: ListView(
+        padding: const EdgeInsets.all(16),
+        children: [
+          ElevatedButton.icon(
+            key: const Key('navInventoryBtn'),
+            icon: const Icon(Icons.inventory),
+            label: const Text('Inventory Catalog'),
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const ProductListScreen()),
+              );
+            },
+          ),
+        ],
+      ),
     );
   }
 }
