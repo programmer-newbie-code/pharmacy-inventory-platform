@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:drift/drift.dart';
 
 import 'audit_logger.dart';
@@ -38,15 +40,15 @@ class StockBatchRepository {
 
     if (_auditLogger != null && userIdForAudit != null) {
       await _auditLogger.log(
-        entityTable: 'stock_batches',
+        tableName: 'stock_batches',
         recordId: id,
         action: 'create',
-        newValue: {
+        newValue: jsonEncode({
           'batchNo': batchNo,
           'productId': productId,
           'qtyReceived': qtyReceivedBaseUnit,
           'expiryDate': expiryDate.toIso8601String(),
-        },
+        }),
         userId: userIdForAudit,
       );
     }
@@ -63,7 +65,7 @@ class StockBatchRepository {
       ..where((tbl) => tbl.productId.equals(productId));
 
     if (availableOnly) {
-      query.where((tbl) => tbl.qtyRemaining.isGreaterThanValue(0));
+      query.where((tbl) => tbl.qtyRemaining.isBiggerThanValue(0));
     }
 
     query.orderBy([(tbl) => OrderingTerm.asc(tbl.expiryDate)]);
@@ -81,8 +83,8 @@ class StockBatchRepository {
     final query = _db.select(_db.stockBatches)
       ..where(
         (tbl) =>
-            tbl.qtyRemaining.isGreaterThanValue(0) &
-            tbl.expiryDate.isLessThanOrEqualToValue(thresholdDate),
+            tbl.qtyRemaining.isBiggerThanValue(0) &
+            tbl.expiryDate.isSmallerOrEqualValue(thresholdDate),
       )
       ..orderBy([(tbl) => OrderingTerm.asc(tbl.expiryDate)]);
     return query.get();

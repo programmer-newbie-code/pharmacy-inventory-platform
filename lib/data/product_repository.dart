@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:drift/drift.dart';
 
 import 'audit_logger.dart';
@@ -71,10 +73,10 @@ class ProductRepository {
 
     if (_auditLogger != null && userIdForAudit != null) {
       await _auditLogger.log(
-        entityTable: 'products',
+        tableName: 'products',
         recordId: id,
         action: 'create',
-        newValue: {'name': name, 'barcode': barcode, 'category': category},
+        newValue: jsonEncode({'name': name, 'barcode': barcode, 'category': category}),
         userId: userIdForAudit,
       );
     }
@@ -95,10 +97,10 @@ class ProductRepository {
 
     if (success && _auditLogger != null && userIdForAudit != null) {
       await _auditLogger.log(
-        entityTable: 'products',
+        tableName: 'products',
         recordId: product.id,
         action: 'update',
-        newValue: {'name': product.name, 'updatedBy': updatedBy},
+        newValue: jsonEncode({'name': product.name, 'updatedBy': updatedBy}),
         userId: userIdForAudit,
       );
     }

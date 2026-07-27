@@ -61,7 +61,6 @@ class _AddProductDialogState extends ConsumerState<AddProductDialog> {
     if (!_formKey.currentState!.validate()) return;
 
     final repo = ref.read(productRepositoryProvider);
-    final user = ref.read(userRepositoryProvider);
 
     await repo.createProduct(
       barcode: _barcodeController.text.trim(),
@@ -170,6 +169,18 @@ class _AddProductDialogState extends ConsumerState<AddProductDialog> {
                 controller: _categoryController,
                 decoration: const InputDecoration(labelText: 'Category'),
               ),
+              if (_locations.isNotEmpty)
+                DropdownButtonFormField<int>(
+                  value: _selectedStorageLocationId,
+                  decoration: const InputDecoration(labelText: 'Storage Location'),
+                  items: _locations
+                      .map((loc) => DropdownMenuItem<int>(
+                            value: loc.id,
+                            child: Text('${loc.code} - ${loc.name}'),
+                          ))
+                      .toList(),
+                  onChanged: (val) => setState(() => _selectedStorageLocationId = val),
+                ),
               CheckboxListTile(
                 key: const Key('isControlledCheckbox'),
                 title: const Text('Controlled Drug / Prescription Required'),
