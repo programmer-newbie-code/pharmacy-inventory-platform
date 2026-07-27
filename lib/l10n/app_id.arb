@@ -1,4 +1,12 @@
 {
   "@@locale": "id",
-  "appTitle": "Platform Inventaris Apotek"
+  "appTitle": "Platform Inventaris Apotek",
+  "setupAdminTitle": "Buat akun admin pertama",
+  "usernameLabel": "Nama pengguna",
+  "passwordLabel": "Kata sandi",
+  "createAccountButton": "Buat akun",
+  "setupAdminError": "Akun tidak bisa dibuat. Coba nama pengguna lain.",
+  "loginTitle": "Masuk",
+  "loginButton": "Masuk",
+  "loginError": "Nama pengguna atau kata sandi salah. Coba lagi."
 }

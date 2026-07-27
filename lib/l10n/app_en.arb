@@ -1,4 +1,12 @@
 {
   "@@locale": "en",
-  "appTitle": "Pharmacy Inventory Platform"
+  "appTitle": "Pharmacy Inventory Platform",
+  "setupAdminTitle": "Create the first admin account",
+  "usernameLabel": "Username",
+  "passwordLabel": "Password",
+  "createAccountButton": "Create account",
+  "setupAdminError": "Could not create the account. Try a different username.",
+  "loginTitle": "Log in",
+  "loginButton": "Log in",
+  "loginError": "Wrong username or password. Try again."
 }
