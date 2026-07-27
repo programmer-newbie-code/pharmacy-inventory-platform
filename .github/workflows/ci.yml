@@ -141,19 +141,16 @@ jobs:
       contents: write
     steps:
       - uses: actions/checkout@v4
-      - uses: subosito/flutter-action@v2
+      - uses: ruby/setup-ruby@v1
         with:
-          channel: stable
-      - name: Backfill web platform
-        run: flutter create --platforms=web .
-      - run: flutter pub get
-      - name: Generate drift code
-        run: dart run build_runner build --delete-conflicting-outputs
-      - name: Build Flutter Web
-        run: flutter build web --release --base-href "/pharmacy-inventory-platform/"
+          ruby-version: '3.3'
+      - name: Build Jekyll documentation site
+        run: |
+          gem install jekyll jekyll-theme-cayman
+          jekyll build -s docs_site -d _site
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./build/web
+          publish_dir: ./_site
 
