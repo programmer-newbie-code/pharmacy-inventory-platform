@@ -9,6 +9,8 @@ import '../domain/permission_checker.dart';
 import '../data/product_repository.dart';
 import '../data/stock_batch_repository.dart';
 
+import '../data/sale_repository.dart';
+
 final databaseProvider = Provider<AppDatabase>((ref) {
   final db = AppDatabase.defaultConnection();
   ref.onDispose(db.close);
@@ -37,7 +39,15 @@ final stockBatchRepositoryProvider = Provider<StockBatchRepository>(
   ),
 );
 
+final saleRepositoryProvider = Provider<SaleRepository>(
+  (ref) => SaleRepository(
+    ref.watch(databaseProvider),
+    auditLogger: ref.watch(auditLoggerProvider),
+  ),
+);
+
 final passwordHasherProvider = Provider<PasswordHasher>((ref) => PasswordHasher());
 
 final permissionCheckerProvider = Provider<PermissionChecker>((ref) => PermissionChecker());
+
 

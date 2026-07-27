@@ -5,6 +5,7 @@ import '../../l10n/app_localizations.dart';
 import '../auth/auth_session.dart';
 
 import '../inventory/product_list_screen.dart';
+import '../pos/pos_screen.dart';
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
@@ -26,6 +27,17 @@ class HomeScreen extends ConsumerWidget {
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
+          ElevatedButton.icon(
+            key: const Key('navPosBtn'),
+            icon: const Icon(Icons.point_of_sale),
+            label: const Text('POS Sales Counter'),
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const PosScreen()),
+              );
+            },
+          ),
+          const SizedBox(height: 12),
           ElevatedButton.icon(
             key: const Key('navInventoryBtn'),
             icon: const Icon(Icons.inventory),
