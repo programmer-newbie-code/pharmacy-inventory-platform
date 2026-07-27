@@ -1,5 +1,3 @@
-import 'package:drift/drift.dart';
-
 import 'database.dart';
 
 class SalesSummary {
@@ -27,7 +25,9 @@ class ReportRepository {
     required DateTime endDate,
   }) async {
     final query = _db.select(_db.saleTransactions)
-      ..where((tbl) => tbl.createdAt.betweenValues(startDate, endDate));
+      ..where((tbl) =>
+          tbl.createdAt.isBiggerOrEqualValue(startDate) &
+          tbl.createdAt.isSmallerOrEqualValue(endDate));
     final txns = await query.get();
 
     int count = txns.length;

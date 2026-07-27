@@ -34,14 +34,14 @@ class BackupService {
 
     final file = File(filePath);
     await file.writeAsString(jsonStr);
+    final bytes = await file.length();
 
     await _db.into(_db.backupLogs).insert(
           BackupLogsCompanion.insert(
-            backupType: 'Local JSON',
-            filePath: Value(filePath),
+            destination: 'local',
             status: 'Success',
-            detail: Value('Exported ${products.length} products, ${batches.length} stock batches'),
-            createdAt: Value(DateTime.now()),
+            fileSize: Value(bytes),
+            timestamp: Value(DateTime.now()),
           ),
         );
 
@@ -51,7 +51,7 @@ class BackupService {
   /// Lists past backup logs.
   Future<List<BackupLog>> listBackupLogs() {
     return (_db.select(_db.backupLogs)
-          ..orderBy([(tbl) => OrderingTerm.desc(tbl.createdAt)]))
+          ..orderBy([(tbl) => OrderingTerm.desc(tbl.timestamp)]))
         .get();
   }
 }

@@ -31,7 +31,7 @@ void main() {
 
     final logs = await backupService.listBackupLogs();
     expect(logs, hasLength(1));
-    expect(logs.first.backupType, equals('Local JSON'));
+    expect(logs.first.destination, equals('local'));
     expect(logs.first.status, equals('Success'));
   });
 }
