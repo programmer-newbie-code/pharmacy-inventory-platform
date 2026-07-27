@@ -1,14 +1,26 @@
 import 'package:flutter/material.dart';
-import 'package:pharmacy_inventory_platform/l10n/app_localizations.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class HomeScreen extends StatelessWidget {
+import '../../l10n/app_localizations.dart';
+import '../auth/auth_session.dart';
+
+class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.appTitle)),
+      appBar: AppBar(
+        title: Text(l10n.appTitle),
+        actions: [
+          IconButton(
+            key: const Key('logoutButton'),
+            icon: const Icon(Icons.logout),
+            onPressed: () => ref.read(authSessionProvider.notifier).logout(),
+          ),
+        ],
+      ),
       body: Center(child: Text(l10n.appTitle)),
     );
   }
