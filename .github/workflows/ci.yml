@@ -133,3 +133,27 @@ jobs:
             pharmacy-inventory-platform-android-${{ github.ref_name }}.apk
           generate_release_notes: true
 
+  deploy-gh-pages:
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    needs: [analyze-and-test]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+      - name: Backfill web platform
+        run: flutter create --platforms=web .
+      - run: flutter pub get
+      - name: Generate drift code
+        run: dart run build_runner build --delete-conflicting-outputs
+      - name: Build Flutter Web
+        run: flutter build web --release --base-href "/pharmacy-inventory-platform/"
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./build/web
+
