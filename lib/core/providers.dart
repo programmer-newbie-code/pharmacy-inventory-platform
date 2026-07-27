@@ -15,6 +15,7 @@ import '../data/alert_repository.dart';
 
 import '../data/report_repository.dart';
 import '../data/backup_service.dart';
+import '../data/excel_report_service.dart';
 
 final databaseProvider = Provider<AppDatabase>((ref) {
   final db = AppDatabase.defaultConnection();
@@ -62,6 +63,8 @@ final reportRepositoryProvider = Provider<ReportRepository>(
 final backupServiceProvider = Provider<BackupService>(
   (ref) => BackupService(ref.watch(databaseProvider)),
 );
+
+final excelReportServiceProvider = Provider<ExcelReportService>((ref) => ExcelReportService());
 
 final passwordHasherProvider = Provider<PasswordHasher>((ref) => PasswordHasher());
 

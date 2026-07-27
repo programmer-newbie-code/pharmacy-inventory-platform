@@ -9,6 +9,7 @@ import '../backup/backup_screen.dart';
 import '../inventory/product_list_screen.dart';
 import '../pos/pos_screen.dart';
 import '../users/user_management_screen.dart';
+import '../reports/reports_screen.dart';
 
 import '../help/quick_guide_dialog.dart';
 
@@ -93,6 +94,17 @@ class HomeScreen extends ConsumerWidget {
             onPressed: () {
               Navigator.of(context).push(
                 MaterialPageRoute(builder: (_) => const UserManagementScreen()),
+              );
+            },
+          ),
+          const SizedBox(height: 12),
+          ElevatedButton.icon(
+            key: const Key('navReportsBtn'),
+            icon: const Icon(Icons.bar_chart),
+            label: const Text('Laporan & Financial Excel'),
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const ReportsScreen()),
               );
             },
           ),
