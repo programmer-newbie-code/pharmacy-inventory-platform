@@ -7,6 +7,7 @@ import 'package:path_provider/path_provider.dart';
 
 part 'database.g.dart';
 
+@DataClassName('User')
 class Users extends Table {
   IntColumn get id => integer().autoIncrement()();
   TextColumn get username => text().unique()();
@@ -15,6 +16,7 @@ class Users extends Table {
   DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
 }
 
+@DataClassName('StorageLocation')
 class StorageLocations extends Table {
   IntColumn get id => integer().autoIncrement()();
   TextColumn get code => text().unique()();
@@ -23,6 +25,7 @@ class StorageLocations extends Table {
   DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
 }
 
+@DataClassName('Product')
 class Products extends Table {
   IntColumn get id => integer().autoIncrement()();
   TextColumn get barcode => text().unique()();
@@ -49,6 +52,7 @@ class Products extends Table {
   TextColumn get deviceId => text().nullable()();
 }
 
+@DataClassName('StockBatch')
 class StockBatches extends Table {
   IntColumn get id => integer().autoIncrement()();
   IntColumn get productId => integer().references(Products, #id)();
@@ -65,6 +69,7 @@ class StockBatches extends Table {
   TextColumn get deviceId => text().nullable()();
 }
 
+@DataClassName('SaleTransaction')
 class SaleTransactions extends Table {
   IntColumn get id => integer().autoIncrement()();
   TextColumn get txnNo => text().unique()();
@@ -80,6 +85,7 @@ class SaleTransactions extends Table {
   TextColumn get deviceId => text().nullable()();
 }
 
+@DataClassName('SaleItem')
 class SaleItems extends Table {
   IntColumn get id => integer().autoIncrement()();
   IntColumn get transactionId => integer().references(SaleTransactions, #id)();
@@ -90,6 +96,7 @@ class SaleItems extends Table {
   RealColumn get subtotal => real()();
 }
 
+@DataClassName('AuditLog')
 class AuditLogs extends Table {
   IntColumn get id => integer().autoIncrement()();
   // fix ci: named `entityTable`, not `tableName` — the latter collides with
@@ -103,6 +110,7 @@ class AuditLogs extends Table {
   DateTimeColumn get timestamp => dateTime().withDefault(currentDateAndTime)();
 }
 
+@DataClassName('BackupLog')
 class BackupLogs extends Table {
   IntColumn get id => integer().autoIncrement()();
   DateTimeColumn get timestamp => dateTime().withDefault(currentDateAndTime)();
