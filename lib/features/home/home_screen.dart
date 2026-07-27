@@ -5,6 +5,7 @@ import '../../l10n/app_localizations.dart';
 import '../auth/auth_session.dart';
 
 import '../alerts/alerts_screen.dart';
+import '../backup/backup_screen.dart';
 import '../inventory/product_list_screen.dart';
 import '../pos/pos_screen.dart';
 
@@ -69,6 +70,17 @@ class HomeScreen extends ConsumerWidget {
             onPressed: () {
               Navigator.of(context).push(
                 MaterialPageRoute(builder: (_) => const AlertsScreen()),
+              );
+            },
+          ),
+          const SizedBox(height: 12),
+          ElevatedButton.icon(
+            key: const Key('navBackupBtn'),
+            icon: const Icon(Icons.backup),
+            label: Text(l10n.backupTitle),
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const BackupScreen()),
               );
             },
           ),

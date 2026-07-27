@@ -8,5 +8,13 @@
   "setupAdminError": "Akun tidak bisa dibuat. Coba nama pengguna lain.",
   "loginTitle": "Masuk",
   "loginButton": "Masuk",
-  "loginError": "Nama pengguna atau kata sandi salah. Coba lagi."
+  "loginError": "Nama pengguna atau kata sandi salah. Coba lagi.",
+  "backupTitle": "Pencadangan & Pemulihan Data",
+  "createBackupButton": "Buat Cadangan Lokal",
+  "restoreBackupButton": "Pulihkan dari Berkas",
+  "backupHistoryTitle": "Riwayat Log Cadangan",
+  "restoreConfirmTitle": "Konfirmasi Pemulihan Data",
+  "restoreConfirmMessage": "Apakah Anda yakin ingin memulihkan data? Data saat ini akan ditimpa oleh data dari berkas cadangan.",
+  "cancelButton": "Batal",
+  "confirmButton": "Konfirmasi Pulihkan"
 }
