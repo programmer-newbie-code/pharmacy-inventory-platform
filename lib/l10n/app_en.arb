@@ -24,5 +24,6 @@
   "resetPasswordButton": "Reset Password",
   "newPasswordLabel": "New Password",
   "exportExcelButton": "Export Excel (.xlsx)",
-  "exportCsvButton": "Export Prescription CSV"
+  "exportCsvButton": "Export Prescription CSV",
+  "importCsvButton": "Import Inventory CSV"
 }

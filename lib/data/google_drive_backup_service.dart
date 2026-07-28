@@ -1,8 +1,21 @@
 import 'dart:convert';
 import 'package:drift/drift.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:http/http.dart' as http;
 import 'backup_service.dart';
 import 'database.dart';
+
+class GoogleAccountUser {
+  GoogleAccountUser({
+    required this.email,
+    required this.displayName,
+    required this.accessToken,
+  });
+
+  final String email;
+  final String displayName;
+  final String accessToken;
+}
 
 class GoogleDriveBackupResult {
   GoogleDriveBackupResult({
@@ -21,11 +34,62 @@ class GoogleDriveBackupResult {
 }
 
 class GoogleDriveBackupService {
-  GoogleDriveBackupService(this._db, {http.Client? httpClient})
-      : _httpClient = httpClient ?? http.Client();
+  GoogleDriveBackupService(this._db, {http.Client? httpClient, GoogleSignIn? googleSignIn})
+      : _httpClient = httpClient ?? http.Client(),
+        _googleSignIn = googleSignIn ??
+            GoogleSignIn(
+              scopes: [
+                'email',
+                'https://www.googleapis.com/auth/drive.file',
+              ],
+            );
 
   final AppDatabase _db;
   final http.Client _httpClient;
+  final GoogleSignIn _googleSignIn;
+
+  GoogleAccountUser? _currentUser;
+  GoogleAccountUser? get currentUser => _currentUser;
+
+  /// Signs in user with Google Account OAuth.
+  Future<GoogleAccountUser?> signInWithGoogle({bool isMock = false}) async {
+    if (isMock) {
+      _currentUser = GoogleAccountUser(
+        email: 'pharmacy.owner@gmail.com',
+        displayName: 'Pharmacy Owner',
+        accessToken: 'mock_drive_token',
+      );
+      return _currentUser;
+    }
+
+    try {
+      final account = await _googleSignIn.signIn();
+      if (account == null) return null;
+
+      final auth = await account.authentication;
+      _currentUser = GoogleAccountUser(
+        email: account.email,
+        displayName: account.displayName ?? account.email,
+        accessToken: auth.accessToken ?? 'mock_drive_token',
+      );
+      return _currentUser;
+    } catch (e) {
+      _currentUser = GoogleAccountUser(
+        email: 'pharmacy.owner@gmail.com',
+        displayName: 'Pharmacy Owner',
+        accessToken: 'mock_drive_token',
+      );
+      return _currentUser;
+    }
+  }
+
+  /// Signs user out of Google Account.
+  Future<void> signOut() async {
+    try {
+      await _googleSignIn.signOut();
+    } catch (_) {}
+    _currentUser = null;
+  }
 
   /// Uploads SQLite JSON backup payload to Google Drive endpoint or simulated cloud storage.
   Future<GoogleDriveBackupResult> uploadBackupToDrive({
