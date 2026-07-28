@@ -10,6 +10,7 @@ import '../inventory/product_list_screen.dart';
 import '../pos/pos_screen.dart';
 import '../pos/shift_management_screen.dart';
 import '../pos/return_screen.dart';
+import '../suppliers/purchase_order_screen.dart';
 import '../users/user_management_screen.dart';
 import '../reports/reports_screen.dart';
 
@@ -74,6 +75,17 @@ class HomeScreen extends ConsumerWidget {
             onPressed: () {
               Navigator.of(context).push(
                 MaterialPageRoute(builder: (_) => const ReturnScreen()),
+              );
+            },
+          ),
+          const SizedBox(height: 12),
+          ElevatedButton.icon(
+            key: const Key('navSuppliersBtn'),
+            icon: const Icon(Icons.local_shipping),
+            label: const Text('Suppliers & Purchase Orders'),
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const PurchaseOrderScreen()),
               );
             },
           ),

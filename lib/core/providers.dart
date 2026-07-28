@@ -21,6 +21,8 @@ import '../data/csv_import_service.dart';
 import '../data/receipt_pdf_service.dart';
 import '../data/cashier_shift_repository.dart';
 import '../data/return_repository.dart';
+import '../data/supplier_repository.dart';
+import '../data/purchase_order_repository.dart';
 
 final databaseProvider = Provider<AppDatabase>((ref) {
   final db = AppDatabase.defaultConnection();
@@ -87,6 +89,17 @@ final cashierShiftRepositoryProvider = Provider<CashierShiftRepository>(
 
 final returnRepositoryProvider = Provider<ReturnRepository>(
   (ref) => ReturnRepository(
+    ref.watch(databaseProvider),
+    auditLogger: ref.watch(auditLoggerProvider),
+  ),
+);
+
+final supplierRepositoryProvider = Provider<SupplierRepository>(
+  (ref) => SupplierRepository(ref.watch(databaseProvider)),
+);
+
+final purchaseOrderRepositoryProvider = Provider<PurchaseOrderRepository>(
+  (ref) => PurchaseOrderRepository(
     ref.watch(databaseProvider),
     auditLogger: ref.watch(auditLoggerProvider),
   ),
