@@ -129,6 +129,27 @@ class CashierShifts extends Table {
   DateTimeColumn get closedAt => dateTime().nullable()();
 }
 
+@DataClassName('ReturnTransaction')
+class ReturnTransactions extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get returnNo => text().unique()();
+  IntColumn get originalTxnId => integer().references(SaleTransactions, #id)();
+  IntColumn get processedBy => integer().references(Users, #id)();
+  TextColumn get reason => text()(); // wrong_product|allergic|defective|other
+  RealColumn get refundAmount => real()();
+  TextColumn get refundMethod => text()(); // Cash|Store Credit|Bank Transfer
+  DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
+}
+
+@DataClassName('ReturnItem')
+class ReturnItems extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  IntColumn get returnTxnId => integer().references(ReturnTransactions, #id)();
+  IntColumn get saleItemId => integer().references(SaleItems, #id)();
+  IntColumn get qtyReturned => integer()();
+  BoolColumn get restocked => boolean().withDefault(const Constant(false))();
+}
+
 @DriftDatabase(tables: [
   Users,
   StorageLocations,
@@ -139,6 +160,8 @@ class CashierShifts extends Table {
   AuditLogs,
   BackupLogs,
   CashierShifts,
+  ReturnTransactions,
+  ReturnItems,
 ])
 class AppDatabase extends _$AppDatabase {
   AppDatabase(super.e);

@@ -9,6 +9,7 @@ import '../backup/backup_screen.dart';
 import '../inventory/product_list_screen.dart';
 import '../pos/pos_screen.dart';
 import '../pos/shift_management_screen.dart';
+import '../pos/return_screen.dart';
 import '../users/user_management_screen.dart';
 import '../reports/reports_screen.dart';
 
@@ -62,6 +63,17 @@ class HomeScreen extends ConsumerWidget {
             onPressed: () {
               Navigator.of(context).push(
                 MaterialPageRoute(builder: (_) => const ShiftManagementScreen()),
+              );
+            },
+          ),
+          const SizedBox(height: 12),
+          ElevatedButton.icon(
+            key: const Key('navReturnsBtn'),
+            icon: const Icon(Icons.assignment_return),
+            label: const Text('Returns & Refunds'),
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const ReturnScreen()),
               );
             },
           ),
