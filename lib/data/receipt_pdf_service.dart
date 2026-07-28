@@ -12,6 +12,7 @@ class ReceiptPdfService {
     String pharmacyName = 'Apotek Medika Sehat',
     String pharmacyAddress = 'Jl. Merdeka No. 45, Jakarta',
     String cashierName = 'Kasir Staff',
+    Uint8List? logoBytes,
   }) async {
     final pdf = pw.Document();
 
@@ -23,7 +24,17 @@ class ReceiptPdfService {
           return pw.Column(
             crossAxisAlignment: pw.CrossAxisAlignment.start,
             children: [
-              // Pharmacy Header
+              // Pharmacy Logo & Header
+              if (logoBytes != null) ...[
+                pw.Center(
+                  child: pw.Image(
+                    pw.MemoryImage(logoBytes),
+                    height: 36,
+                    fit: pw.BoxFit.contain,
+                  ),
+                ),
+                pw.SizedBox(height: 4),
+              ],
               pw.Center(
                 child: pw.Text(
                   pharmacyName,
