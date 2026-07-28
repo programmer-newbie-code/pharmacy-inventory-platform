@@ -55,25 +55,25 @@ Flutter (stable) · `drift` (SQLite) · `flutter_riverpod` · ARB-based i18n
 - Widget tests for screens; unit tests for domain logic. Don't write a test for a
   trivial one-line getter.
 
-## Workflow — non-negotiable
+## Workflow — STRICT & NON-NEGOTIABLE
 
-1. **Every change goes through a PR.** No direct commits to `main`.
-2. **PR titles follow [react-spectrum's naming guide](https://github.com/adobe/react-spectrum/wiki/Pull-Request-Naming-Guide):**
+1. **NEVER push or commit directly to `main`.** All work must be done on a feature branch (e.g. `feat/xxx`, `fix/xxx`, `chore/xxx`).
+2. **Every change MUST go through a Pull Request (PR).**
+   - Push feature branch to GitHub (`git push origin feat/xxx`)
+   - Create PR (`gh pr create`)
+   - Wait for ALL GitHub Actions CI checks (`analyze-and-test`, `build-windows`, `build-android`, `secret-scan`, `verify-signatures`) to pass completely (100% GREEN)
+   - Merge PR (`gh pr merge --squash`)
+3. **No exceptions unless the USER explicitly instructs to bypass in writing.** The AI agent must never decide on its own to push directly to `main` or skip PR/CI validation.
+4. **PR titles follow [react-spectrum's naming guide](https://github.com/adobe/react-spectrum/wiki/Pull-Request-Naming-Guide):**
    `type(scope): summary` — e.g. `feat(auth): add login screen and session provider`,
    `fix(pos): correct FEFO batch selection when two batches share an expiry date`.
    Type is one of: `feat`, `fix`, `build`, `chore`, `docs`, `test`, `refactor`, `ci`,
-   `localize`, `bump`, `revert`. Scope is optional, a noun for the affected area (not
-   an issue number). Summary is lowercase, imperative, readable at a glance. PR
-   **description** always has a `## Summary` (what and why, not a line-by-line diff
-   recap) and a `## Test plan` checklist — a title alone is never enough.
-3. **CI must be fully green before merge** (`flutter analyze`, coverage-gated tests,
-   Windows build, Android build). Watch with `gh pr checks --watch`; if red, read the
+   `localize`, `bump`, `revert`. Scope is optional.
+5. **CI must be fully green before merge** (`flutter analyze`, 80%+ coverage tests,
+   Windows build, Android build). Watch with `gh run watch`; if red, read the
    exact failing log (`gh run view <run-id> --log-failed`) and fix the specific
    reported error — don't guess broadly.
-4. Branch protection on `main` is **not currently enforced** — this repo is private
-   on GitHub's free plan, which doesn't support the branch-protection API (403). Rules
-   1-3 above are enforced by convention, not the server, until the plan changes.
-5. Use `context7` for current library/API docs when unsure — training data may be
+6. Use `context7` for current library/API docs when unsure — training data may be
    stale, especially for a fast-moving Flutter/drift ecosystem.
 
 ## Docs map
