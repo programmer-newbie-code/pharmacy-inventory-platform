@@ -32,9 +32,13 @@ void main() {
     expect(logs.first.status, equals('Success'));
   });
 
-  test('restoreFromCloudJson imports database JSON payload successfully', () async {
-    const payload = '{"users":[],"products":[],"stock_batches":[]}';
-    final success = await service.restoreFromCloudJson(payload);
-    expect(success, isTrue);
+  test('signInWithGoogle signs in mock user and stores currentUser', () async {
+    final user = await service.signInWithGoogle(isMock: true);
+    expect(user, isNotNull);
+    expect(user?.email, equals('pharmacy.owner@gmail.com'));
+    expect(service.currentUser, isNotNull);
+
+    await service.signOut();
+    expect(service.currentUser, isNull);
   });
 }

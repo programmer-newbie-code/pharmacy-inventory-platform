@@ -72,12 +72,81 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen> {
     }
   }
 
+  Future<void> _openImportCsvDialog() async {
+    final csvController = TextEditingController(
+      text: 'Barcode,InternalCode,ProductName,ActiveIngredient,BaseUnit,PurchaseUnit,UnitsPerPurchaseUnit,CostPrice,MarginPct,ReorderThreshold,Category,IsControlled\n'
+            '899123456701,P001,Amoxicillin 500mg,Amoxicillin,tablet,box,100,500,20,50,Obat Keras,true\n'
+            '899123456702,P002,Paracetamol 500mg,Paracetamol,tablet,box,100,200,25,30,Obat Bebas,false',
+    );
+
+    final importContent = await showDialog<String>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Import Inventory CSV'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Paste or edit CSV spreadsheet rows below:',
+              style: TextStyle(fontSize: 12, color: Colors.grey),
+            ),
+            const SizedBox(height: 8),
+            TextField(
+              key: const Key('csvTextInput'),
+              controller: csvController,
+              maxLines: 6,
+              decoration: const InputDecoration(
+                border: OutlineInputBorder(),
+                hintText: 'Barcode,InternalCode,ProductName,...',
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            key: const Key('submitCsvImportBtn'),
+            onPressed: () => Navigator.of(ctx).pop(csvController.text),
+            child: const Text('Import Products'),
+          ),
+        ],
+      ),
+    );
+
+    if (importContent != null && importContent.isNotEmpty) {
+      final csvService = ref.read(csvImportServiceProvider);
+      final result = await csvService.importProductsFromCsv(importContent);
+      _fetchProducts();
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Imported ${result.successCount} products successfully (${result.failedCount} failed).',
+            ),
+            backgroundColor: result.failedCount == 0 ? Colors.green : Colors.orange,
+          ),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Inventory Catalog'),
         actions: [
+          IconButton(
+            key: const Key('importCsvBtn'),
+            icon: const Icon(Icons.file_upload),
+            tooltip: 'Import Inventory CSV',
+            onPressed: _openImportCsvDialog,
+          ),
           IconButton(
             key: const Key('refreshButton'),
             icon: const Icon(Icons.refresh),

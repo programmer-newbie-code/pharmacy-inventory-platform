@@ -17,6 +17,7 @@ import '../data/report_repository.dart';
 import '../data/backup_service.dart';
 import '../data/excel_report_service.dart';
 import '../data/google_drive_backup_service.dart';
+import '../data/csv_import_service.dart';
 
 final databaseProvider = Provider<AppDatabase>((ref) {
   final db = AppDatabase.defaultConnection();
@@ -70,6 +71,10 @@ final googleDriveBackupServiceProvider = Provider<GoogleDriveBackupService>(
 );
 
 final excelReportServiceProvider = Provider<ExcelReportService>((ref) => ExcelReportService());
+
+final csvImportServiceProvider = Provider<CsvImportService>(
+  (ref) => CsvImportService(ref.watch(productRepositoryProvider)),
+);
 
 final passwordHasherProvider = Provider<PasswordHasher>((ref) => PasswordHasher());
 

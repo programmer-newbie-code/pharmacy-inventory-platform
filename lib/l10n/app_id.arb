@@ -24,5 +24,6 @@
   "resetPasswordButton": "Reset Kata Sandi",
   "newPasswordLabel": "Kata Sandi Baru",
   "exportExcelButton": "Ekspor Excel (.xlsx)",
-  "exportCsvButton": "Ekspor Resep CSV"
+  "exportCsvButton": "Ekspor Resep CSV",
+  "importCsvButton": "Impor Inventaris CSV"
 }
