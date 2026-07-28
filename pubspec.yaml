@@ -24,6 +24,8 @@ dependencies:
   http: ^1.2.1
   csv: ^6.0.0
   google_sign_in: ^6.2.1
+  pdf: ^3.11.1
+  printing: ^5.13.3
 
 dev_dependencies:
   flutter_test:

@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:printing/printing.dart';
 
+import '../../core/providers.dart';
 import '../../data/database.dart';
 
-class ReceiptDialog extends StatelessWidget {
+class ReceiptDialog extends ConsumerWidget {
   const ReceiptDialog({
     super.key,
     required this.transaction,
@@ -15,7 +18,7 @@ class ReceiptDialog extends StatelessWidget {
   final Map<int, Product> productsMap;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return AlertDialog(
       title: const Text('Transaction Receipt'),
       content: SingleChildScrollView(
@@ -79,6 +82,23 @@ class ReceiptDialog extends StatelessWidget {
         ),
       ),
       actions: [
+        OutlinedButton.icon(
+          key: const Key('printReceiptBtn'),
+          icon: const Icon(Icons.print),
+          label: const Text('Print Receipt'),
+          onPressed: () async {
+            final pdfService = ref.read(receiptPdfServiceProvider);
+            final pdfBytes = await pdfService.generateReceiptPdf(
+              transaction: transaction,
+              items: items,
+              productsMap: productsMap,
+            );
+            await Printing.layoutPdf(
+              onLayout: (_) => pdfBytes,
+              name: 'receipt_${transaction.txnNo}',
+            );
+          },
+        ),
         ElevatedButton.icon(
           key: const Key('closeReceiptButton'),
           icon: const Icon(Icons.check),
