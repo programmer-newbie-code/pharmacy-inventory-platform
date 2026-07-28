@@ -1,3 +1,4 @@
+import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/providers.dart';
@@ -254,7 +255,7 @@ class _SalesAnalyticsScreenState extends ConsumerState<SalesAnalyticsScreen> {
                         }),
                       const SizedBox(height: 24),
 
-                      // Top 5 Best-Selling Products Table
+                      // Top 5 Best-Selling Products Table & Chart
                       const Text(
                         'Top 5 Best-Selling Products',
                         style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
@@ -262,7 +263,64 @@ class _SalesAnalyticsScreenState extends ConsumerState<SalesAnalyticsScreen> {
                       const SizedBox(height: 8),
                       if (topProducts.isEmpty)
                         const Text('No sales recorded in selected period.')
-                      else
+                      else ...[
+                        Card(
+                          elevation: 2,
+                          child: Padding(
+                            padding: const EdgeInsets.all(16.0),
+                            child: SizedBox(
+                              height: 180,
+                              child: BarChart(
+                                BarChartData(
+                                  alignment: BarChartAlignment.spaceAround,
+                                  maxY: (topProducts.first.revenue * 1.2).clamp(10.0, double.infinity),
+                                  barTouchData: BarTouchData(enabled: true),
+                                  titlesData: FlTitlesData(
+                                    show: true,
+                                    leftTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                                    rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                                    topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                                    bottomTitles: AxisTitles(
+                                      sideTitles: SideTitles(
+                                        showTitles: true,
+                                        getTitlesWidget: (value, meta) {
+                                          final index = value.toInt();
+                                          if (index >= 0 && index < topProducts.length) {
+                                            final name = topProducts[index].productName;
+                                            final shortName = name.length > 8 ? '${name.substring(0, 7)}…' : name;
+                                            return SideTitleWidget(
+                                              axisSide: meta.axisSide,
+                                              child: Text(shortName, style: const TextStyle(fontSize: 10)),
+                                            );
+                                          }
+                                          return const SizedBox.shrink();
+                                        },
+                                      ),
+                                    ),
+                                  ),
+                                  gridData: const FlGridData(show: false),
+                                  borderData: FlBorderData(show: false),
+                                  barGroups: topProducts.asMap().entries.map((entry) {
+                                    final idx = entry.key;
+                                    final item = entry.value;
+                                    return BarChartGroupData(
+                                      x: idx,
+                                      barRods: [
+                                        BarChartRodData(
+                                          toY: item.revenue,
+                                          color: Colors.indigo,
+                                          width: 16,
+                                          borderRadius: BorderRadius.circular(4),
+                                        ),
+                                      ],
+                                    );
+                                  }).toList(),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 8),
                         Card(
                           child: SingleChildScrollView(
                             scrollDirection: Axis.horizontal,
@@ -286,6 +344,7 @@ class _SalesAnalyticsScreenState extends ConsumerState<SalesAnalyticsScreen> {
                             ),
                           ),
                         ),
+                      ],
                       const SizedBox(height: 24),
 
                       // Payment Method Breakdown
