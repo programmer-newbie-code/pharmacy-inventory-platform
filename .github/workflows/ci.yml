@@ -62,7 +62,6 @@ jobs:
           awk -v cov="$COVERAGE" 'BEGIN { if (cov + 0 < 80) { print "Coverage below 80%"; exit 1 } }'
 
   build-windows:
-    if: github.event_name == 'push'
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
@@ -82,7 +81,6 @@ jobs:
           path: build/windows/x64/runner/Release/
 
   build-android:
-    if: github.event_name == 'push'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
