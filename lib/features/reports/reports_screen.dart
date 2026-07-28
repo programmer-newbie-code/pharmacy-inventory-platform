@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import '../../core/providers.dart';
 import '../../data/report_repository.dart';
 import '../../l10n/app_localizations.dart';
+import 'sales_analytics_screen.dart';
 
 final salesReportFutureProvider = FutureProvider.autoDispose<SalesSummary>((ref) {
   final now = DateTime.now();
@@ -110,7 +111,22 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
                 ),
               ),
             ),
-            const SizedBox(height: 24),
+            ElevatedButton.icon(
+              key: const Key('navAnalyticsBtn'),
+              style: ElevatedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                backgroundColor: Colors.indigo,
+                foregroundColor: Colors.white,
+              ),
+              icon: const Icon(Icons.analytics),
+              label: const Text('Sales Analytics & Executive Insights'),
+              onPressed: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => const SalesAnalyticsScreen()),
+                );
+              },
+            ),
+            const SizedBox(height: 12),
             ElevatedButton.icon(
               key: const Key('exportExcelBtn'),
               style: ElevatedButton.styleFrom(
