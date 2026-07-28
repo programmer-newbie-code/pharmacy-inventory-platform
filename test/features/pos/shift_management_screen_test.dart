@@ -41,5 +41,16 @@ void main() {
 
     expect(find.textContaining('Shift Active (Open)'), findsOneWidget);
     expect(find.byKey(const Key('closeShiftBtn')), findsOneWidget);
+
+    await tester.tap(find.byKey(const Key('closeShiftBtn')));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Close Shift & Reconcile Cash'), findsOneWidget);
+    await tester.enterText(find.byKey(const Key('actualCashInput')), '100000');
+    await tester.tap(find.byKey(const Key('confirmCloseShiftBtn')));
+    await tester.pumpAndSettle();
+
+    expect(find.textContaining('No Active Shift'), findsOneWidget);
+    expect(find.textContaining('BALANCED'), findsOneWidget);
   });
 }

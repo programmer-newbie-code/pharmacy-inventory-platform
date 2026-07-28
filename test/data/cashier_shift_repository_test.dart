@@ -71,6 +71,10 @@ void main() {
     final active = await shiftRepo.getActiveShift(1);
     expect(active, isNotNull);
     expect(active?.id, equals(shift.id));
+
+    // Calling openShift again while active returns same active shift
+    final secondCall = await shiftRepo.openShift(cashierId: 1, openingBalance: 200000);
+    expect(secondCall.id, equals(shift.id));
   });
 
   test('closeShift calculates expected cash and discrepancy correctly', () async {
@@ -95,5 +99,21 @@ void main() {
     expect(closed.expectedCash, equals(112000));
     expect(closed.actualCash, equals(112000));
     expect(closed.discrepancy, equals(0));
+
+    final all = await shiftRepo.listShifts();
+    expect(all, isNotEmpty);
+  });
+
+  test('closeShift handles shortage and overage correctly', () async {
+    final shift = await shiftRepo.openShift(cashierId: 1, openingBalance: 50000);
+
+    // Shortage case (Counted 45,000 when expected 50,000) -> disc = -5,000
+    final closedShortage = await shiftRepo.closeShift(shiftId: shift.id, actualCash: 45000);
+    expect(closedShortage.discrepancy, equals(-5000));
+
+    // Overage case
+    final shift2 = await shiftRepo.openShift(cashierId: 1, openingBalance: 50000);
+    final closedOverage = await shiftRepo.closeShift(shiftId: shift2.id, actualCash: 55000);
+    expect(closedOverage.discrepancy, equals(5000));
   });
 }
