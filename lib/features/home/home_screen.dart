@@ -8,6 +8,7 @@ import '../alerts/alerts_screen.dart';
 import '../backup/backup_screen.dart';
 import '../inventory/product_list_screen.dart';
 import '../pos/pos_screen.dart';
+import '../pos/shift_management_screen.dart';
 import '../users/user_management_screen.dart';
 import '../reports/reports_screen.dart';
 
@@ -50,6 +51,17 @@ class HomeScreen extends ConsumerWidget {
             onPressed: () {
               Navigator.of(context).push(
                 MaterialPageRoute(builder: (_) => const PosScreen()),
+              );
+            },
+          ),
+          const SizedBox(height: 12),
+          ElevatedButton.icon(
+            key: const Key('navShiftsBtn'),
+            icon: const Icon(Icons.account_balance_wallet),
+            label: const Text('Shift Reconciliation'),
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const ShiftManagementScreen()),
               );
             },
           ),
