@@ -14,6 +14,7 @@ import '../suppliers/purchase_order_screen.dart';
 import '../users/user_management_screen.dart';
 import '../reports/reports_screen.dart';
 
+import '../settings/pharmacy_branding_dialog.dart';
 import '../help/quick_guide_dialog.dart';
 
 class HomeScreen extends ConsumerWidget {
@@ -26,6 +27,17 @@ class HomeScreen extends ConsumerWidget {
       appBar: AppBar(
         title: Text(l10n.appTitle),
         actions: [
+          IconButton(
+            key: const Key('brandingButton'),
+            icon: const Icon(Icons.storefront),
+            tooltip: 'Pharmacy Branding & Logo',
+            onPressed: () {
+              showDialog(
+                context: context,
+                builder: (_) => const PharmacyBrandingDialog(),
+              );
+            },
+          ),
           IconButton(
             key: const Key('helpButton'),
             icon: const Icon(Icons.help_outline),

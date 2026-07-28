@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
+import 'core/app_theme.dart';
 import 'core/providers.dart';
 import 'features/auth/auth_session.dart';
 import 'features/auth/login_screen.dart';
@@ -17,12 +17,13 @@ class PharmacyInventoryApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
+    return MaterialApp(
       title: 'Pharmacy Inventory Platform',
+      theme: AppTheme.lightTheme,
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
-      locale: Locale('id'),
-      home: AuthGate(),
+      locale: const Locale('id'),
+      home: const AuthGate(),
     );
   }
 }

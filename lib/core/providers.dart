@@ -23,6 +23,8 @@ import '../data/cashier_shift_repository.dart';
 import '../data/return_repository.dart';
 import '../data/supplier_repository.dart';
 import '../data/purchase_order_repository.dart';
+import '../data/pharmacy_settings_service.dart';
+import '../data/openfda_drug_service.dart';
 
 final databaseProvider = Provider<AppDatabase>((ref) {
   final db = AppDatabase.defaultConnection();
@@ -103,6 +105,14 @@ final purchaseOrderRepositoryProvider = Provider<PurchaseOrderRepository>(
     ref.watch(databaseProvider),
     auditLogger: ref.watch(auditLoggerProvider),
   ),
+);
+
+final pharmacySettingsServiceProvider = Provider<PharmacySettingsService>(
+  (ref) => PharmacySettingsService(),
+);
+
+final openFdaDrugServiceProvider = Provider<OpenFdaDrugService>(
+  (ref) => OpenFdaDrugService(),
 );
 
 final passwordHasherProvider = Provider<PasswordHasher>((ref) => PasswordHasher());
