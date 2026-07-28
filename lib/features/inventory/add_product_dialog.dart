@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/providers.dart';
 import '../../data/database.dart';
+import 'camera_scanner_dialog.dart';
 
 class AddProductDialog extends ConsumerStatefulWidget {
   const AddProductDialog({super.key});
@@ -102,7 +103,19 @@ class _AddProductDialogState extends ConsumerState<AddProductDialog> {
               TextFormField(
                 key: const Key('productBarcodeInput'),
                 controller: _barcodeController,
-                decoration: const InputDecoration(labelText: 'Barcode'),
+                decoration: InputDecoration(
+                  labelText: 'Barcode',
+                  suffixIcon: IconButton(
+                    key: const Key('cameraScanBarcodeBtn'),
+                    icon: const Icon(Icons.qr_code_scanner),
+                    onPressed: () async {
+                      final scanned = await CameraScannerDialog.scanBarcode(context);
+                      if (scanned != null) {
+                        _barcodeController.text = scanned;
+                      }
+                    },
+                  ),
+                ),
                 validator: (v) => (v == null || v.isEmpty) ? 'Required' : null,
               ),
               TextFormField(

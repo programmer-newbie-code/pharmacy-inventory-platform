@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/providers.dart';
 import '../../data/database.dart';
 import '../../data/sale_repository.dart';
+import '../inventory/camera_scanner_dialog.dart';
 import 'receipt_dialog.dart';
 
 class PosScreen extends ConsumerStatefulWidget {
@@ -154,16 +155,34 @@ class _PosScreenState extends ConsumerState<PosScreen> {
               children: [
                 Padding(
                   padding: const EdgeInsets.all(8.0),
-                  child: TextField(
-                    key: const Key('posSearchInput'),
-                    controller: _searchController,
-                    decoration: const InputDecoration(
-                      labelText: 'Scan barcode or search product',
-                      prefixIcon: Icon(Icons.qr_code_scanner),
-                    ),
-                    onChanged: (val) {
-                      setState(() {});
-                    },
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: TextField(
+                          key: const Key('posSearchInput'),
+                          controller: _searchController,
+                          decoration: const InputDecoration(
+                            labelText: 'Scan barcode or search product',
+                            prefixIcon: Icon(Icons.search),
+                          ),
+                          onChanged: (val) {
+                            setState(() {});
+                          },
+                        ),
+                      ),
+                      IconButton(
+                        key: const Key('cameraScanBtn'),
+                        icon: const Icon(Icons.qr_code_scanner),
+                        tooltip: 'Scan with Camera',
+                        onPressed: () async {
+                          final scanned = await CameraScannerDialog.scanBarcode(context);
+                          if (scanned != null) {
+                            _searchController.text = scanned;
+                            setState(() {});
+                          }
+                        },
+                      ),
+                    ],
                   ),
                 ),
                 Expanded(
