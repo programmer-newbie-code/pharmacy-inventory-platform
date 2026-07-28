@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/providers.dart';
 import '../../data/alert_repository.dart';
+import '../suppliers/purchase_order_screen.dart';
 
 class AlertsScreen extends ConsumerStatefulWidget {
   const AlertsScreen({super.key});
@@ -137,20 +138,36 @@ class _AlertsScreenState extends ConsumerState<AlertsScreen> {
                               subtitle: Text(
                                 'Barcode: ${item.product.barcode} | Location: ${item.product.category}',
                               ),
-                              trailing: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                crossAxisAlignment: CrossAxisAlignment.end,
+                              trailing: Row(
+                                mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  Text(
-                                    'Stock: ${item.currentTotalStock} / Threshold: ${item.product.reorderThreshold}',
-                                    style: const TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.red,
-                                    ),
+                                  Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    crossAxisAlignment: CrossAxisAlignment.end,
+                                    children: [
+                                      Text(
+                                        'Stock: ${item.currentTotalStock} / Threshold: ${item.product.reorderThreshold}',
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.red,
+                                        ),
+                                      ),
+                                      Text(
+                                        '${item.product.baseUnit}s',
+                                        style: const TextStyle(fontSize: 12, color: Colors.grey),
+                                      ),
+                                    ],
                                   ),
-                                  Text(
-                                    '${item.product.baseUnit}s',
-                                    style: const TextStyle(fontSize: 12, color: Colors.grey),
+                                  const SizedBox(width: 8),
+                                  IconButton(
+                                    key: Key('createPoFromAlert_${item.product.id}'),
+                                    icon: const Icon(Icons.add_shopping_cart, color: Colors.blue),
+                                    tooltip: 'Create Purchase Order',
+                                    onPressed: () {
+                                      Navigator.of(context).push(
+                                        MaterialPageRoute(builder: (_) => const PurchaseOrderScreen()),
+                                      );
+                                    },
                                   ),
                                 ],
                               ),

@@ -150,6 +150,40 @@ class ReturnItems extends Table {
   BoolColumn get restocked => boolean().withDefault(const Constant(false))();
 }
 
+@DataClassName('Supplier')
+class Suppliers extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get name => text()();
+  TextColumn get contactPerson => text().nullable()();
+  TextColumn get phone => text().nullable()();
+  TextColumn get email => text().nullable()();
+  TextColumn get address => text().nullable()();
+  DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
+}
+
+@DataClassName('PurchaseOrder')
+class PurchaseOrders extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get poNumber => text().unique()();
+  IntColumn get supplierId => integer().references(Suppliers, #id)();
+  TextColumn get status => text()(); // draft|sent|received|cancelled
+  RealColumn get totalAmount => real()();
+  TextColumn get notes => text().nullable()();
+  TextColumn get createdBy => text()();
+  DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
+  DateTimeColumn get receivedAt => dateTime().nullable()();
+}
+
+@DataClassName('PurchaseOrderItem')
+class PurchaseOrderItems extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  IntColumn get purchaseOrderId => integer().references(PurchaseOrders, #id)();
+  IntColumn get productId => integer().references(Products, #id)();
+  IntColumn get qtyOrdered => integer()();
+  IntColumn get qtyReceived => integer().withDefault(const Constant(0))();
+  RealColumn get unitCost => real()();
+}
+
 @DriftDatabase(tables: [
   Users,
   StorageLocations,
@@ -162,6 +196,9 @@ class ReturnItems extends Table {
   CashierShifts,
   ReturnTransactions,
   ReturnItems,
+  Suppliers,
+  PurchaseOrders,
+  PurchaseOrderItems,
 ])
 class AppDatabase extends _$AppDatabase {
   AppDatabase(super.e);
