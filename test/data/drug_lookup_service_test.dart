@@ -1,43 +1,33 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:flutter/services.dart';
 import 'package:pharmacy_inventory_platform/data/drug_lookup_service.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  // Provide the real CSV asset in tests via the rootBundle mock
-  setUp(() {
-    const channel = MethodChannel('flutter/assets');
-    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
-        .setMockMessageHandler(channel.name, null);
-  });
-
-  group('DrugLookupService trigram search', () {
+  group('DrugLookupService', () {
     late DrugLookupService service;
 
     setUp(() {
       service = DrugLookupService();
     });
 
-    test('trigram similarity — identical strings returns 1.0', () {
-      // Access via reflection is not straightforward in Dart tests,
-      // so we test via observable behaviour from searchOffline.
-      // This test verifies the service is constructable.
-      expect(service, isNotNull);
+    test('searchOffline returns empty list for empty query', () async {
+      final results = await service.searchOffline('');
+      expect(results, isEmpty);
     });
 
-    test('DrugLookupResult.requiresPrescription is true for Obat Keras', () {
-      final drug = DrugLookupResult(
-        name: 'Amoxicillin 500mg',
-        activeIngredient: 'Amoxicillin',
-        category: 'Obat Keras',
-        manufacturer: 'Generik',
-        unit: 'kapsul',
-      );
-      expect(drug.requiresPrescription, isTrue);
+    test('searchBpom returns empty list for empty query', () async {
+      final results = await service.searchBpom('');
+      expect(results, isEmpty);
     });
 
-    test('DrugLookupResult.requiresPrescription is false for Obat Bebas', () {
+    test('search returns offline results for valid query', () async {
+      final results = await service.search('paracetamol');
+      expect(results, isNotEmpty);
+      expect(results.first.name.toLowerCase(), contains('paracetamol'));
+    });
+
+    test('DrugLookupResult toString formatting', () {
       final drug = DrugLookupResult(
         name: 'Paracetamol 500mg',
         activeIngredient: 'Paracetamol',
@@ -45,18 +35,36 @@ void main() {
         manufacturer: 'Generik',
         unit: 'tablet',
       );
-      expect(drug.requiresPrescription, isFalse);
+      expect(drug.toString(), equals('Paracetamol 500mg (Obat Bebas)'));
     });
 
-    test('DrugLookupResult.requiresPrescription is true for Psikotropika', () {
-      final drug = DrugLookupResult(
+    test('DrugLookupResult.requiresPrescription is true for Obat Keras & Psikotropika', () {
+      final drugKeras = DrugLookupResult(
+        name: 'Amoxicillin 500mg',
+        activeIngredient: 'Amoxicillin',
+        category: 'Obat Keras',
+        manufacturer: 'Generik',
+        unit: 'kapsul',
+      );
+      expect(drugKeras.requiresPrescription, isTrue);
+
+      final drugBebas = DrugLookupResult(
+        name: 'Paracetamol 500mg',
+        activeIngredient: 'Paracetamol',
+        category: 'Obat Bebas',
+        manufacturer: 'Generik',
+        unit: 'tablet',
+      );
+      expect(drugBebas.requiresPrescription, isFalse);
+
+      final drugPsiko = DrugLookupResult(
         name: 'Diazepam 5mg',
         activeIngredient: 'Diazepam',
         category: 'Psikotropika',
         manufacturer: 'Generik',
         unit: 'tablet',
       );
-      expect(drug.requiresPrescription, isTrue);
+      expect(drugPsiko.requiresPrescription, isTrue);
     });
 
     test('DrugSource enum has offline and bpom values', () {
