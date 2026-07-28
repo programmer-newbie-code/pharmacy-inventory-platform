@@ -1,0 +1,486 @@
+name,active_ingredient,category,manufacturer,unit
+Paracetamol 500mg,Paracetamol,Obat Bebas,Generik,tablet
+Paracetamol 250mg,Paracetamol,Obat Bebas,Generik,tablet
+Paracetamol Sirup 120mg/5ml,Paracetamol,Obat Bebas,Generik,botol
+Amoxicillin 500mg,Amoxicillin,Obat Keras,Generik,kapsul
+Amoxicillin 250mg,Amoxicillin,Obat Keras,Generik,kapsul
+Amoxicillin Sirup 125mg/5ml,Amoxicillin,Obat Keras,Generik,botol
+Amoksisilin 500mg,Amoxicillin,Obat Keras,Generik,kapsul
+Cetirizine 10mg,Cetirizine HCl,Obat Keras,Generik,tablet
+Cetirizine Sirup 5mg/5ml,Cetirizine HCl,Obat Keras,Generik,botol
+Loratadine 10mg,Loratadine,Obat Bebas Terbatas,Generik,tablet
+Chlorpheniramine Maleate 4mg,Chlorpheniramine Maleate,Obat Bebas Terbatas,Generik,tablet
+CTM 4mg,Chlorpheniramine Maleate,Obat Bebas Terbatas,Generik,tablet
+Dexamethasone 0.5mg,Dexamethasone,Obat Keras,Generik,tablet
+Dexamethasone 0.75mg,Dexamethasone,Obat Keras,Generik,tablet
+Methylprednisolone 4mg,Methylprednisolone,Obat Keras,Generik,tablet
+Methylprednisolone 8mg,Methylprednisolone,Obat Keras,Generik,tablet
+Prednisone 5mg,Prednisone,Obat Keras,Generik,tablet
+Metformin 500mg,Metformin HCl,Obat Keras,Generik,tablet
+Metformin 850mg,Metformin HCl,Obat Keras,Generik,tablet
+Metformin 1000mg,Metformin HCl,Obat Keras,Generik,tablet
+Glibenclamide 5mg,Glibenclamide,Obat Keras,Generik,tablet
+Glimepiride 1mg,Glimepiride,Obat Keras,Generik,tablet
+Glimepiride 2mg,Glimepiride,Obat Keras,Generik,tablet
+Glimepiride 4mg,Glimepiride,Obat Keras,Generik,tablet
+Amlodipine 5mg,Amlodipine Besilate,Obat Keras,Generik,tablet
+Amlodipine 10mg,Amlodipine Besilate,Obat Keras,Generik,tablet
+Captopril 12.5mg,Captopril,Obat Keras,Generik,tablet
+Captopril 25mg,Captopril,Obat Keras,Generik,tablet
+Captopril 50mg,Captopril,Obat Keras,Generik,tablet
+Lisinopril 5mg,Lisinopril,Obat Keras,Generik,tablet
+Lisinopril 10mg,Lisinopril,Obat Keras,Generik,tablet
+Valsartan 80mg,Valsartan,Obat Keras,Generik,tablet
+Valsartan 160mg,Valsartan,Obat Keras,Generik,tablet
+Irbesartan 150mg,Irbesartan,Obat Keras,Generik,tablet
+Candesartan 8mg,Candesartan,Obat Keras,Generik,tablet
+Candesartan 16mg,Candesartan,Obat Keras,Generik,tablet
+Bisoprolol 2.5mg,Bisoprolol Fumarate,Obat Keras,Generik,tablet
+Bisoprolol 5mg,Bisoprolol Fumarate,Obat Keras,Generik,tablet
+Atenolol 50mg,Atenolol,Obat Keras,Generik,tablet
+Propranolol 10mg,Propranolol HCl,Obat Keras,Generik,tablet
+Propranolol 40mg,Propranolol HCl,Obat Keras,Generik,tablet
+Simvastatin 10mg,Simvastatin,Obat Keras,Generik,tablet
+Simvastatin 20mg,Simvastatin,Obat Keras,Generik,tablet
+Simvastatin 40mg,Simvastatin,Obat Keras,Generik,tablet
+Atorvastatin 10mg,Atorvastatin Calcium,Obat Keras,Generik,tablet
+Atorvastatin 20mg,Atorvastatin Calcium,Obat Keras,Generik,tablet
+Atorvastatin 40mg,Atorvastatin Calcium,Obat Keras,Generik,tablet
+Omeprazole 20mg,Omeprazole,Obat Keras,Generik,kapsul
+Omeprazole 40mg,Omeprazole,Obat Keras,Generik,kapsul
+Lansoprazole 15mg,Lansoprazole,Obat Keras,Generik,kapsul
+Lansoprazole 30mg,Lansoprazole,Obat Keras,Generik,kapsul
+Pantoprazole 40mg,Pantoprazole,Obat Keras,Generik,tablet
+Ranitidin 150mg,Ranitidine HCl,Obat Keras,Generik,tablet
+Famotidine 20mg,Famotidine,Obat Keras,Generik,tablet
+Antasida DOEN,Aluminium Hidroksida + Magnesium Hidroksida,Obat Bebas,Generik,tablet
+Antasida Sirup,Aluminium Hidroksida + Magnesium Hidroksida,Obat Bebas,Generik,botol
+Sucralfate 500mg,Sucralfate,Obat Keras,Generik,tablet
+Domperidone 10mg,Domperidone,Obat Keras,Generik,tablet
+Metoclopramide 10mg,Metoclopramide HCl,Obat Keras,Generik,tablet
+Ondansetron 4mg,Ondansetron HCl,Obat Keras,Generik,tablet
+Ondansetron 8mg,Ondansetron HCl,Obat Keras,Generik,tablet
+Loperamide 2mg,Loperamide HCl,Obat Bebas Terbatas,Generik,tablet
+Oralit,Natrium Klorida + Kalium Klorida + Natrium Sitrat + Glukosa,Obat Bebas,Generik,sachet
+Zinc 20mg Sirup,Zinc Sulfate,Obat Bebas,Generik,botol
+Cotrimoxazole 480mg,Sulfamethoxazole + Trimethoprim,Obat Keras,Generik,tablet
+Cotrimoxazole 960mg,Sulfamethoxazole + Trimethoprim,Obat Keras,Generik,tablet
+Cotrimoxazole Sirup 240mg/5ml,Sulfamethoxazole + Trimethoprim,Obat Keras,Generik,botol
+Ciprofloxacin 500mg,Ciprofloxacin HCl,Obat Keras,Generik,tablet
+Ciprofloxacin 250mg,Ciprofloxacin HCl,Obat Keras,Generik,tablet
+Levofloxacin 500mg,Levofloxacin,Obat Keras,Generik,tablet
+Azithromycin 500mg,Azithromycin,Obat Keras,Generik,tablet
+Azithromycin 250mg,Azithromycin,Obat Keras,Generik,tablet
+Erythromycin 500mg,Erythromycin,Obat Keras,Generik,tablet
+Doxycycline 100mg,Doxycycline HCl,Obat Keras,Generik,kapsul
+Cefadroxil 500mg,Cefadroxil,Obat Keras,Generik,kapsul
+Cefadroxil Sirup 125mg/5ml,Cefadroxil,Obat Keras,Generik,botol
+Cefixime 100mg,Cefixime,Obat Keras,Generik,kapsul
+Cefixime Sirup 100mg/5ml,Cefixime,Obat Keras,Generik,botol
+Chloramphenicol 250mg,Chloramphenicol,Obat Keras,Generik,kapsul
+Metronidazole 250mg,Metronidazole,Obat Keras,Generik,tablet
+Metronidazole 500mg,Metronidazole,Obat Keras,Generik,tablet
+Metronidazole Sirup 125mg/5ml,Metronidazole,Obat Keras,Generik,botol
+Acyclovir 200mg,Acyclovir,Obat Keras,Generik,tablet
+Acyclovir 400mg,Acyclovir,Obat Keras,Generik,tablet
+Ibuprofen 200mg,Ibuprofen,Obat Bebas Terbatas,Generik,tablet
+Ibuprofen 400mg,Ibuprofen,Obat Bebas Terbatas,Generik,tablet
+Ibuprofen Sirup 100mg/5ml,Ibuprofen,Obat Bebas Terbatas,Generik,botol
+Asam Mefenamat 250mg,Mefenamic Acid,Obat Keras,Generik,kapsul
+Asam Mefenamat 500mg,Mefenamic Acid,Obat Keras,Generik,kapsul
+Meloxicam 7.5mg,Meloxicam,Obat Keras,Generik,tablet
+Meloxicam 15mg,Meloxicam,Obat Keras,Generik,tablet
+Diclofenac Sodium 25mg,Diclofenac Sodium,Obat Keras,Generik,tablet
+Diclofenac Sodium 50mg,Diclofenac Sodium,Obat Keras,Generik,tablet
+Piroxicam 10mg,Piroxicam,Obat Keras,Generik,kapsul
+Piroxicam 20mg,Piroxicam,Obat Keras,Generik,kapsul
+Tramadol 50mg,Tramadol HCl,Obat Keras,Generik,kapsul
+Codeine 10mg,Codeine Phosphate,Obat Keras,Generik,tablet
+Allopurinol 100mg,Allopurinol,Obat Keras,Generik,tablet
+Allopurinol 300mg,Allopurinol,Obat Keras,Generik,tablet
+Furosemide 40mg,Furosemide,Obat Keras,Generik,tablet
+Hydrochlorothiazide 25mg,Hydrochlorothiazide,Obat Keras,Generik,tablet
+Spironolactone 25mg,Spironolactone,Obat Keras,Generik,tablet
+Digoxin 0.25mg,Digoxin,Obat Keras,Generik,tablet
+Isosorbide Dinitrate 5mg,Isosorbide Dinitrate,Obat Keras,Generik,tablet
+Aspirin 100mg,Acetylsalicylic Acid,Obat Keras,Generik,tablet
+Clopidogrel 75mg,Clopidogrel,Obat Keras,Generik,tablet
+Warfarin 2mg,Warfarin Sodium,Obat Keras,Generik,tablet
+Phenytoin 100mg,Phenytoin,Obat Keras,Generik,tablet
+Carbamazepine 200mg,Carbamazepine,Obat Keras,Generik,tablet
+Valproic Acid 250mg,Valproate Semisodium,Obat Keras,Generik,tablet
+Haloperidol 1.5mg,Haloperidol,Obat Keras,Generik,tablet
+Haloperidol 5mg,Haloperidol,Obat Keras,Generik,tablet
+Chlorpromazine 25mg,Chlorpromazine HCl,Obat Keras,Generik,tablet
+Amitriptyline 25mg,Amitriptyline HCl,Obat Keras,Generik,tablet
+Diazepam 2mg,Diazepam,Psikotropika,Generik,tablet
+Diazepam 5mg,Diazepam,Psikotropika,Generik,tablet
+Alprazolam 0.25mg,Alprazolam,Psikotropika,Generik,tablet
+Alprazolam 0.5mg,Alprazolam,Psikotropika,Generik,tablet
+Insulin Glargine,Insulin Glargine,Obat Keras,Generik,vial
+Insulin Lispro,Insulin Lispro,Obat Keras,Generik,vial
+Insulin Aspart,Insulin Aspart,Obat Keras,Generik,vial
+Levothyroxine 50mcg,Levothyroxine Sodium,Obat Keras,Generik,tablet
+Levothyroxine 100mcg,Levothyroxine Sodium,Obat Keras,Generik,tablet
+Propylthiouracil 100mg,Propylthiouracil,Obat Keras,Generik,tablet
+Salbutamol 2mg,Salbutamol Sulfate,Obat Keras,Generik,tablet
+Salbutamol 4mg,Salbutamol Sulfate,Obat Keras,Generik,tablet
+Salbutamol Inhaler 100mcg,Salbutamol Sulfate,Obat Keras,Generik,inhaler
+Theophylline 130mg,Theophylline,Obat Keras,Generik,tablet
+Aminophylline 200mg,Aminophylline,Obat Keras,Generik,tablet
+Betahistine 6mg,Betahistine Mesilate,Obat Keras,Generik,tablet
+Betahistine 12mg,Betahistine Mesilate,Obat Keras,Generik,tablet
+Flunarizine 5mg,Flunarizine,Obat Keras,Generik,kapsul
+Vitamin B Complex,Vitamin B1 + B2 + B3 + B5 + B6,Obat Bebas,Generik,tablet
+Vitamin B1 50mg,Thiamine HCl,Obat Bebas,Generik,tablet
+Vitamin B6 10mg,Pyridoxine HCl,Obat Bebas,Generik,tablet
+Vitamin B12 50mcg,Cyanocobalamin,Obat Bebas,Generik,tablet
+Vitamin C 50mg,Ascorbic Acid,Obat Bebas,Generik,tablet
+Vitamin C 250mg,Ascorbic Acid,Obat Bebas,Generik,tablet
+Vitamin C 500mg,Ascorbic Acid,Obat Bebas,Generik,tablet
+Vitamin D3 400IU,Cholecalciferol,Obat Bebas,Generik,tablet
+Vitamin D3 1000IU,Cholecalciferol,Obat Bebas,Generik,tablet
+Kalk / Calcium Carbonat 500mg,Calcium Carbonate,Obat Bebas,Generik,tablet
+Ferrous Sulfate 300mg,Ferrous Sulfate,Obat Bebas Terbatas,Generik,tablet
+Folic Acid 400mcg,Folic Acid,Obat Bebas,Generik,tablet
+Folic Acid 1mg,Folic Acid,Obat Bebas,Generik,tablet
+Multivitamin Anak,Vitamin A + B + C + D,Obat Bebas,Generik,sirup
+Vitamin A 200.000IU,Retinol,Obat Bebas,Generik,kapsul
+Neurobion,Vitamin B1 + B6 + B12,Obat Bebas,Merck,tablet
+Neurobion Forte,Vitamin B1 100mg + B6 200mg + B12 200mcg,Obat Bebas,Merck,tablet
+Elkana,Multivitamin + Mineral,Obat Bebas,Darya-Varia,tablet
+Sangobion,Fe + Vitamin B12 + C + Folic Acid,Obat Bebas,Merck,kapsul
+Panadol,Paracetamol 500mg,Obat Bebas,GSK,tablet
+Panadol Extra,Paracetamol 500mg + Caffeine 65mg,Obat Bebas,GSK,tablet
+Panadol Biru / Panadol Anak,Paracetamol 250mg,Obat Bebas,GSK,tablet
+Panadol Sirup Anak,Paracetamol 120mg/5ml,Obat Bebas,GSK,botol
+Bodrex,Paracetamol 500mg + Caffeine 50mg,Obat Bebas,Tempo,tablet
+Bodrex Extra,Paracetamol 650mg + Ibuprofen,Obat Bebas Terbatas,Tempo,tablet
+Bodrexin,Paracetamol 250mg,Obat Bebas,Tempo,tablet
+Tempra,Paracetamol 160mg/5ml,Obat Bebas,Sanofi,sirup
+Sanmol,Paracetamol 500mg,Obat Bebas,Sanbe,tablet
+Sanmol Forte,Paracetamol 650mg,Obat Bebas,Sanbe,tablet
+Sanmol Sirup,Paracetamol 120mg/5ml,Obat Bebas,Sanbe,botol
+Proris,Ibuprofen 200mg,Obat Bebas Terbatas,Sanbe,tablet
+Proris Forte,Ibuprofen 400mg,Obat Bebas Terbatas,Sanbe,tablet
+Proris Sirup,Ibuprofen 100mg/5ml,Obat Bebas Terbatas,Sanbe,botol
+Ponstan,Mefenamic Acid 500mg,Obat Keras,Pfizer,kapsul
+Renadinac,Diclofenac Sodium 50mg,Obat Keras,Sanbe,tablet
+Voltaren,Diclofenac Sodium 50mg,Obat Keras,Novartis,tablet
+Piroxicam Obat Keras,Piroxicam 20mg,Obat Keras,Generik,kapsul
+Mefinal,Mefenamic Acid 250mg,Obat Keras,Sanbe,kapsul
+Voltadex,Diclofenac Sodium 50mg,Obat Keras,Dexa Medica,tablet
+Alloris,Loratadine 10mg,Obat Bebas Terbatas,Sanbe,tablet
+Claritin,Loratadine 10mg,Obat Bebas Terbatas,MSD,tablet
+Incidal-OD,Cetirizine 10mg,Obat Keras,Bayer,tablet
+Zyrtec,Cetirizine 10mg,Obat Keras,UCB Pharma,tablet
+Rhinofed,Pseudoephedrine + Triprolidine,Obat Bebas Terbatas,GSK,tablet
+Actifed,Triprolidine + Pseudoephedrine,Obat Bebas Terbatas,GSK,tablet
+OBH Combi,Paracetamol + Bromhexine + CTM + Phenylephrine,Obat Bebas,Combiphar,sirup
+OBH Combi Batuk Berdahak,Guaifenesin + Bromhexine,Obat Bebas,Combiphar,sirup
+Woods' Antitusif,Dextromethorphan + CTM + Guaifenesin,Obat Bebas,Kalbe Farma,sirup
+Bisolvon,Bromhexine 8mg,Obat Bebas Terbatas,Boehringer,tablet
+Ambroxol 30mg,Ambroxol HCl,Obat Bebas Terbatas,Generik,tablet
+Ambroxol Sirup,Ambroxol HCl 15mg/5ml,Obat Bebas Terbatas,Generik,botol
+Mucosolvan,Ambroxol 30mg,Obat Bebas Terbatas,Boehringer,tablet
+Glyceryl Guaiacolate 100mg,Guaifenesin,Obat Bebas,Generik,tablet
+Dextromethorphan 10mg,Dextromethorphan HBr,Obat Bebas Terbatas,Generik,tablet
+Vicks Formula 44,Dextromethorphan + CTM,Obat Bebas,Procter & Gamble,sirup
+Konidin,Dextromethorphan + CTM,Obat Bebas,Konimex,tablet
+Hexilon,Methylprednisolone 4mg,Obat Keras,Hexpharm,tablet
+Medrol,Methylprednisolone 4mg,Obat Keras,Pfizer,tablet
+Medrol 8mg,Methylprednisolone 8mg,Obat Keras,Pfizer,tablet
+Celestamin,Dexamethasone + CTM,Obat Keras,Schering,tablet
+Dexaharsen,Dexamethasone 0.5mg,Obat Keras,Harsen,tablet
+Metformin Dexa,Metformin HCl 500mg,Obat Keras,Dexa Medica,tablet
+Glucophage,Metformin HCl 500mg,Obat Keras,Merck,tablet
+Glucophage XR,Metformin HCl 750mg,Obat Keras,Merck,tablet
+Glucovance,Metformin + Glibenclamide,Obat Keras,Merck,tablet
+Amaryl,Glimepiride 2mg,Obat Keras,Sanofi,tablet
+Amadiab,Glimepiride 1mg,Obat Keras,Dexa Medica,tablet
+Concor,Bisoprolol Fumarate 5mg,Obat Keras,Merck,tablet
+Amlodipine Dexa,Amlodipine Besilate 5mg,Obat Keras,Dexa Medica,tablet
+Norvasc,Amlodipine 5mg,Obat Keras,Pfizer,tablet
+Tensivask,Amlodipine 10mg,Obat Keras,Dexa Medica,tablet
+Catopril,Captopril 25mg,Obat Keras,Dexa Medica,tablet
+Zestril,Lisinopril 10mg,Obat Keras,AstraZeneca,tablet
+Diovan,Valsartan 80mg,Obat Keras,Novartis,tablet
+Atacand,Candesartan 8mg,Obat Keras,AstraZeneca,tablet
+Lipitor,Atorvastatin 20mg,Obat Keras,Pfizer,tablet
+Crestor,Rosuvastatin 10mg,Obat Keras,AstraZeneca,tablet
+Zocor,Simvastatin 20mg,Obat Keras,MSD,tablet
+Nexium,Esomeprazole 40mg,Obat Keras,AstraZeneca,kapsul
+Esomeprazole 20mg,Esomeprazole,Obat Keras,Generik,kapsul
+Esomeprazole 40mg,Esomeprazole,Obat Keras,Generik,kapsul
+Omepron,Omeprazole 20mg,Obat Keras,Dexa Medica,kapsul
+Pumpitor,Omeprazole 20mg,Obat Keras,Sanbe,kapsul
+Soho Flucaps,Amoxicillin + Bromhexine,Obat Keras,Soho,kapsul
+Amoxan,Amoxicillin 500mg,Obat Keras,Sanbe,kapsul
+Lapimox,Amoxicillin 500mg,Obat Keras,Lapi,kapsul
+Siflox,Ciprofloxacin 500mg,Obat Keras,Sanbe,tablet
+Baquinor,Ciprofloxacin 500mg,Obat Keras,Sanbe,tablet
+Levoflox,Levofloxacin 500mg,Obat Keras,Generik,tablet
+Zithromax,Azithromycin 500mg,Obat Keras,Pfizer,tablet
+Zithromax 250mg,Azithromycin 250mg,Obat Keras,Pfizer,tablet
+Mycoral,Ketoconazole 200mg,Obat Keras,Combiphar,tablet
+Ketoconazole 200mg,Ketoconazole,Obat Keras,Generik,tablet
+Fluconazole 150mg,Fluconazole,Obat Keras,Generik,kapsul
+Itraconazole 100mg,Itraconazole,Obat Keras,Generik,kapsul
+Gentamicin Salep,Gentamicin Sulfate 0.1%,Obat Keras,Generik,tube
+Mupirocin 2%,Mupirocin,Obat Keras,Generik,tube
+Miconazole Krim,Miconazole Nitrate 2%,Obat Bebas Terbatas,Generik,tube
+Clotrimazole Krim,Clotrimazole 1%,Obat Bebas Terbatas,Generik,tube
+Hydrocortisone Krim 1%,Hydrocortisone,Obat Keras,Generik,tube
+Betamethasone Krim,Betamethasone Valerate 0.1%,Obat Keras,Generik,tube
+Bioplacenton,Neomycin + Placenta Extract,Obat Keras,Kalbe Farma,tube
+Centabio,Centella Asiatica,Obat Bebas,Kalbe Farma,tube
+Burnazine,Silver Sulfadiazine 1%,Obat Keras,Generik,tube
+Rivanol,Ethacridine Lactate 0.1%,Obat Bebas,Generik,larutan
+Betadine Antiseptic Solution,Povidone Iodine 10%,Obat Bebas,Mundipharma,botol
+Betadine Salep,Povidone Iodine 10%,Obat Bebas,Mundipharma,tube
+Albendazole 400mg,Albendazole,Obat Keras,Generik,tablet
+Mebendazole 100mg,Mebendazole,Obat Bebas Terbatas,Generik,tablet
+Pyrantel Pamoate 125mg,Pyrantel Pamoate,Obat Bebas Terbatas,Generik,tablet
+Combantrin,Pyrantel Pamoate 125mg,Obat Bebas Terbatas,Pfizer,tablet
+Vermox,Mebendazole 100mg,Obat Bebas Terbatas,Janssen,tablet
+Obat Cacing Kalbe,Pyrantel Pamoate 125mg,Obat Bebas Terbatas,Kalbe Farma,tablet
+Scopamin Plus,Scopolamine + Paracetamol,Obat Keras,Combiphar,tablet
+Hyoscine 10mg,Hyoscine N-Butylbromide,Obat Keras,Generik,tablet
+Buscopan,Hyoscine N-Butylbromide 10mg,Obat Keras,Boehringer,tablet
+Antimo,Dimenhydrinate 50mg,Obat Bebas,Konimex,tablet
+Dramamine,Dimenhydrinate 50mg,Obat Bebas,Pfizer,tablet
+Biogesic,Paracetamol 500mg,Obat Bebas,Unilab,tablet
+Feminax,Paracetamol + Ekstraks Hiosiamina,Obat Bebas,Konimex,tablet
+Neo Entrostop,Attapulgite + Pectin,Obat Bebas,Kalbe Farma,tablet
+Entrostop,Attapulgite 600mg + Pectin 50mg,Obat Bebas,Kalbe Farma,tablet
+Diapet,Pycnarrhenum,Herbal / Jamu,Soho,tablet
+Norit,Activated Charcoal 250mg,Obat Bebas,Norit,tablet
+Lactulose Sirup,Lactulose 3.35g/5ml,Obat Keras,Generik,botol
+Dulcolax,Bisacodyl 5mg,Obat Bebas Terbatas,Boehringer,tablet
+Bisacodyl 5mg,Bisacodyl,Obat Bebas Terbatas,Generik,tablet
+Laxadin,Bisacodyl 5mg,Obat Bebas Terbatas,Combiphar,tablet
+Microlax,Sodium Citrate + Sodium Lauryl + Sorbitol,Obat Bebas Terbatas,Johnson & Johnson,enema
+Suppositoria Anak,Glycerine,Obat Bebas,Generik,suppositoria
+Neframine,Asam Amino Esensial,Obat Keras,Kalbe Farma,infus
+Asering,NaCl + KCl + CaCl2 + MgCl2,Obat Keras,Otsuka,infus
+NaCl 0.9%,Sodium Chloride 0.9%,Obat Keras,Generik,infus
+Ringer Laktat,NaCl + KCl + CaCl + Sodium Lactate,Obat Keras,Generik,infus
+Dextrose 5%,Dextrose,Obat Keras,Generik,infus
+Chloramphenicol Tetes Mata,Chloramphenicol 0.5%,Obat Keras,Generik,tetes mata
+Gentamicin Tetes Mata,Gentamicin Sulfate 0.3%,Obat Keras,Generik,tetes mata
+Polymyxin B + Neomycin Tetes Mata,Polymyxin B + Neomycin,Obat Keras,Generik,tetes mata
+Erlamycetin Tetes Mata,Chloramphenicol 0.5%,Obat Keras,Erela,tetes mata
+Visine,Tetrahydrozoline HCl 0.05%,Obat Bebas,Johnson & Johnson,tetes mata
+Insto,Tetrahydrozoline HCl 0.05%,Obat Bebas,Rohto,tetes mata
+Rohto,Tetrahydrozoline HCl 0.05%,Obat Bebas,Rohto,tetes mata
+Cendo Xitrol,Dexamethasone + Neomycin + Polymyxin B,Obat Keras,Cendo,tetes mata
+Combicef,Cefadroxil 500mg,Obat Keras,Combiphar,kapsul
+Droxal,Cefadroxil 500mg,Obat Keras,Lapi,kapsul
+Sporetik,Cefixime 100mg,Obat Keras,Meiji,kapsul
+Cefspan,Cefixime 100mg,Obat Keras,Fujisawa,kapsul
+Taxime,Cefixime 100mg,Obat Keras,Sunthi Sepuri,kapsul
+Prolic,Ciprofloxacin 500mg,Obat Keras,Lapi,tablet
+Ethambutol 250mg,Ethambutol HCl,Obat Keras,Generik,tablet
+Ethambutol 500mg,Ethambutol HCl,Obat Keras,Generik,tablet
+Rifampicin 300mg,Rifampicin,Obat Keras,Generik,kapsul
+Rifampicin 450mg,Rifampicin,Obat Keras,Generik,kapsul
+Isoniazid 100mg,Isoniazid,Obat Keras,Generik,tablet
+Isoniazid 300mg,Isoniazid,Obat Keras,Generik,tablet
+Pyrazinamide 500mg,Pyrazinamide,Obat Keras,Generik,tablet
+OAT FDC Kategori 1,Rifampicin + Isoniazid + Pyrazinamide + Ethambutol,Obat Keras,Kimia Farma,tablet
+OAT FDC Kategori 2,Rifampicin + Isoniazid + Ethambutol,Obat Keras,Kimia Farma,tablet
+Tolak Angin,Ekstrak Herbal,Herbal / Jamu,Sido Muncul,sachet
+Tolak Angin Cair,Ekstrak Herbal,Herbal / Jamu,Sido Muncul,sachet
+Antangin,Jahe + Madu + Herbal,Herbal / Jamu,Deltomed,sachet
+Antangin JRG,Ekstrak Herbal,Herbal / Jamu,Deltomed,sachet
+Tresnojoyo,Curcuma,Herbal / Jamu,Nyonya Meneer,sachet
+Jamu Tolak Angin Forte,Ekstrak Herbal,Herbal / Jamu,Sido Muncul,tablet
+Kiranti Sehat Datang Bulan,Jahe + Kunyit,Herbal / Jamu,Sido Muncul,sachet
+Curcuma Plus,Curcuma xanthorrhiza,Herbal / Jamu,Kalbe Farma,sirup
+Imboost,Echinacea + Zinc + Vitamin C,Obat Bebas,Soho,tablet
+Imboost Force,Echinacea + Zinc,Obat Bebas,Soho,tablet
+Stimuno,Phyllanthus niruri,Herbal / Jamu,Dexa Medica,kapsul
+Stimuno Sirup,Phyllanthus niruri,Herbal / Jamu,Dexa Medica,botol
+Isoprinosine,Inosine Pranobex,Obat Keras,Kalbe Farma,tablet
+Hemaviton,Multivitamin + Mineral,Obat Bebas,Tempo,kapsul
+Hemaviton Jreng,Ginseng + Vitamin,Obat Bebas,Tempo,sachet
+Enervon-C,Vitamin C + B Complex,Obat Bebas,Unilab,tablet
+Youvit,Multivitamin Gummy,Obat Bebas,Kalbe Farma,tablet
+Tonikum Bayer,Vitamin B Complex + Iron,Obat Bebas,Bayer,botol
+Mixagrip,Paracetamol + CTM + Phenylephrine,Obat Bebas,Kalbe Farma,tablet
+Demacolin,Paracetamol + CTM + Phenylephrine,Obat Bebas,Dexa Medica,tablet
+Procold,Paracetamol + CTM + Pseudoephedrine,Obat Bebas,Combiphar,tablet
+Flutamol,Paracetamol + CTM + Dextromethorphan,Obat Bebas,Sanbe,tablet
+Neozep,Paracetamol + CTM + Phenylpropanolamine,Obat Bebas,Unilab,tablet
+Sanadryl,Diphenhydramine + Ammonium Chloride,Obat Bebas,Pfizer,sirup
+Benadryl,Diphenhydramine + Ammonium Chloride,Obat Bebas Terbatas,Pfizer,sirup
+Komix,Dextromethorphan + CTM + GG,Obat Bebas,Bintang Toedjoe,sachet
+Komix Herbal,Ekstrak Jahe + Menthol,Herbal / Jamu,Bintang Toedjoe,sachet
+Woods' Peppermint,Dextromethorphan HBr,Obat Bebas,Kalbe Farma,sirup
+Siladex,Dextromethorphan,Obat Bebas,Combiphar,sirup
+Intunal,Paracetamol + CTM + Ephedrine,Obat Bebas,Kalbe Farma,tablet
+Paratusin,Paracetamol + CTM + Dextromethorphan,Obat Bebas,Prafa,tablet
+Contrexyn,Paracetamol + CTM + Pseudoephedrine,Obat Bebas,Fahrenheit,tablet
+Antalgin,Metamizole 500mg,Obat Keras,Generik,tablet
+Metamizole 500mg,Metamizole Sodium,Obat Keras,Generik,tablet
+Asam Traneksamat 250mg,Tranexamic Acid,Obat Keras,Generik,tablet
+Tranexamic Acid 500mg,Tranexamic Acid,Obat Keras,Generik,tablet
+Methylergonovine 0.125mg,Methylergonovine Maleate,Obat Keras,Generik,tablet
+Oxytocin Injeksi,Oxytocin,Obat Keras,Generik,ampul
+Misoprostol 200mcg,Misoprostol,Obat Keras,Generik,tablet
+Dydrogesterone 10mg,Dydrogesterone,Obat Keras,Generik,tablet
+Duphaston,Dydrogesterone 10mg,Obat Keras,Abbott,tablet
+Lynestrenol 0.5mg,Lynestrenol,Obat Keras,Generik,tablet
+Microgynon,Levonorgestrel + Ethinyl Estradiol,Obat Keras,Bayer,tablet
+KB Pil Kombinasi,Levonorgestrel + Ethinyl Estradiol,Obat Keras,Generik,tablet
+KB Suntik,Medroxyprogesterone Acetate 150mg,Obat Keras,Generik,vial
+Postinor,Levonorgestrel 0.75mg,Obat Keras,Gedeon Richter,tablet
+Nopstop,Norgestrel,Obat Keras,Wyeth,tablet
+Anabion,Vitamin B Complex,Obat Bebas,Kimia Farma,tablet
+Berocca,Vitamin B Complex + Vitamin C,Obat Bebas,Bayer,tablet
+Redoxon,Vitamin C 1000mg,Obat Bebas,Bayer,tablet
+Redoxon Double Action,Vitamin C + Zinc,Obat Bebas,Bayer,tablet
+Cevion,Vitamin C 500mg,Obat Bebas,Dexa Medica,tablet
+Aspar-K,Kalium Aspartat + Magnesium Aspartat,Obat Bebas,Kimia Farma,tablet
+Kalium Klorida 500mg,Potassium Chloride,Obat Keras,Generik,tablet
+Magnesium Hydroxide 400mg,Magnesium Hydroxide,Obat Bebas,Generik,tablet
+Mylanta,Aluminium Hidroksida + Magnesium Hidroksida,Obat Bebas,Johnson & Johnson,tablet
+Promag,Aluminium Hidroksida + Magnesium Hidroksida + Simethicone,Obat Bebas,Kalbe Farma,tablet
+Promag Cair,Aluminium Hidroksida + Magnesium Hidroksida,Obat Bebas,Kalbe Farma,botol
+Polysilane,Dimethylpolysiloxane + Antasid,Obat Bebas,Combiphar,tablet
+Gaviscon,Sodium Alginate + Sodium Bicarbonate + CaCO3,Obat Bebas,Reckitt,tablet
+Zantac,Ranitidine 150mg,Obat Keras,GSK,tablet
+Ranitidine 150mg,Ranitidine HCl,Obat Keras,Generik,tablet
+Curcuma Pro,Curcuma xanthorrhiza,Herbal / Jamu,Kalbe Farma,tablet
+Prolipid,Simvastatin 10mg,Obat Keras,Kalbe Farma,tablet
+Normit,Simvastatin 20mg,Obat Keras,Kalbe Farma,tablet
+Glucovance 500mg,Metformin 500mg + Glibenclamide 2.5mg,Obat Keras,Merck,tablet
+Novomix,Insulin Aspart,Obat Keras,Novo Nordisk,vial
+Lantus,Insulin Glargine,Obat Keras,Sanofi,vial
+Levemir,Insulin Detemir,Obat Keras,Novo Nordisk,vial
+Novorapid,Insulin Aspart 100IU/ml,Obat Keras,Novo Nordisk,vial
+Humulin N,Insulin NPH,Obat Keras,Lilly,vial
+Humulin R,Insulin Regular,Obat Keras,Lilly,vial
+Mixard 30,Biphasic Isophane Insulin,Obat Keras,Novo Nordisk,vial
+Ventolin,Salbutamol 100mcg,Obat Keras,GSK,inhaler
+Berotec,Fenoterol 100mcg,Obat Keras,Boehringer,inhaler
+Atrovent,Ipratropium 20mcg,Obat Keras,Boehringer,inhaler
+Combivent,Salbutamol + Ipratropium,Obat Keras,Boehringer,inhaler
+Symbicort,Budesonide + Formoterol,Obat Keras,AstraZeneca,inhaler
+Seretide,Fluticasone + Salmeterol,Obat Keras,GSK,inhaler
+Rhinocort,Budesonide 64mcg,Obat Keras,AstraZeneca,nasal spray
+Flixonase,Fluticasone 50mcg,Obat Keras,GSK,nasal spray
+Otrivin,Xylometazoline 0.1%,Obat Bebas Terbatas,Novartis,nasal spray
+Illiadin,Oxymetazoline 0.05%,Obat Bebas Terbatas,Merck,nasal spray
+Farizol,Metronidazole 500mg,Obat Keras,Fahrenheit,tablet
+Flagyl,Metronidazole 500mg,Obat Keras,Sanofi,tablet
+Acyclovir Krim 5%,Acyclovir,Obat Keras,Generik,tube
+Zovirax Krim,Acyclovir 5%,Obat Keras,GSK,tube
+Zovirax Tablet,Acyclovir 200mg,Obat Keras,GSK,tablet
+Asiklovir,Acyclovir 400mg,Obat Keras,Generik,tablet
+Valacyclovir 500mg,Valacyclovir HCl,Obat Keras,Generik,tablet
+Famciclovir 250mg,Famciclovir,Obat Keras,Generik,tablet
+Piridoxin B6,Pyridoxine 25mg,Obat Bebas,Generik,tablet
+Tiamin B1,Thiamine 50mg,Obat Bebas,Generik,tablet
+Riboflavin B2,Riboflavin 10mg,Obat Bebas,Generik,tablet
+Nicotinamide B3,Nicotinamide 100mg,Obat Bebas,Generik,tablet
+Cyanocobalamin B12,Cyanocobalamin 500mcg,Obat Bebas,Generik,tablet
+Novabal,Multivitamin,Obat Bebas,Novapharin,tablet
+Laktafit,Domperidone 10mg,Obat Keras,Kalbe Farma,tablet
+Lacto-B,Lactobacillus,Obat Bebas,Galenium,sachet
+Lacto-B Sirup,Lactobacillus,Obat Bebas,Galenium,botol
+Probiotik Lacto-B,Lactobacillus acidophilus,Obat Bebas,Galenium,sachet
+Enterogermina,Bacillus clausii,Obat Bebas,Sanofi,vial
+Tensaflux,Amlodipine 5mg + Lisinopril 5mg,Obat Keras,Dexa Medica,tablet
+Exforge,Amlodipine + Valsartan,Obat Keras,Novartis,tablet
+Viacoram,Perindopril + Amlodipine,Obat Keras,Servier,tablet
+Olmesartan 20mg,Olmesartan Medoxomil,Obat Keras,Generik,tablet
+Benicar,Olmesartan 20mg,Obat Keras,Daiichi Sankyo,tablet
+Glucobay,Acarbose 50mg,Obat Keras,Bayer,tablet
+Acarbose 50mg,Acarbose,Obat Keras,Generik,tablet
+Januvia,Sitagliptin 100mg,Obat Keras,MSD,tablet
+Sitagliptin 100mg,Sitagliptin,Obat Keras,Generik,tablet
+Onglyza,Saxagliptin 5mg,Obat Keras,AstraZeneca,tablet
+Xarelto,Rivaroxaban 10mg,Obat Keras,Bayer,tablet
+Pradaxa,Dabigatran 110mg,Obat Keras,Boehringer,kapsul
+Eliquis,Apixaban 5mg,Obat Keras,BMS,tablet
+Plavix,Clopidogrel 75mg,Obat Keras,Sanofi,tablet
+Brilinta,Ticagrelor 90mg,Obat Keras,AstraZeneca,tablet
+Entresto,Sacubitril + Valsartan,Obat Keras,Novartis,tablet
+Spironolakton 25mg,Spironolactone,Obat Keras,Generik,tablet
+Aldactone,Spironolactone 25mg,Obat Keras,Pfizer,tablet
+Lasix,Furosemide 40mg,Obat Keras,Sanofi,tablet
+Bumex,Bumetanide 1mg,Obat Keras,Roche,tablet
+Tegretol,Carbamazepine 200mg,Obat Keras,Novartis,tablet
+Depakote,Divalproex Sodium 250mg,Obat Keras,Abbott,tablet
+Epilim,Valproate Semisodium 200mg,Obat Keras,Sanofi,tablet
+Phenobarbital 30mg,Phenobarbital,Obat Keras,Generik,tablet
+Neurontin,Gabapentin 300mg,Obat Keras,Pfizer,kapsul
+Gabapentin 300mg,Gabapentin,Obat Keras,Generik,kapsul
+Lyrica,Pregabalin 75mg,Obat Keras,Pfizer,kapsul
+Pregabalin 75mg,Pregabalin,Obat Keras,Generik,kapsul
+Amitriptyline 25mg Dexa,Amitriptyline HCl 25mg,Obat Keras,Dexa Medica,tablet
+Zoloft,Sertraline 50mg,Obat Keras,Pfizer,tablet
+Sertraline 50mg,Sertraline HCl,Obat Keras,Generik,tablet
+Prozac,Fluoxetine 20mg,Obat Keras,Lilly,kapsul
+Fluoxetine 20mg,Fluoxetine HCl,Obat Keras,Generik,kapsul
+Risperdal,Risperidone 2mg,Obat Keras,Janssen,tablet
+Risperidone 2mg,Risperidone,Obat Keras,Generik,tablet
+Clozapine 25mg,Clozapine,Psikotropika,Generik,tablet
+Quetiapine 25mg,Quetiapine Fumarate,Obat Keras,Generik,tablet
+Olanzapine 5mg,Olanzapine,Obat Keras,Generik,tablet
+Donepezil 5mg,Donepezil HCl,Obat Keras,Generik,tablet
+Donepezil 10mg,Donepezil HCl,Obat Keras,Generik,tablet
+Aricept,Donepezil 5mg,Obat Keras,Pfizer,tablet
+Memantine 10mg,Memantine HCl,Obat Keras,Generik,tablet
+Tamsulosin 0.4mg,Tamsulosin HCl,Obat Keras,Generik,kapsul
+Finasteride 5mg,Finasteride,Obat Keras,Generik,tablet
+Sildenafil 50mg,Sildenafil Citrate,Obat Keras,Generik,tablet
+Tadalafil 20mg,Tadalafil,Obat Keras,Generik,tablet
+Alendronat 70mg,Alendronate Sodium,Obat Keras,Generik,tablet
+Calcitriol 0.25mcg,Calcitriol,Obat Keras,Generik,kapsul
+Methotrexate 2.5mg,Methotrexate,Obat Keras,Generik,tablet
+Hydroxychloroquine 200mg,Hydroxychloroquine Sulfate,Obat Keras,Generik,tablet
+Chloroquine 150mg,Chloroquine Phosphate,Obat Keras,Generik,tablet
+Primaquine 15mg,Primaquine Phosphate,Obat Keras,Generik,tablet
+Artesunate 50mg,Artesunate,Obat Keras,Generik,tablet
+DHP Piperaquine,Dihydroartemisinin + Piperaquine,Obat Keras,Generik,tablet
+Odontol,Eugenol,Obat Bebas,Kimia Farma,cairan
+Gigi Karies Obat,Zinc Oxide + Eugenol,Obat Bebas,Generik,semen
+Tantum Verde,Benzydamine HCl 0.15%,Obat Keras,Pfizer,obat kumur
+Povidone Iodine Kumur,Povidone Iodine 1%,Obat Bebas,Generik,obat kumur
+Kenalog,Triamcinolone Acetonide 0.1%,Obat Keras,Lederle,pasta gigi
+Mouthwash Herbal,Daun Sirih,Herbal / Jamu,Generik,obat kumur
+Chlorhexidine 0.2% Kumur,Chlorhexidine Gluconate,Obat Keras,Generik,obat kumur
+Salicyl Talk,Salicylate Talk,Obat Bebas,Generik,bedak
+Caladine Lotion,Calamine + Zinc Oxide + Diphenhydramine,Obat Bebas,Johnson & Johnson,lotion
+Calamine Lotion,Calamine,Obat Bebas,Generik,lotion
+Neo Ultrasiline,Sodium Cromoglycate 2%,Obat Keras,Pharmos,tetes mata
+Tobrex,Tobramycin 0.3%,Obat Keras,Alcon,tetes mata
+Cendo Fenicol,Chloramphenicol 0.5%,Obat Keras,Cendo,tetes mata
+Cendo Lyteers,Sodium Chloride,Obat Bebas,Cendo,tetes mata
+Systane,Polyethylene Glycol + Propylene Glycol,Obat Bebas,Alcon,tetes mata
+Cortidex,Dexamethasone 0.5mg,Obat Keras,Ifars,tablet
+Rindala,Dexamethasone 0.75mg,Obat Keras,Lapi,tablet
+Kalmethasone,Dexamethasone 0.5mg,Obat Keras,Kalbe Farma,tablet
+Grafazol,Metronidazole 500mg,Obat Keras,Gracia Pharmindo,tablet
+Nistatin Tablet,Nystatin 500.000 IU,Obat Keras,Generik,tablet
+Nistatin Tetes,Nystatin 100.000 IU/ml,Obat Keras,Generik,botol
+Daktarin,Miconazole 2%,Obat Bebas Terbatas,Janssen,gel/krim
+Canesten,Clotrimazole 1%,Obat Bebas Terbatas,Bayer,krim
+Lamisil,Terbinafine 1%,Obat Bebas Terbatas,Novartis,krim
+Terbinafine 1% Krim,Terbinafine HCl,Obat Bebas Terbatas,Generik,krim
+Griseofulvin 125mg,Griseofulvin,Obat Keras,Generik,tablet
+Griseofulvin 500mg,Griseofulvin,Obat Keras,Generik,tablet
+Kalpanax,Miconazole + Hydrocortisone,Obat Keras,Kalbe Farma,krim
+Folamil Genio,Folic Acid + Iron + Vitamin,Obat Bebas,Generik,kapsul
+Folamil,Folic Acid + Multivitamin,Obat Bebas,Generik,kapsul
+Vitonal M,Multivitamin Mineral Kehamilan,Obat Bebas,Kalbe Farma,tablet
+Prenagen,Susu Ibu Hamil,Obat Bebas,Kalbe Farma,susu
+Obimin AF,Multivitamin Mineral,Obat Bebas,Merck,tablet
+Actos,Pioglitazone 30mg,Obat Keras,Takeda,tablet
+Pioglitazone 30mg,Pioglitazone HCl,Obat Keras,Generik,tablet
+Forxiga,Dapagliflozin 10mg,Obat Keras,AstraZeneca,tablet
+Jardiance,Empagliflozin 10mg,Obat Keras,Boehringer,tablet
+Trajenta,Linagliptin 5mg,Obat Keras,Boehringer,tablet
+Galvus,Vildagliptin 50mg,Obat Keras,Novartis,tablet

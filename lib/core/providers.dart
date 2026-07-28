@@ -24,7 +24,7 @@ import '../data/return_repository.dart';
 import '../data/supplier_repository.dart';
 import '../data/purchase_order_repository.dart';
 import '../data/pharmacy_settings_service.dart';
-import '../data/openfda_drug_service.dart';
+import '../data/drug_lookup_service.dart';
 
 final databaseProvider = Provider<AppDatabase>((ref) {
   final db = AppDatabase.defaultConnection();
@@ -111,8 +111,8 @@ final pharmacySettingsServiceProvider = Provider<PharmacySettingsService>(
   (ref) => PharmacySettingsService(),
 );
 
-final openFdaDrugServiceProvider = Provider<OpenFdaDrugService>(
-  (ref) => OpenFdaDrugService(),
+final drugLookupServiceProvider = Provider<DrugLookupService>(
+  (ref) => DrugLookupService(),
 );
 
 final passwordHasherProvider = Provider<PasswordHasher>((ref) => PasswordHasher());

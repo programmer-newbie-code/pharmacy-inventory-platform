@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/providers.dart';
 import '../../data/database.dart';
+import '../../data/drug_lookup_service.dart';
 import 'camera_scanner_dialog.dart';
 
 class AddProductDialog extends ConsumerStatefulWidget {
@@ -25,9 +26,16 @@ class _AddProductDialogState extends ConsumerState<AddProductDialog> {
   final _marginPctController = TextEditingController(text: '20.0');
   final _reorderThresholdController = TextEditingController(text: '50');
   final _categoryController = TextEditingController(text: 'Obat Bebas');
+  final _drugSearchController = TextEditingController();
+
   bool _isControlled = false;
   int? _selectedStorageLocationId;
   List<StorageLocation> _locations = [];
+
+  // Drug search state
+  bool _isSearching = false;
+  List<DrugLookupResult> _searchResults = [];
+  bool _searchPanelOpen = false;
 
   @override
   void initState() {
@@ -55,7 +63,57 @@ class _AddProductDialogState extends ConsumerState<AddProductDialog> {
     _marginPctController.dispose();
     _reorderThresholdController.dispose();
     _categoryController.dispose();
+    _drugSearchController.dispose();
     super.dispose();
+  }
+
+  Future<void> _runDrugSearch(String query) async {
+    if (query.trim().length < 2) {
+      setState(() => _searchResults = []);
+      return;
+    }
+    setState(() => _isSearching = true);
+    try {
+      final service = ref.read(drugLookupServiceProvider);
+      final results = await service.search(query);
+      if (mounted) setState(() => _searchResults = results);
+    } finally {
+      if (mounted) setState(() => _isSearching = false);
+    }
+  }
+
+  /// Auto-fills all form fields from a selected drug lookup result.
+  void _applyDrugResult(DrugLookupResult drug) {
+    _nameController.text = drug.name;
+    _activeIngredientController.text = drug.activeIngredient;
+    _categoryController.text = drug.category;
+    _baseUnitController.text = drug.unit;
+    _isControlled = drug.requiresPrescription;
+    _drugSearchController.clear();
+    setState(() {
+      _searchResults = [];
+      _searchPanelOpen = false;
+    });
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            const Icon(Icons.check_circle, color: Colors.white, size: 18),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                'Auto-filled from ${drug.source == DrugSource.bpom ? 'BPOM' : 'database lokal'}',
+                style: const TextStyle(color: Colors.white),
+              ),
+            ),
+          ],
+        ),
+        backgroundColor: Colors.green.shade700,
+        duration: const Duration(seconds: 2),
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
   }
 
   Future<void> _save() async {
@@ -86,135 +144,514 @@ class _AddProductDialogState extends ConsumerState<AddProductDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+
     return AlertDialog(
-      title: const Text('Add New Product'),
-      content: SingleChildScrollView(
-        child: Form(
-          key: _formKey,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextFormField(
-                key: const Key('productNameInput'),
-                controller: _nameController,
-                decoration: const InputDecoration(labelText: 'Product Name'),
-                validator: (v) => (v == null || v.isEmpty) ? 'Required' : null,
-              ),
-              TextFormField(
-                key: const Key('productBarcodeInput'),
-                controller: _barcodeController,
-                decoration: InputDecoration(
-                  labelText: 'Barcode',
-                  suffixIcon: IconButton(
-                    key: const Key('cameraScanBarcodeBtn'),
-                    icon: const Icon(Icons.qr_code_scanner),
-                    onPressed: () async {
-                      final scanned = await CameraScannerDialog.scanBarcode(context);
-                      if (scanned != null) {
-                        _barcodeController.text = scanned;
-                      }
-                    },
+      title: const Text('Tambah Produk Baru'),
+      contentPadding: const EdgeInsets.fromLTRB(24, 16, 24, 0),
+      content: SizedBox(
+        width: 480,
+        child: SingleChildScrollView(
+          child: Form(
+            key: _formKey,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                // ── Drug Lookup Panel ───────────────────────────────────────
+                _DrugLookupPanel(
+                  controller: _drugSearchController,
+                  isSearching: _isSearching,
+                  results: _searchResults,
+                  isOpen: _searchPanelOpen,
+                  onToggle: () => setState(() => _searchPanelOpen = !_searchPanelOpen),
+                  onQueryChanged: _runDrugSearch,
+                  onResultSelected: _applyDrugResult,
+                ),
+                const SizedBox(height: 12),
+                const Divider(),
+                const SizedBox(height: 4),
+
+                // ── Product Name ────────────────────────────────────────────
+                TextFormField(
+                  key: const Key('productNameInput'),
+                  controller: _nameController,
+                  decoration: const InputDecoration(
+                    labelText: 'Nama Produk *',
+                    prefixIcon: Icon(Icons.medication),
+                  ),
+                  validator: (v) => (v == null || v.isEmpty) ? 'Wajib diisi' : null,
+                ),
+                const SizedBox(height: 8),
+
+                // ── Barcode ─────────────────────────────────────────────────
+                TextFormField(
+                  key: const Key('productBarcodeInput'),
+                  controller: _barcodeController,
+                  decoration: InputDecoration(
+                    labelText: 'Barcode *',
+                    prefixIcon: const Icon(Icons.barcode_reader),
+                    suffixIcon: IconButton(
+                      key: const Key('cameraScanBarcodeBtn'),
+                      icon: const Icon(Icons.qr_code_scanner),
+                      tooltip: 'Scan barcode dengan kamera',
+                      onPressed: () async {
+                        final scanned = await CameraScannerDialog.scanBarcode(context);
+                        if (scanned != null) {
+                          _barcodeController.text = scanned;
+                        }
+                      },
+                    ),
+                  ),
+                  validator: (v) => (v == null || v.isEmpty) ? 'Wajib diisi' : null,
+                ),
+                const SizedBox(height: 8),
+
+                // ── Internal Code ───────────────────────────────────────────
+                TextFormField(
+                  key: const Key('productInternalCodeInput'),
+                  controller: _internalCodeController,
+                  decoration: const InputDecoration(
+                    labelText: 'Kode Internal *',
+                    prefixIcon: Icon(Icons.tag),
+                  ),
+                  validator: (v) => (v == null || v.isEmpty) ? 'Wajib diisi' : null,
+                ),
+                const SizedBox(height: 8),
+
+                // ── Active Ingredient ───────────────────────────────────────
+                TextFormField(
+                  key: const Key('activeIngredientInput'),
+                  controller: _activeIngredientController,
+                  decoration: const InputDecoration(
+                    labelText: 'Zat Aktif',
+                    prefixIcon: Icon(Icons.science),
                   ),
                 ),
-                validator: (v) => (v == null || v.isEmpty) ? 'Required' : null,
-              ),
-              TextFormField(
-                key: const Key('productInternalCodeInput'),
-                controller: _internalCodeController,
-                decoration: const InputDecoration(labelText: 'Internal Code'),
-                validator: (v) => (v == null || v.isEmpty) ? 'Required' : null,
-              ),
-              TextFormField(
-                key: const Key('activeIngredientInput'),
-                controller: _activeIngredientController,
-                decoration: const InputDecoration(labelText: 'Active Ingredient'),
-              ),
-              Row(
-                children: [
-                  Expanded(
-                    child: TextFormField(
-                      controller: _baseUnitController,
-                      decoration: const InputDecoration(labelText: 'Base Unit (e.g. tablet)'),
-                      validator: (v) => (v == null || v.isEmpty) ? 'Required' : null,
-                    ),
+                const SizedBox(height: 8),
+
+                // ── Category ────────────────────────────────────────────────
+                DropdownButtonFormField<String>(
+                  initialValue: _categoryController.text.isEmpty ? 'Obat Bebas' : _categoryController.text,
+                  isExpanded: true,
+                  decoration: const InputDecoration(
+                    labelText: 'Golongan Obat',
+                    prefixIcon: Icon(Icons.category),
                   ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: TextFormField(
-                      controller: _purchaseUnitController,
-                      decoration: const InputDecoration(labelText: 'Purchase Unit (e.g. box)'),
-                      validator: (v) => (v == null || v.isEmpty) ? 'Required' : null,
-                    ),
-                  ),
-                ],
-              ),
-              TextFormField(
-                controller: _unitsPerPurchaseUnitController,
-                decoration: const InputDecoration(labelText: 'Base Units per Purchase Unit'),
-                keyboardType: TextInputType.number,
-                validator: (v) => (v == null || int.tryParse(v) == null) ? 'Invalid number' : null,
-              ),
-              Row(
-                children: [
-                  Expanded(
-                    child: TextFormField(
-                      controller: _costPriceController,
-                      decoration: const InputDecoration(labelText: 'Cost Price / Base Unit'),
-                      keyboardType: TextInputType.number,
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: TextFormField(
-                      controller: _marginPctController,
-                      decoration: const InputDecoration(labelText: 'Margin %'),
-                      keyboardType: TextInputType.number,
-                    ),
-                  ),
-                ],
-              ),
-              TextFormField(
-                controller: _reorderThresholdController,
-                decoration: const InputDecoration(labelText: 'Reorder Threshold (Base Units)'),
-                keyboardType: TextInputType.number,
-              ),
-              TextFormField(
-                controller: _categoryController,
-                decoration: const InputDecoration(labelText: 'Category'),
-              ),
-              if (_locations.isNotEmpty)
-                DropdownButtonFormField<int>(
-                  initialValue: _selectedStorageLocationId,
-                  decoration: const InputDecoration(labelText: 'Storage Location'),
-                  items: _locations
-                      .map((loc) => DropdownMenuItem<int>(
-                            value: loc.id,
-                            child: Text('${loc.code} - ${loc.name}'),
-                          ))
-                      .toList(),
-                  onChanged: (val) => setState(() => _selectedStorageLocationId = val),
+                  items: const [
+                    DropdownMenuItem(value: 'Obat Bebas', child: Text('Obat Bebas (Hijau)')),
+                    DropdownMenuItem(value: 'Obat Bebas Terbatas', child: Text('Obat Bebas Terbatas (Biru)')),
+                    DropdownMenuItem(value: 'Obat Keras', child: Text('Obat Keras (Merah)')),
+                    DropdownMenuItem(value: 'Psikotropika', child: Text('Psikotropika')),
+                    DropdownMenuItem(value: 'Narkotika', child: Text('Narkotika')),
+                    DropdownMenuItem(value: 'Herbal / Jamu', child: Text('Herbal / Jamu')),
+                  ],
+                  onChanged: (val) {
+                    if (val != null) {
+                      _categoryController.text = val;
+                      setState(() {
+                        _isControlled = val == 'Obat Keras' || val == 'Psikotropika' || val == 'Narkotika';
+                      });
+                    }
+                  },
                 ),
-              CheckboxListTile(
-                key: const Key('isControlledCheckbox'),
-                title: const Text('Controlled Drug / Prescription Required'),
-                value: _isControlled,
-                onChanged: (val) => setState(() => _isControlled = val ?? false),
-              ),
-            ],
+                const SizedBox(height: 8),
+
+                // ── Units row ───────────────────────────────────────────────
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextFormField(
+                        controller: _baseUnitController,
+                        decoration: const InputDecoration(labelText: 'Satuan Dasar'),
+                        validator: (v) => (v == null || v.isEmpty) ? 'Wajib' : null,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: TextFormField(
+                        controller: _purchaseUnitController,
+                        decoration: const InputDecoration(labelText: 'Satuan Beli'),
+                        validator: (v) => (v == null || v.isEmpty) ? 'Wajib' : null,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                TextFormField(
+                  controller: _unitsPerPurchaseUnitController,
+                  decoration: const InputDecoration(labelText: 'Isi per Satuan Beli'),
+                  keyboardType: TextInputType.number,
+                  validator: (v) => (v == null || int.tryParse(v) == null) ? 'Angka tidak valid' : null,
+                ),
+                const SizedBox(height: 8),
+
+                // ── Price row ────────────────────────────────────────────────
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextFormField(
+                        controller: _costPriceController,
+                        decoration: const InputDecoration(
+                          labelText: 'HPP / Satuan (Rp)',
+                          prefixText: 'Rp ',
+                        ),
+                        keyboardType: TextInputType.number,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: TextFormField(
+                        controller: _marginPctController,
+                        decoration: const InputDecoration(
+                          labelText: 'Margin %',
+                          suffixText: '%',
+                        ),
+                        keyboardType: TextInputType.number,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+
+                TextFormField(
+                  controller: _reorderThresholdController,
+                  decoration: const InputDecoration(
+                    labelText: 'Minimum Stok (Satuan Dasar)',
+                    prefixIcon: Icon(Icons.warning_amber),
+                  ),
+                  keyboardType: TextInputType.number,
+                ),
+                const SizedBox(height: 8),
+
+                // ── Storage location ─────────────────────────────────────────
+                if (_locations.isNotEmpty) ...[
+                  DropdownButtonFormField<int>(
+                    initialValue: _selectedStorageLocationId,
+                    decoration: const InputDecoration(
+                      labelText: 'Lokasi Penyimpanan',
+                      prefixIcon: Icon(Icons.shelves),
+                    ),
+                    items: _locations
+                        .map((loc) => DropdownMenuItem<int>(
+                              value: loc.id,
+                              child: Text('${loc.code} - ${loc.name}'),
+                            ))
+                        .toList(),
+                    onChanged: (val) => setState(() => _selectedStorageLocationId = val),
+                  ),
+                  const SizedBox(height: 8),
+                ],
+
+                // ── Controlled toggle ─────────────────────────────────────────
+                CheckboxListTile(
+                  key: const Key('isControlledCheckbox'),
+                  title: const Text('Obat Keras / Perlu Resep Dokter'),
+                  subtitle: _isControlled
+                      ? const Text('Penjualan akan dicatat dengan kode resep')
+                      : null,
+                  secondary: Icon(
+                    Icons.lock_outline,
+                    color: _isControlled ? cs.error : cs.outline,
+                  ),
+                  value: _isControlled,
+                  tileColor: _isControlled
+                      ? cs.errorContainer.withAlpha(80)
+                      : cs.surfaceContainerHighest.withAlpha(60),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  onChanged: (val) => setState(() => _isControlled = val ?? false),
+                ),
+                const SizedBox(height: 8),
+
+              ],
+            ),
           ),
         ),
       ),
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(false),
-          child: const Text('Cancel'),
+          child: const Text('Batal'),
         ),
-        ElevatedButton(
+        FilledButton.icon(
           key: const Key('saveProductButton'),
+          icon: const Icon(Icons.save_outlined, size: 18),
+          label: const Text('Simpan Produk'),
           onPressed: _save,
-          child: const Text('Save Product'),
         ),
       ],
+    );
+  }
+}
+
+// ─── Drug Lookup Panel Widget ──────────────────────────────────────────────────
+
+class _DrugLookupPanel extends StatelessWidget {
+  const _DrugLookupPanel({
+    required this.controller,
+    required this.isSearching,
+    required this.results,
+    required this.isOpen,
+    required this.onToggle,
+    required this.onQueryChanged,
+    required this.onResultSelected,
+  });
+
+  final TextEditingController controller;
+  final bool isSearching;
+  final List<DrugLookupResult> results;
+  final bool isOpen;
+  final VoidCallback onToggle;
+  final ValueChanged<String> onQueryChanged;
+  final ValueChanged<DrugLookupResult> onResultSelected;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        // Header button to expand/collapse
+        InkWell(
+          borderRadius: BorderRadius.circular(8),
+          onTap: onToggle,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            decoration: BoxDecoration(
+              color: cs.primaryContainer.withAlpha(120),
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: cs.primary.withAlpha(80)),
+            ),
+            child: Row(
+              children: [
+                Icon(Icons.search, size: 18, color: cs.primary),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    'Cari Obat Otomatis (BPOM / Database Lokal)',
+                    style: TextStyle(
+                      color: cs.primary,
+                      fontWeight: FontWeight.w600,
+                      fontSize: 13,
+                    ),
+                  ),
+                ),
+                Icon(
+                  isOpen ? Icons.expand_less : Icons.expand_more,
+                  color: cs.primary,
+                  size: 20,
+                ),
+              ],
+            ),
+          ),
+        ),
+
+        // Expandable search area
+        AnimatedCrossFade(
+          duration: const Duration(milliseconds: 200),
+          crossFadeState: isOpen ? CrossFadeState.showSecond : CrossFadeState.showFirst,
+          firstChild: const SizedBox.shrink(),
+          secondChild: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              const SizedBox(height: 8),
+              TextField(
+                controller: controller,
+                decoration: InputDecoration(
+                  hintText: 'Ketik nama obat (contoh: paracetamol, amoksisilin)...',
+                  prefixIcon: isSearching
+                      ? const Padding(
+                          padding: EdgeInsets.all(12),
+                          child: SizedBox(
+                            width: 16,
+                            height: 16,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          ),
+                        )
+                      : const Icon(Icons.medication_liquid),
+                  suffixIcon: controller.text.isNotEmpty
+                      ? IconButton(
+                          icon: const Icon(Icons.clear, size: 18),
+                          onPressed: () {
+                            controller.clear();
+                            onQueryChanged('');
+                          },
+                        )
+                      : null,
+                  border: const OutlineInputBorder(),
+                  isDense: true,
+                ),
+                onChanged: onQueryChanged,
+              ),
+              if (results.isNotEmpty) ...[
+                const SizedBox(height: 6),
+                Container(
+                  constraints: const BoxConstraints(maxHeight: 220),
+                  decoration: BoxDecoration(
+                    border: Border.all(color: cs.outlineVariant),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(8),
+                    child: ListView.separated(
+                      shrinkWrap: true,
+                      padding: EdgeInsets.zero,
+                      itemCount: results.length,
+                      separatorBuilder: (_, __) => Divider(
+                        height: 1,
+                        color: cs.outlineVariant.withAlpha(80),
+                      ),
+                      itemBuilder: (context, index) {
+                        final drug = results[index];
+                        return _DrugResultTile(
+                          drug: drug,
+                          onTap: () => onResultSelected(drug),
+                        );
+                      },
+                    ),
+                  ),
+                ),
+              ] else if (!isSearching && controller.text.length >= 2) ...[
+                const SizedBox(height: 6),
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  child: Text(
+                    'Tidak ditemukan. Coba nama generik (contoh: "paracetamol").',
+                    style: TextStyle(color: cs.outline, fontSize: 12),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              ],
+              const SizedBox(height: 4),
+              Row(
+                children: [
+                  Icon(Icons.info_outline, size: 12, color: cs.outline),
+                  const SizedBox(width: 4),
+                  Expanded(
+                    child: Text(
+                      'Data dari database lokal 600+ obat Indonesia + BPOM (jika ada koneksi)',
+                      style: TextStyle(color: cs.outline, fontSize: 11),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _DrugResultTile extends StatelessWidget {
+  const _DrugResultTile({required this.drug, required this.onTap});
+
+  final DrugLookupResult drug;
+  final VoidCallback onTap;
+
+  Color _categoryColor(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    return switch (drug.category) {
+      'Obat Bebas' => Colors.green.shade700,
+      'Obat Bebas Terbatas' => Colors.blue.shade700,
+      'Obat Keras' => Colors.red.shade700,
+      'Psikotropika' => Colors.deepPurple.shade700,
+      'Narkotika' => Colors.red.shade900,
+      'Herbal / Jamu' => Colors.teal.shade700,
+      _ => cs.outline,
+    };
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final catColor = _categoryColor(context);
+
+    return InkWell(
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Category dot indicator
+            Padding(
+              padding: const EdgeInsets.only(top: 4),
+              child: Container(
+                width: 10,
+                height: 10,
+                decoration: BoxDecoration(
+                  color: catColor,
+                  shape: BoxShape.circle,
+                ),
+              ),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    drug.name,
+                    style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  if (drug.activeIngredient.isNotEmpty)
+                    Text(
+                      drug.activeIngredient,
+                      style: TextStyle(color: cs.outline, fontSize: 11),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  Row(
+                    children: [
+                      Text(
+                        drug.category,
+                        style: TextStyle(
+                          color: catColor,
+                          fontSize: 11,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      if (drug.manufacturer.isNotEmpty) ...[
+                        Text('  ·  ', style: TextStyle(color: cs.outline, fontSize: 11)),
+                        Text(
+                          drug.manufacturer,
+                          style: TextStyle(color: cs.outline, fontSize: 11),
+                        ),
+                      ],
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            // Source badge
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+              decoration: BoxDecoration(
+                color: drug.source == DrugSource.bpom
+                    ? Colors.green.shade100
+                    : cs.surfaceContainerHighest,
+                borderRadius: BorderRadius.circular(4),
+              ),
+              child: Text(
+                drug.source == DrugSource.bpom ? 'BPOM' : 'Lokal',
+                style: TextStyle(
+                  fontSize: 9,
+                  fontWeight: FontWeight.bold,
+                  color: drug.source == DrugSource.bpom
+                      ? Colors.green.shade800
+                      : cs.onSurfaceVariant,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

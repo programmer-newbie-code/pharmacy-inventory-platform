@@ -29,7 +29,7 @@ void main() {
 
     await tester.pumpAndSettle();
 
-    expect(find.text('Add New Product'), findsOneWidget);
+    expect(find.text('Tambah Produk Baru'), findsOneWidget);
 
     await tester.enterText(find.byKey(const Key('productNameInput')), 'Ibuprofen 400mg');
     await tester.enterText(find.byKey(const Key('productBarcodeInput')), '8998888777666');

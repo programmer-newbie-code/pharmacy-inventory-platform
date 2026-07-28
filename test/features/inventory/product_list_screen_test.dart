@@ -51,6 +51,6 @@ void main() {
     await tester.tap(find.byKey(const Key('addProductFab')));
     await tester.pumpAndSettle();
 
-    expect(find.text('Add New Product'), findsOneWidget);
+    expect(find.text('Tambah Produk Baru'), findsOneWidget);
   });
 }
