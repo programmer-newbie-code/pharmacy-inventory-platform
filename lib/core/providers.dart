@@ -16,6 +16,7 @@ import '../data/alert_repository.dart';
 import '../data/report_repository.dart';
 import '../data/backup_service.dart';
 import '../data/excel_report_service.dart';
+import '../data/google_drive_backup_service.dart';
 
 final databaseProvider = Provider<AppDatabase>((ref) {
   final db = AppDatabase.defaultConnection();
@@ -62,6 +63,10 @@ final reportRepositoryProvider = Provider<ReportRepository>(
 
 final backupServiceProvider = Provider<BackupService>(
   (ref) => BackupService(ref.watch(databaseProvider)),
+);
+
+final googleDriveBackupServiceProvider = Provider<GoogleDriveBackupService>(
+  (ref) => GoogleDriveBackupService(ref.watch(databaseProvider)),
 );
 
 final excelReportServiceProvider = Provider<ExcelReportService>((ref) => ExcelReportService());

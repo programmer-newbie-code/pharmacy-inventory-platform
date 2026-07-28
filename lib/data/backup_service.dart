@@ -11,8 +11,8 @@ class BackupService {
 
   final AppDatabase _db;
 
-  /// Creates a full local database backup JSON export.
-  Future<String> createBackupJson(String exportDirectoryPath) async {
+  /// Creates a full local database backup JSON export string.
+  Future<String> exportDatabaseToJson() async {
     final users = await _db.select(_db.users).get();
     final locations = await _db.select(_db.storageLocations).get();
     final products = await _db.select(_db.products).get();
@@ -35,7 +35,12 @@ class BackupService {
       'itemsCount': saleItems.length,
     };
 
-    final jsonStr = const JsonEncoder.withIndent('  ').convert(backupData);
+    return const JsonEncoder.withIndent('  ').convert(backupData);
+  }
+
+  /// Creates a full local database backup JSON file.
+  Future<String> createBackupJson(String exportDirectoryPath) async {
+    final jsonStr = await exportDatabaseToJson();
     final filename =
         'pharmacy_backup_${DateTime.now().millisecondsSinceEpoch}.json';
     final filePath = p.join(exportDirectoryPath, filename);
@@ -56,14 +61,8 @@ class BackupService {
     return filePath;
   }
 
-  /// Restores database tables from a backup JSON file within a transaction.
-  Future<bool> restoreFromBackupJson(String filePath) async {
-    final file = File(filePath);
-    if (!await file.exists()) {
-      return false;
-    }
-
-    final jsonStr = await file.readAsString();
+  /// Restores database tables from a backup JSON string within a transaction.
+  Future<bool> restoreFromBackupData(String jsonStr) async {
     final data = jsonDecode(jsonStr) as Map<String, dynamic>;
 
     await _db.transaction(() async {
@@ -128,12 +127,23 @@ class BackupService {
           BackupLogsCompanion.insert(
             destination: 'restore',
             status: 'Success',
-            fileSize: Value(await file.length()),
+            fileSize: Value(utf8.encode(jsonStr).length),
             timestamp: Value(DateTime.now()),
           ),
         );
 
     return true;
+  }
+
+  /// Restores database tables from a backup JSON file within a transaction.
+  Future<bool> restoreFromBackupJson(String filePath) async {
+    final file = File(filePath);
+    if (!await file.exists()) {
+      return false;
+    }
+
+    final jsonStr = await file.readAsString();
+    return restoreFromBackupData(jsonStr);
   }
 
   /// Lists past backup logs.

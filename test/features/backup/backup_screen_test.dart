@@ -32,6 +32,12 @@ void main() {
 
     expect(find.text('Pencadangan & Pemulihan Data'), findsOneWidget);
     expect(find.byKey(const Key('createBackupBtn')), findsOneWidget);
+    expect(find.byKey(const Key('googleDriveBackupBtn')), findsOneWidget);
     expect(find.text('Riwayat Log Cadangan'), findsOneWidget);
+
+    await tester.tap(find.byKey(const Key('googleDriveBackupBtn')));
+    await tester.pumpAndSettle();
+
+    expect(find.textContaining('Cloud Backup uploaded to Google Drive'), findsOneWidget);
   });
 }

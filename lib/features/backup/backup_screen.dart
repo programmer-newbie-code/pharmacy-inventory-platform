@@ -99,6 +99,32 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
     }
   }
 
+  Future<void> _handleGoogleDriveBackup() async {
+    setState(() {
+      _isLoading = true;
+      _statusMessage = null;
+    });
+
+    try {
+      final driveService = ref.read(googleDriveBackupServiceProvider);
+      final result = await driveService.uploadBackupToDrive(accessToken: 'mock_drive_token');
+      setState(() {
+        _statusMessage = result.success
+            ? 'Cloud Backup uploaded to Google Drive: ${result.fileName} (${(result.fileSize / 1024).toStringAsFixed(1)} KB)'
+            : 'Cloud Backup failed: ${result.errorMessage}';
+      });
+      ref.invalidate(backupLogsFutureProvider);
+    } catch (e) {
+      setState(() {
+        _statusMessage = 'Google Drive error: $e';
+      });
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
@@ -118,14 +144,23 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
                 padding: const EdgeInsets.all(16.0),
                 child: Column(
                   children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      alignment: WrapAlignment.center,
                       children: [
                         ElevatedButton.icon(
                           key: const Key('createBackupBtn'),
                           icon: const Icon(Icons.backup),
                           label: Text(l10n.createBackupButton),
                           onPressed: _isLoading ? null : _handleCreateBackup,
+                        ),
+                        ElevatedButton.icon(
+                          key: const Key('googleDriveBackupBtn'),
+                          style: ElevatedButton.styleFrom(backgroundColor: Colors.indigo, foregroundColor: Colors.white),
+                          icon: const Icon(Icons.cloud_upload),
+                          label: const Text('Google Drive Backup'),
+                          onPressed: _isLoading ? null : _handleGoogleDriveBackup,
                         ),
                         OutlinedButton.icon(
                           key: const Key('restoreBackupBtn'),
