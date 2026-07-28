@@ -116,6 +116,19 @@ class BackupLogs extends Table {
   IntColumn get fileSize => integer().nullable()();
 }
 
+@DataClassName('CashierShift')
+class CashierShifts extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  IntColumn get cashierId => integer().references(Users, #id)();
+  RealColumn get openingBalance => real()();
+  RealColumn get expectedCash => real().nullable()(); // calculated on close
+  RealColumn get actualCash => real().nullable()();   // entered by cashier
+  RealColumn get discrepancy => real().nullable()();  // actual - expected
+  TextColumn get status => text()(); // open|closed
+  DateTimeColumn get openedAt => dateTime().withDefault(currentDateAndTime)();
+  DateTimeColumn get closedAt => dateTime().nullable()();
+}
+
 @DriftDatabase(tables: [
   Users,
   StorageLocations,
@@ -125,6 +138,7 @@ class BackupLogs extends Table {
   SaleItems,
   AuditLogs,
   BackupLogs,
+  CashierShifts,
 ])
 class AppDatabase extends _$AppDatabase {
   AppDatabase(super.e);

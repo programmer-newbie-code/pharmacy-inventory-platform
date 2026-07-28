@@ -19,6 +19,7 @@ import '../data/excel_report_service.dart';
 import '../data/google_drive_backup_service.dart';
 import '../data/csv_import_service.dart';
 import '../data/receipt_pdf_service.dart';
+import '../data/cashier_shift_repository.dart';
 
 final databaseProvider = Provider<AppDatabase>((ref) {
   final db = AppDatabase.defaultConnection();
@@ -78,6 +79,10 @@ final csvImportServiceProvider = Provider<CsvImportService>(
 );
 
 final receiptPdfServiceProvider = Provider<ReceiptPdfService>((ref) => ReceiptPdfService());
+
+final cashierShiftRepositoryProvider = Provider<CashierShiftRepository>(
+  (ref) => CashierShiftRepository(ref.watch(databaseProvider)),
+);
 
 final passwordHasherProvider = Provider<PasswordHasher>((ref) => PasswordHasher());
 
