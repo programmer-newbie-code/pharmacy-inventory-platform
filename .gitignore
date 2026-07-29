@@ -21,4 +21,5 @@ lib/l10n/app_localizations*.dart
 
 # IDE
 .idea/
+.vscode/
 *.iml
