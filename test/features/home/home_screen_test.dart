@@ -29,6 +29,7 @@ void main() {
         ),
       ),
     );
+    await tester.pumpAndSettle();
 
     expect(find.text('Platform Inventaris Apotek'), findsWidgets);
     expect(find.byKey(const Key('navBackupBtn')), findsOneWidget);
@@ -63,6 +64,7 @@ void main() {
         ),
       ),
     );
+    await tester.pumpAndSettle();
 
     await tester.tap(find.byKey(const Key('logoutButton')));
     await tester.pump();

@@ -2,8 +2,10 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
+import '../../core/app_theme.dart';
 import '../../core/providers.dart';
 import '../../data/pharmacy_settings_service.dart';
+import '../../l10n/app_localizations.dart';
 
 class PharmacyBrandingDialog extends ConsumerStatefulWidget {
   const PharmacyBrandingDialog({super.key});
@@ -61,7 +63,7 @@ class _PharmacyBrandingDialogState extends ConsumerState<PharmacyBrandingDialog>
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Pharmacy branding and logo updated successfully!'),
-          backgroundColor: Colors.green,
+          backgroundColor: AppTheme.successColor,
         ),
       );
     }
@@ -69,8 +71,10 @@ class _PharmacyBrandingDialogState extends ConsumerState<PharmacyBrandingDialog>
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     return AlertDialog(
-      title: const Text('Pharmacy Branding & Logo'),
+      title: Text(l10n.brandingTitle),
       content: _isLoading
           ? const SizedBox(height: 100, child: Center(child: CircularProgressIndicator()))
           : SingleChildScrollView(
@@ -95,7 +99,7 @@ class _PharmacyBrandingDialogState extends ConsumerState<PharmacyBrandingDialog>
                           : const Column(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                Icon(Icons.add_a_photo, size: 32, color: Colors.teal),
+                                Icon(Icons.add_a_photo, size: 32, color: AppTheme.primaryColor),
                                 SizedBox(height: 4),
                                 Text('Upload Pharmacy Logo', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
                               ],
@@ -126,12 +130,12 @@ class _PharmacyBrandingDialogState extends ConsumerState<PharmacyBrandingDialog>
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(false),
-          child: const Text('Cancel'),
+          child: Text(l10n.cancelButton),
         ),
         ElevatedButton(
           key: const Key('saveBrandingBtn'),
           onPressed: _saveSettings,
-          child: const Text('Save Branding'),
+          child: Text(l10n.saveBranding),
         ),
       ],
     );

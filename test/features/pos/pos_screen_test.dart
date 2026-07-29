@@ -7,6 +7,7 @@ import 'package:pharmacy_inventory_platform/data/database.dart';
 import 'package:pharmacy_inventory_platform/data/product_repository.dart';
 import 'package:pharmacy_inventory_platform/data/stock_batch_repository.dart';
 import 'package:pharmacy_inventory_platform/features/pos/pos_screen.dart';
+import 'package:pharmacy_inventory_platform/l10n/app_localizations.dart';
 
 void main() {
   testWidgets('renders PosScreen, adds product to cart, and completes checkout', (tester) async {
@@ -54,6 +55,9 @@ void main() {
       UncontrolledProviderScope(
         container: container,
         child: const MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          locale: Locale('id'),
           home: PosScreen(),
         ),
       ),
@@ -61,14 +65,14 @@ void main() {
 
     await tester.pumpAndSettle();
 
-    expect(find.text('POS Sales Counter'), findsOneWidget);
+    expect(find.text('Kasir POS'), findsOneWidget);
     expect(find.text('Vitamin C 500mg'), findsOneWidget);
 
     // Tap Add to Cart button
     await tester.tap(find.byKey(Key('addToCart_${product.id}')));
     await tester.pump();
 
-    expect(find.text('1 items'), findsOneWidget);
+    expect(find.text('1 item'), findsOneWidget);
 
     // Complete Checkout
     await tester.tap(find.byKey(const Key('checkoutButton')));

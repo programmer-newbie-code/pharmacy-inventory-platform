@@ -6,6 +6,7 @@ import 'package:pharmacy_inventory_platform/core/providers.dart';
 import 'package:pharmacy_inventory_platform/data/database.dart';
 import 'package:pharmacy_inventory_platform/data/product_repository.dart';
 import 'package:pharmacy_inventory_platform/features/inventory/product_list_screen.dart';
+import 'package:pharmacy_inventory_platform/l10n/app_localizations.dart';
 
 void main() {
   testWidgets('renders product list screen and opens add product dialog', (tester) async {
@@ -38,6 +39,9 @@ void main() {
       UncontrolledProviderScope(
         container: container,
         child: const MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          locale: Locale('id'),
           home: ProductListScreen(),
         ),
       ),
@@ -45,7 +49,7 @@ void main() {
 
     await tester.pumpAndSettle();
 
-    expect(find.text('Inventory Catalog'), findsOneWidget);
+    expect(find.text('Katalog Inventaris'), findsOneWidget);
     expect(find.text('Paracetamol Syrup'), findsOneWidget);
 
     await tester.tap(find.byKey(const Key('addProductFab')));

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'core/app_theme.dart';
+import 'core/locale_provider.dart';
 import 'core/providers.dart';
 import 'features/auth/auth_session.dart';
 import 'features/auth/login_screen.dart';
@@ -12,17 +13,19 @@ void main() {
   runApp(const ProviderScope(child: PharmacyInventoryApp()));
 }
 
-class PharmacyInventoryApp extends StatelessWidget {
+class PharmacyInventoryApp extends ConsumerWidget {
   const PharmacyInventoryApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final locale = ref.watch(localeProvider);
+
     return MaterialApp(
       title: 'Pharmacy Inventory Platform',
       theme: AppTheme.lightTheme,
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
-      locale: const Locale('id'),
+      locale: locale,
       home: const AuthGate(),
     );
   }
