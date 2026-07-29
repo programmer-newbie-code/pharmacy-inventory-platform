@@ -68,6 +68,16 @@ class HomeScreen extends ConsumerWidget {
     final user = ref.watch(authSessionProvider);
     final locale = ref.watch(localeProvider);
     final todayStats = ref.watch(_todayStatsProvider);
+    final permChecker = ref.watch(permissionCheckerProvider);
+
+    final roleStr = user?.role;
+    final isAdmin = permChecker.canManageUsers(roleStr);
+    final canManageUsers = permChecker.canManageUsers(roleStr);
+    final canManageBackup = permChecker.canManageBackup(roleStr);
+    final canManageBranding = permChecker.canManageBranding(roleStr);
+    final canManageSuppliers = permChecker.canManageSuppliers(roleStr);
+    final canManageShifts = permChecker.canManageShifts(roleStr);
+    final canManageReturns = permChecker.canManageReturns(roleStr);
 
     return Scaffold(
       appBar: AppBar(
@@ -80,18 +90,19 @@ class HomeScreen extends ConsumerWidget {
             tooltip: l10n.languageLabel,
             onPressed: () => ref.read(localeProvider.notifier).toggleLocale(),
           ),
-          // Branding
-          IconButton(
-            key: const Key('brandingButton'),
-            icon: const Icon(Icons.storefront),
-            tooltip: l10n.brandingTitle,
-            onPressed: () {
-              showDialog(
-                context: context,
-                builder: (_) => const PharmacyBrandingDialog(),
-              );
-            },
-          ),
+          // Branding (Admin only)
+          if (canManageBranding)
+            IconButton(
+              key: const Key('brandingButton'),
+              icon: const Icon(Icons.storefront),
+              tooltip: l10n.brandingTitle,
+              onPressed: () {
+                showDialog(
+                  context: context,
+                  builder: (_) => const PharmacyBrandingDialog(),
+                );
+              },
+            ),
           // Help
           IconButton(
             key: const Key('helpButton'),
@@ -143,22 +154,30 @@ class HomeScreen extends ConsumerWidget {
                         style: Theme.of(context).textTheme.headlineSmall,
                       ),
                       const SizedBox(height: 2),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 8, vertical: 2),
-                        decoration: BoxDecoration(
-                          color: AppTheme.primaryColor.withAlpha(20),
-                          borderRadius: BorderRadius.circular(6),
-                        ),
-                        child: Text(
-                          (user?.role ?? '').toUpperCase(),
-                          style: const TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w600,
-                            color: AppTheme.primaryColor,
-                            letterSpacing: 0.5,
+                      Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 8, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: isAdmin
+                                  ? AppTheme.primaryColor.withAlpha(20)
+                                  : Colors.orange.withAlpha(20),
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: Text(
+                              (user?.role ?? 'kasir').toUpperCase(),
+                              style: TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w600,
+                                color: isAdmin
+                                    ? AppTheme.primaryColor
+                                    : Colors.orange.shade800,
+                                letterSpacing: 0.5,
+                              ),
+                            ),
                           ),
-                        ),
+                        ],
                       ),
                     ],
                   ),
@@ -210,6 +229,7 @@ class HomeScreen extends ConsumerWidget {
                       color: AppTheme.cardPOS,
                       title: l10n.posTitle,
                       subtitle: l10n.posSubtitle,
+                      isEnabled: true,
                       onTap: () => _navigate(context, const PosScreen()),
                     ),
                     _NavCard(
@@ -218,6 +238,8 @@ class HomeScreen extends ConsumerWidget {
                       color: AppTheme.cardShifts,
                       title: l10n.shiftTitle,
                       subtitle: l10n.shiftSubtitle,
+                      isEnabled: canManageShifts,
+                      restrictionTooltip: 'Admin & Kasir only',
                       onTap: () =>
                           _navigate(context, const ShiftManagementScreen()),
                     ),
@@ -227,6 +249,8 @@ class HomeScreen extends ConsumerWidget {
                       color: AppTheme.cardReturns,
                       title: l10n.returnsTitle,
                       subtitle: l10n.returnsSubtitle,
+                      isEnabled: canManageReturns,
+                      restrictionTooltip: 'Admin & Kasir only',
                       onTap: () => _navigate(context, const ReturnScreen()),
                     ),
                     _NavCard(
@@ -235,6 +259,8 @@ class HomeScreen extends ConsumerWidget {
                       color: AppTheme.cardSuppliers,
                       title: l10n.suppliersTitle,
                       subtitle: l10n.suppliersSubtitle,
+                      isEnabled: canManageSuppliers,
+                      restrictionTooltip: 'Admin & Inventory only',
                       onTap: () =>
                           _navigate(context, const PurchaseOrderScreen()),
                     ),
@@ -244,6 +270,7 @@ class HomeScreen extends ConsumerWidget {
                       color: AppTheme.cardInventory,
                       title: l10n.inventoryTitle,
                       subtitle: l10n.inventorySubtitle,
+                      isEnabled: true,
                       onTap: () =>
                           _navigate(context, const ProductListScreen()),
                     ),
@@ -253,6 +280,7 @@ class HomeScreen extends ConsumerWidget {
                       color: AppTheme.cardAlerts,
                       title: l10n.alertsTitle,
                       subtitle: l10n.alertsSubtitle,
+                      isEnabled: true,
                       onTap: () => _navigate(context, const AlertsScreen()),
                     ),
                     _NavCard(
@@ -261,6 +289,7 @@ class HomeScreen extends ConsumerWidget {
                       color: AppTheme.cardReports,
                       title: l10n.reportsTitle,
                       subtitle: l10n.reportsSubtitle,
+                      isEnabled: true,
                       onTap: () => _navigate(context, const ReportsScreen()),
                     ),
                     _NavCard(
@@ -269,6 +298,8 @@ class HomeScreen extends ConsumerWidget {
                       color: AppTheme.cardBackup,
                       title: l10n.backupTitle,
                       subtitle: l10n.backupSubtitle,
+                      isEnabled: canManageBackup,
+                      restrictionTooltip: 'Admin role required',
                       onTap: () => _navigate(context, const BackupScreen()),
                     ),
                     _NavCard(
@@ -277,6 +308,8 @@ class HomeScreen extends ConsumerWidget {
                       color: AppTheme.cardUsers,
                       title: l10n.userManagementTitle,
                       subtitle: l10n.userManagementSubtitle,
+                      isEnabled: canManageUsers,
+                      restrictionTooltip: 'Admin role required',
                       onTap: () =>
                           _navigate(context, const UserManagementScreen()),
                     ),
@@ -408,6 +441,8 @@ class _NavCard extends StatelessWidget {
   final Color color;
   final String title;
   final String subtitle;
+  final bool isEnabled;
+  final String? restrictionTooltip;
   final VoidCallback onTap;
 
   const _NavCard({
@@ -416,60 +451,92 @@ class _NavCard extends StatelessWidget {
     required this.color,
     required this.title,
     required this.subtitle,
+    this.isEnabled = true,
+    this.restrictionTooltip,
     required this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(16),
-      child: InkWell(
+    final effectiveColor = isEnabled ? color : Colors.grey.shade400;
+
+    Widget cardContent = Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: isEnabled ? Colors.white : Colors.grey.shade100,
         borderRadius: BorderRadius.circular(16),
-        onTap: onTap,
-        child: Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: Colors.grey.shade200),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.center,
+        border: Border.all(
+          color: isEnabled ? Colors.grey.shade200 : Colors.grey.shade300,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Container(
                 width: 40,
                 height: 40,
                 decoration: BoxDecoration(
-                  color: color.withAlpha(20),
+                  color: effectiveColor.withAlpha(isEnabled ? 20 : 30),
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: Icon(icon, color: color, size: 22),
+                child: Icon(icon, color: effectiveColor, size: 22),
               ),
-              const SizedBox(height: 12),
-              Text(
-                title,
-                style: const TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                  color: Color(0xFF1A1A2E),
+              if (!isEnabled)
+                Tooltip(
+                  message: restrictionTooltip ?? 'Restricted role',
+                  child: Container(
+                    padding: const EdgeInsets.all(4),
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade300,
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      Icons.lock,
+                      size: 14,
+                      color: Colors.grey.shade700,
+                    ),
+                  ),
                 ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-              const SizedBox(height: 2),
-              Text(
-                subtitle,
-                style: TextStyle(
-                  fontSize: 12,
-                  color: Colors.grey.shade600,
-                ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
             ],
           ),
-        ),
+          const SizedBox(height: 12),
+          Text(
+            title,
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+              color: isEnabled ? const Color(0xFF1A1A2E) : Colors.grey.shade600,
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+          const SizedBox(height: 2),
+          Text(
+            isEnabled
+                ? subtitle
+                : (restrictionTooltip ?? 'Restricted'),
+            style: TextStyle(
+              fontSize: 12,
+              color: isEnabled ? Colors.grey.shade600 : Colors.grey.shade500,
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ],
+      ),
+    );
+
+    return Material(
+      color: Colors.transparent,
+      borderRadius: BorderRadius.circular(16),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(16),
+        onTap: isEnabled ? onTap : null,
+        child: cardContent,
       ),
     );
   }

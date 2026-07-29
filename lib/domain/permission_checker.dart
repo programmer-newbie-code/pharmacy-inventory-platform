@@ -43,7 +43,62 @@ class PermissionChecker {
     },
   };
 
+  Role parseRole(String? roleStr) {
+    if (roleStr == null) return Role.kasir;
+    final normalized = roleStr.trim().toLowerCase();
+    switch (normalized) {
+      case 'admin':
+      case 'administrator':
+        return Role.admin;
+      case 'inventory':
+      case 'gudang':
+        return Role.inventory;
+      case 'audit':
+      case 'auditor':
+        return Role.audit;
+      case 'kasir':
+      case 'cashier':
+      default:
+        return Role.kasir;
+    }
+  }
+
   AccessLevel accessLevel(Role role, Resource resource) => _matrix[role]![resource]!;
+
+  AccessLevel accessLevelForString(String? roleStr, Resource resource) =>
+      accessLevel(parseRole(roleStr), resource);
+
+  /// Helper checks for UI gating:
+  bool canManageUsers(String? roleStr) => parseRole(roleStr) == Role.admin;
+
+  bool canManageBackup(String? roleStr) => parseRole(roleStr) == Role.admin;
+
+  bool canManageBranding(String? roleStr) => parseRole(roleStr) == Role.admin;
+
+  bool canCreateProducts(String? roleStr) {
+    final role = parseRole(roleStr);
+    return role == Role.admin || role == Role.inventory;
+  }
+
+  bool canPerformCheckout(String? roleStr) {
+    final role = parseRole(roleStr);
+    return role == Role.admin || role == Role.kasir;
+  }
+
+  bool canManageSuppliers(String? roleStr) {
+    final role = parseRole(roleStr);
+    return role == Role.admin || role == Role.inventory;
+  }
+
+  bool canManageShifts(String? roleStr) {
+    final role = parseRole(roleStr);
+    return role == Role.admin || role == Role.kasir;
+  }
+
+  bool canManageReturns(String? roleStr) {
+    final role = parseRole(roleStr);
+    return role == Role.admin || role == Role.kasir;
+  }
 
   /// Inventory's "full*" access to products/batches in the spec has one carve-out:
   /// once any unit has been sold from a batch, only admin may edit its cost/expiry.
