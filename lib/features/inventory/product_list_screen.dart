@@ -5,6 +5,7 @@ import '../../core/app_theme.dart';
 import '../../core/providers.dart';
 import '../../data/database.dart';
 import '../../l10n/app_localizations.dart';
+import '../auth/auth_session.dart';
 import 'add_product_dialog.dart';
 import 'add_stock_batch_dialog.dart';
 
@@ -141,17 +142,21 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final currentUser = ref.watch(authSessionProvider);
+    final permChecker = ref.watch(permissionCheckerProvider);
+    final canCreate = currentUser == null || permChecker.canCreateProducts(currentUser.role);
 
     return Scaffold(
       appBar: AppBar(
         title: Text(l10n.inventoryTitle),
         actions: [
-          IconButton(
-            key: const Key('importCsvBtn'),
-            icon: const Icon(Icons.file_upload_outlined),
-            tooltip: l10n.importCsvButton,
-            onPressed: _openImportCsvDialog,
-          ),
+          if (canCreate)
+            IconButton(
+              key: const Key('importCsvBtn'),
+              icon: const Icon(Icons.file_upload_outlined),
+              tooltip: l10n.importCsvButton,
+              onPressed: _openImportCsvDialog,
+            ),
           IconButton(
             key: const Key('refreshButton'),
             icon: const Icon(Icons.refresh),
@@ -267,12 +272,14 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen> {
                                   ],
                                 ),
                               ),
-                              trailing: IconButton(
-                                key: Key('addBatchBtn_${prod.id}'),
-                                icon: const Icon(Icons.add_shopping_cart, color: AppTheme.primaryColor),
-                                tooltip: l10n.receiveStock,
-                                onPressed: () => _openAddBatch(prod),
-                              ),
+                              trailing: canCreate
+                                  ? IconButton(
+                                      key: Key('addBatchBtn_${prod.id}'),
+                                      icon: const Icon(Icons.add_shopping_cart, color: AppTheme.primaryColor),
+                                      tooltip: l10n.receiveStock,
+                                      onPressed: () => _openAddBatch(prod),
+                                    )
+                                  : null,
                             ),
                           );
                         },
@@ -280,12 +287,14 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen> {
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        key: const Key('addProductFab'),
-        onPressed: _openAddProduct,
-        icon: const Icon(Icons.add),
-        label: Text(l10n.addProductButton),
-      ),
+      floatingActionButton: canCreate
+          ? FloatingActionButton.extended(
+              key: const Key('addProductFab'),
+              onPressed: _openAddProduct,
+              icon: const Icon(Icons.add),
+              label: Text(l10n.addProductButton),
+            )
+          : null,
     );
   }
 }

@@ -6,6 +6,7 @@ import '../../core/providers.dart';
 import '../../data/database.dart';
 import '../../data/sale_repository.dart';
 import '../../l10n/app_localizations.dart';
+import '../auth/auth_session.dart';
 import '../inventory/camera_scanner_dialog.dart';
 import 'receipt_dialog.dart';
 
@@ -160,6 +161,9 @@ class _PosScreenState extends ConsumerState<PosScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final currentUser = ref.watch(authSessionProvider);
+    final permChecker = ref.watch(permissionCheckerProvider);
+    final canCheckout = currentUser == null || permChecker.canPerformCheckout(currentUser.role);
 
     return Scaffold(
       appBar: AppBar(
@@ -479,7 +483,7 @@ class _PosScreenState extends ConsumerState<PosScreen> {
                         child: ElevatedButton.icon(
                           key: const Key('checkoutButton'),
                           onPressed:
-                              _isLoading || _cart.isEmpty ? null : _checkout,
+                              _isLoading || _cart.isEmpty || !canCheckout ? null : _checkout,
                           icon: _isLoading
                               ? const SizedBox(
                                   width: 18,

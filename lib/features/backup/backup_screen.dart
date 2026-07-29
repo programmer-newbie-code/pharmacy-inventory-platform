@@ -4,9 +4,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path_provider/path_provider.dart';
 
+import '../../core/app_theme.dart';
 import '../../core/providers.dart';
 import '../../data/database.dart';
 import '../../l10n/app_localizations.dart';
+import '../auth/auth_session.dart';
 
 final backupLogsFutureProvider = FutureProvider.autoDispose<List<BackupLog>>((ref) {
   final service = ref.watch(backupServiceProvider);
@@ -128,6 +130,34 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final currentUser = ref.watch(authSessionProvider);
+    final permChecker = ref.watch(permissionCheckerProvider);
+    final isAllowed = currentUser == null || permChecker.canManageBackup(currentUser.role);
+
+    if (!isAllowed) {
+      return Scaffold(
+        appBar: AppBar(title: Text(l10n.backupTitle)),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.lock_outline, size: 64, color: AppTheme.dangerColor.withAlpha(150)),
+              const SizedBox(height: 16),
+              Text(
+                'Akses Ditolak',
+                style: Theme.of(context).textTheme.headlineSmall,
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Fitur pencadangan data hanya dapat diakses oleh Admin.',
+                style: TextStyle(color: Colors.grey.shade600),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
     final logsAsync = ref.watch(backupLogsFutureProvider);
 
     return Scaffold(

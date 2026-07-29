@@ -2,47 +2,64 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:pharmacy_inventory_platform/domain/permission_checker.dart';
 
 void main() {
-  final checker = PermissionChecker();
+  late PermissionChecker checker;
 
-  test('admin has full access to every resource except audit log (view-only)', () {
-    for (final resource in Resource.values.where((r) => r != Resource.auditLog)) {
-      expect(checker.accessLevel(Role.admin, resource), AccessLevel.full,
-          reason: 'admin should have full access to $resource');
-    }
-    expect(checker.accessLevel(Role.admin, Resource.auditLog), AccessLevel.view);
+  setUp(() {
+    checker = PermissionChecker();
   });
 
-  test('inventory can manage products/batches and storage locations, view-only elsewhere', () {
-    expect(checker.accessLevel(Role.inventory, Resource.productsAndBatches), AccessLevel.full);
-    expect(checker.accessLevel(Role.inventory, Resource.storageLocations), AccessLevel.full);
-    expect(checker.accessLevel(Role.inventory, Resource.salesPos), AccessLevel.view);
-    expect(checker.accessLevel(Role.inventory, Resource.reports), AccessLevel.view);
-    expect(checker.accessLevel(Role.inventory, Resource.auditLog), AccessLevel.none);
-    expect(checker.accessLevel(Role.inventory, Resource.users), AccessLevel.none);
-  });
+  group('PermissionChecker role parsing and resource access', () {
+    test('parseRole correctly normalizes string roles', () {
+      expect(checker.parseRole('admin'), Role.admin);
+      expect(checker.parseRole('Administrator'), Role.admin);
+      expect(checker.parseRole('inventory'), Role.inventory);
+      expect(checker.parseRole('Gudang'), Role.inventory);
+      expect(checker.parseRole('kasir'), Role.kasir);
+      expect(checker.parseRole('Cashier'), Role.kasir);
+      expect(checker.parseRole('audit'), Role.audit);
+      expect(checker.parseRole(null), Role.kasir);
+    });
 
-  test('kasir can only view catalog data, create sales, and view own reports', () {
-    expect(checker.accessLevel(Role.kasir, Resource.productsAndBatches), AccessLevel.view);
-    expect(checker.accessLevel(Role.kasir, Resource.storageLocations), AccessLevel.view);
-    expect(checker.accessLevel(Role.kasir, Resource.salesPos), AccessLevel.create);
-    expect(checker.accessLevel(Role.kasir, Resource.reports), AccessLevel.viewOwn);
-    expect(checker.accessLevel(Role.kasir, Resource.auditLog), AccessLevel.none);
-    expect(checker.accessLevel(Role.kasir, Resource.users), AccessLevel.none);
-  });
+    test('canManageUsers restricts employee management to admin only', () {
+      expect(checker.canManageUsers('admin'), isTrue);
+      expect(checker.canManageUsers('kasir'), isFalse);
+      expect(checker.canManageUsers('inventory'), isFalse);
+      expect(checker.canManageUsers('audit'), isFalse);
+    });
 
-  test('audit can view everything and has full access to reports, no write access anywhere', () {
-    expect(checker.accessLevel(Role.audit, Resource.productsAndBatches), AccessLevel.view);
-    expect(checker.accessLevel(Role.audit, Resource.storageLocations), AccessLevel.view);
-    expect(checker.accessLevel(Role.audit, Resource.salesPos), AccessLevel.view);
-    expect(checker.accessLevel(Role.audit, Resource.reports), AccessLevel.full);
-    expect(checker.accessLevel(Role.audit, Resource.auditLog), AccessLevel.view);
-    expect(checker.accessLevel(Role.audit, Resource.users), AccessLevel.none);
-  });
+    test('canManageBackup restricts backup and restore to admin only', () {
+      expect(checker.canManageBackup('admin'), isTrue);
+      expect(checker.canManageBackup('kasir'), isFalse);
+      expect(checker.canManageBackup('inventory'), isFalse);
+      expect(checker.canManageBackup('audit'), isFalse);
+    });
 
-  test('only admin may edit a stock batch that already has units sold from it', () {
-    expect(checker.canEditSoldBatch(Role.admin), isTrue);
-    expect(checker.canEditSoldBatch(Role.inventory), isFalse);
-    expect(checker.canEditSoldBatch(Role.kasir), isFalse);
-    expect(checker.canEditSoldBatch(Role.audit), isFalse);
+    test('canManageBranding restricts pharmacy branding settings to admin only', () {
+      expect(checker.canManageBranding('admin'), isTrue);
+      expect(checker.canManageBranding('kasir'), isFalse);
+      expect(checker.canManageBranding('inventory'), isFalse);
+      expect(checker.canManageBranding('audit'), isFalse);
+    });
+
+    test('canCreateProducts allows admin and inventory roles', () {
+      expect(checker.canCreateProducts('admin'), isTrue);
+      expect(checker.canCreateProducts('inventory'), isTrue);
+      expect(checker.canCreateProducts('kasir'), isFalse);
+      expect(checker.canCreateProducts('audit'), isFalse);
+    });
+
+    test('canPerformCheckout allows admin and cashier roles', () {
+      expect(checker.canPerformCheckout('admin'), isTrue);
+      expect(checker.canPerformCheckout('kasir'), isTrue);
+      expect(checker.canPerformCheckout('inventory'), isFalse);
+      expect(checker.canPerformCheckout('audit'), isFalse);
+    });
+
+    test('canManageSuppliers allows admin and inventory roles', () {
+      expect(checker.canManageSuppliers('admin'), isTrue);
+      expect(checker.canManageSuppliers('inventory'), isTrue);
+      expect(checker.canManageSuppliers('kasir'), isFalse);
+      expect(checker.canManageSuppliers('audit'), isFalse);
+    });
   });
 }
