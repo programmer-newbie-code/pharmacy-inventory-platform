@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:drift/drift.dart';
 import 'package:path/path.dart' as p;
 
+import 'backup_document.dart';
 import 'database.dart';
 
 class BackupService {
@@ -17,25 +18,43 @@ class BackupService {
     final locations = await _db.select(_db.storageLocations).get();
     final products = await _db.select(_db.products).get();
     final batches = await _db.select(_db.stockBatches).get();
-    final txns = await _db.select(_db.saleTransactions).get();
+    final sales = await _db.select(_db.saleTransactions).get();
     final saleItems = await _db.select(_db.saleItems).get();
+    final auditLogs = await _db.select(_db.auditLogs).get();
+    final backupLogs = await _db.select(_db.backupLogs).get();
+    final cashierShifts = await _db.select(_db.cashierShifts).get();
+    final returnTransactions = await _db.select(_db.returnTransactions).get();
+    final returnItems = await _db.select(_db.returnItems).get();
+    final suppliers = await _db.select(_db.suppliers).get();
+    final purchaseOrders = await _db.select(_db.purchaseOrders).get();
+    final purchaseOrderItems = await _db.select(_db.purchaseOrderItems).get();
 
-    final backupData = {
-      'exportedAt': DateTime.now().toIso8601String(),
-      'version': 1,
-      'users': users.map((u) => u.toJson()).toList(),
-      'storageLocations': locations.map((l) => l.toJson()).toList(),
-      'products': products.map((p) => p.toJson()).toList(),
-      'stockBatches': batches.map((b) => b.toJson()).toList(),
-      'saleTransactions': txns.map((t) => t.toJson()).toList(),
-      'saleItems': saleItems.map((i) => i.toJson()).toList(),
-      'productsCount': products.length,
-      'batchesCount': batches.length,
-      'transactionsCount': txns.length,
-      'itemsCount': saleItems.length,
+    final data = <String, List<Map<String, dynamic>>>{
+      'users': users.map((row) => row.toJson()).toList(),
+      'storageLocations': locations.map((row) => row.toJson()).toList(),
+      'products': products.map((row) => row.toJson()).toList(),
+      'stockBatches': batches.map((row) => row.toJson()).toList(),
+      'saleTransactions': sales.map((row) => row.toJson()).toList(),
+      'saleItems': saleItems.map((row) => row.toJson()).toList(),
+      'auditLogs': auditLogs.map((row) => row.toJson()).toList(),
+      'backupLogs': backupLogs.map((row) => row.toJson()).toList(),
+      'cashierShifts': cashierShifts.map((row) => row.toJson()).toList(),
+      'returnTransactions': returnTransactions.map((row) => row.toJson()).toList(),
+      'returnItems': returnItems.map((row) => row.toJson()).toList(),
+      'suppliers': suppliers.map((row) => row.toJson()).toList(),
+      'purchaseOrders': purchaseOrders.map((row) => row.toJson()).toList(),
+      'purchaseOrderItems': purchaseOrderItems.map((row) => row.toJson()).toList(),
+    };
+    final counts = <String, int>{
+      for (final entry in data.entries) entry.key: entry.value.length,
     };
 
-    return const JsonEncoder.withIndent('  ').convert(backupData);
+    return const JsonEncoder.withIndent('  ').convert({
+      'schemaVersion': BackupDocument.currentSchemaVersion,
+      'createdAt': DateTime.now().toIso8601String(),
+      'counts': counts,
+      'data': data,
+    });
   }
 
   /// Creates a full local database backup JSON file.
@@ -63,63 +82,67 @@ class BackupService {
 
   /// Restores database tables from a backup JSON string within a transaction.
   Future<bool> restoreFromBackupData(String jsonStr) async {
-    final data = jsonDecode(jsonStr) as Map<String, dynamic>;
+    final document = BackupDocument.parseAndValidate(jsonStr);
+    final data = document.data;
 
     await _db.transaction(() async {
-      // Clear existing records in proper dependency order
+      await _db.delete(_db.returnItems).go();
+      await _db.delete(_db.returnTransactions).go();
       await _db.delete(_db.saleItems).go();
       await _db.delete(_db.saleTransactions).go();
+      await _db.delete(_db.purchaseOrderItems).go();
+      await _db.delete(_db.purchaseOrders).go();
       await _db.delete(_db.stockBatches).go();
+      await _db.delete(_db.cashierShifts).go();
+      await _db.delete(_db.auditLogs).go();
       await _db.delete(_db.products).go();
+      await _db.delete(_db.suppliers).go();
       await _db.delete(_db.storageLocations).go();
       await _db.delete(_db.users).go();
 
-      // Restore Users
-      if (data['users'] != null) {
-        final usersList = data['users'] as List;
-        for (final item in usersList) {
-          await _db.into(_db.users).insert(User.fromJson(item as Map<String, dynamic>));
-        }
+      for (final row in data['users']!) {
+        await _db.into(_db.users).insert(User.fromJson(_json(row)));
+      }
+      for (final row in data['storageLocations']!) {
+        await _db.into(_db.storageLocations).insert(StorageLocation.fromJson(_json(row)));
+      }
+      for (final row in data['suppliers']!) {
+        await _db.into(_db.suppliers).insert(Supplier.fromJson(_json(row)));
+      }
+      for (final row in data['products']!) {
+        await _db.into(_db.products).insert(Product.fromJson(_json(row)));
+      }
+      for (final row in data['stockBatches']!) {
+        await _db.into(_db.stockBatches).insert(StockBatch.fromJson(_json(row)));
+      }
+      for (final row in data['saleTransactions']!) {
+        await _db.into(_db.saleTransactions).insert(SaleTransaction.fromJson(_json(row)));
+      }
+      for (final row in data['saleItems']!) {
+        await _db.into(_db.saleItems).insert(SaleItem.fromJson(_json(row)));
+      }
+      for (final row in data['auditLogs']!) {
+        await _db.into(_db.auditLogs).insert(AuditLog.fromJson(_json(row)));
+      }
+      for (final row in data['cashierShifts']!) {
+        await _db.into(_db.cashierShifts).insert(CashierShift.fromJson(_json(row)));
+      }
+      for (final row in data['returnTransactions']!) {
+        await _db.into(_db.returnTransactions).insert(ReturnTransaction.fromJson(_json(row)));
+      }
+      for (final row in data['returnItems']!) {
+        await _db.into(_db.returnItems).insert(ReturnItem.fromJson(_json(row)));
+      }
+      for (final row in data['purchaseOrders']!) {
+        await _db.into(_db.purchaseOrders).insert(PurchaseOrder.fromJson(_json(row)));
+      }
+      for (final row in data['purchaseOrderItems']!) {
+        await _db.into(_db.purchaseOrderItems).insert(PurchaseOrderItem.fromJson(_json(row)));
       }
 
-      // Restore Storage Locations
-      if (data['storageLocations'] != null) {
-        final locationsList = data['storageLocations'] as List;
-        for (final item in locationsList) {
-          await _db.into(_db.storageLocations).insert(StorageLocation.fromJson(item as Map<String, dynamic>));
-        }
-      }
-
-      // Restore Products
-      if (data['products'] != null) {
-        final productsList = data['products'] as List;
-        for (final item in productsList) {
-          await _db.into(_db.products).insert(Product.fromJson(item as Map<String, dynamic>));
-        }
-      }
-
-      // Restore Stock Batches
-      if (data['stockBatches'] != null) {
-        final batchesList = data['stockBatches'] as List;
-        for (final item in batchesList) {
-          await _db.into(_db.stockBatches).insert(StockBatch.fromJson(item as Map<String, dynamic>));
-        }
-      }
-
-      // Restore Sale Transactions
-      if (data['saleTransactions'] != null) {
-        final txnsList = data['saleTransactions'] as List;
-        for (final item in txnsList) {
-          await _db.into(_db.saleTransactions).insert(SaleTransaction.fromJson(item as Map<String, dynamic>));
-        }
-      }
-
-      // Restore Sale Items
-      if (data['saleItems'] != null) {
-        final itemsList = data['saleItems'] as List;
-        for (final item in itemsList) {
-          await _db.into(_db.saleItems).insert(SaleItem.fromJson(item as Map<String, dynamic>));
-        }
+      await _db.delete(_db.backupLogs).go();
+      for (final row in data['backupLogs']!) {
+        await _db.into(_db.backupLogs).insert(BackupLog.fromJson(_json(row)));
       }
     });
 
@@ -155,5 +178,8 @@ class BackupService {
           ]))
         .get();
   }
+
+  Map<String, dynamic> _json(Map<String, Object?> row) =>
+      Map<String, dynamic>.from(row);
 }
 
