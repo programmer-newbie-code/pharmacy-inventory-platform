@@ -65,6 +65,13 @@ jobs:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Auto-Inject Tag Version into pubspec.yaml
+        shell: pwsh
+        run: |
+          if ("${{ github.ref }}" -like "refs/tags/v*") {
+            $ver = "${{ github.ref_name }}".TrimStart('v')
+            (Get-Content pubspec.yaml) -replace '^version: .*', "version: $ver+$env:GITHUB_RUN_NUMBER" | Set-Content pubspec.yaml
+          }
       - uses: subosito/flutter-action@v2
         with:
           channel: stable
@@ -73,7 +80,16 @@ jobs:
       - run: flutter pub get
       - name: Generate drift code
         run: dart run build_runner build --delete-conflicting-outputs
-      - run: flutter build windows --release
+      - name: Determine Build Version
+        shell: pwsh
+        run: |
+          if ("${{ github.ref }}" -like "refs/tags/v*") {
+            $ver = "${{ github.ref_name }}".TrimStart('v')
+          } else {
+            $ver = "1.2.0"
+          }
+          echo "BUILD_VER=$ver" >> $env:GITHUB_ENV
+      - run: flutter build windows --release --build-name=${{ env.BUILD_VER }} --build-number=${{ github.run_number }}
       - name: Upload Windows Release Artifact
         uses: actions/upload-artifact@v4
         with:
@@ -84,6 +100,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Auto-Inject Tag Version into pubspec.yaml
+        shell: bash
+        run: |
+          if [[ "${{ github.ref }}" == refs/tags/v* ]]; then
+            VER="${GITHUB_REF_NAME#v}"
+            sed -i "s/^version: .*/version: ${VER}+${{ github.run_number }}/" pubspec.yaml
+          fi
       - uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
@@ -94,7 +117,16 @@ jobs:
       - run: flutter pub get
       - name: Generate drift code
         run: dart run build_runner build --delete-conflicting-outputs
-      - run: flutter build apk --release
+      - name: Determine Build Version
+        shell: bash
+        run: |
+          if [[ "${{ github.ref }}" == refs/tags/v* ]]; then
+            VER="${GITHUB_REF_NAME#v}"
+          else
+            VER="1.2.0"
+          fi
+          echo "BUILD_VER=$VER" >> $GITHUB_ENV
+      - run: flutter build apk --release --build-name=${{ env.BUILD_VER }} --build-number=${{ github.run_number }}
       - name: Upload APK Release Artifact
         uses: actions/upload-artifact@v4
         with:

@@ -320,8 +320,17 @@
   <header class="hero">
     <div class="badge-pill">
       <span class="badge-pulse"></span>
-      <span>v1.2.0 Release — Production Ready</span>
+      <span id="latest-release-tag">Latest Release — Production Ready</span>
     </div>
+    <script>
+      fetch('https://api.github.com/repos/programmer-newbie-code/pharmacy-inventory-platform/releases/latest')
+        .then(function(r) { return r.json(); })
+        .then(function(d) {
+          if (d.tag_name) {
+            document.getElementById('latest-release-tag').innerText = d.tag_name + ' Release — Production Ready';
+          }
+        }).catch(function() {});
+    </script>
     <h1 class="hero-title">Pharmacy Inventory & POS Platform</h1>
     <p class="hero-subtitle">
       Offline-first inventory management and Point-of-Sale counter system designed specifically for pharmacies, clinics, and drugstores.

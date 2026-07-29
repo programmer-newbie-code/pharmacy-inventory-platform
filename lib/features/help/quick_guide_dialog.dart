@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 
 class QuickGuideDialog extends StatelessWidget {
   const QuickGuideDialog({super.key});
@@ -13,35 +14,41 @@ class QuickGuideDialog extends StatelessWidget {
           Text('Quick Start & User Guide'),
         ],
       ),
-      content: const SingleChildScrollView(
+      content: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text(
-              'Welcome to Pharmacy Inventory Platform!',
-              style: TextStyle(fontWeight: FontWeight.bold),
+            FutureBuilder<PackageInfo>(
+              future: PackageInfo.fromPlatform(),
+              builder: (context, snapshot) {
+                final version = snapshot.data?.version ?? '1.2.0';
+                return Text(
+                  'Welcome to Pharmacy Inventory Platform v$version!',
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                );
+              },
             ),
-            SizedBox(height: 12),
-            ListTile(
+            const SizedBox(height: 12),
+            const ListTile(
               contentPadding: EdgeInsets.zero,
               leading: Icon(Icons.point_of_sale, color: Colors.green),
               title: Text('POS Sales Counter'),
               subtitle: Text('Scan barcodes, FEFO automatic stock deduction, prescription verification for controlled drugs, and receipts.'),
             ),
-            ListTile(
+            const ListTile(
               contentPadding: EdgeInsets.zero,
               leading: Icon(Icons.inventory, color: Colors.blue),
               title: Text('Inventory Catalog'),
               subtitle: Text('Manage products, unit conversions (box to tablet), cost margins, and incoming stock batch entry.'),
             ),
-            ListTile(
+            const ListTile(
               contentPadding: EdgeInsets.zero,
               leading: Icon(Icons.warning_amber, color: Colors.orange),
               title: Text('Expiry & Low-Stock Alerts'),
               subtitle: Text('Real-time alerts for batches expiring in 30/60/90 days and products below reorder thresholds.'),
             ),
-            ListTile(
+            const ListTile(
               contentPadding: EdgeInsets.zero,
               leading: Icon(Icons.security, color: Colors.purple),
               title: Text('Compliance & Backup'),
