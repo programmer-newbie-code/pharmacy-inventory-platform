@@ -1,9 +1,9 @@
 import 'dart:convert';
 import 'package:drift/drift.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:http/http.dart' as http;
 import 'backup_service.dart';
 import 'database.dart';
+import 'drive_upload_client.dart';
 
 class GoogleAccountUser {
   GoogleAccountUser({
@@ -33,64 +33,69 @@ class GoogleDriveBackupResult {
   final String? errorMessage;
 }
 
+abstract interface class GoogleAccountAuthorizer {
+  Future<GoogleAccountUser?> signIn();
+  Future<void> signOut();
+}
+
+class GoogleSignInAuthorizer implements GoogleAccountAuthorizer {
+  GoogleSignInAuthorizer({GoogleSignIn? googleSignIn})
+      : _googleSignIn = googleSignIn ?? GoogleSignIn(scopes: const [
+          'email',
+          'https://www.googleapis.com/auth/drive.file',
+        ]);
+
+  final GoogleSignIn _googleSignIn;
+
+  @override
+  Future<GoogleAccountUser?> signIn() async {
+    final account = await _googleSignIn.signIn();
+    if (account == null) return null;
+    final accessToken = (await account.authentication).accessToken;
+    if (accessToken == null || accessToken.isEmpty) {
+      throw StateError('Google did not provide a Drive access token.');
+    }
+    return GoogleAccountUser(
+      email: account.email,
+      displayName: account.displayName ?? account.email,
+      accessToken: accessToken,
+    );
+  }
+
+  @override
+  Future<void> signOut() => _googleSignIn.signOut();
+}
+
 class GoogleDriveBackupService {
-  GoogleDriveBackupService(this._db, {http.Client? httpClient, GoogleSignIn? googleSignIn})
-      : _httpClient = httpClient ?? http.Client(),
-        _googleSignIn = googleSignIn ??
-            GoogleSignIn(
-              scopes: [
-                'email',
-                'https://www.googleapis.com/auth/drive.file',
-              ],
-            );
+  GoogleDriveBackupService(
+    this._db, {
+    DriveUploadClient? driveUploadClient,
+    GoogleAccountAuthorizer? accountAuthorizer,
+  })  : _driveUploadClient = driveUploadClient ?? HttpDriveUploadClient(),
+        _accountAuthorizer = accountAuthorizer ?? GoogleSignInAuthorizer();
 
   final AppDatabase _db;
-  final http.Client _httpClient;
-  final GoogleSignIn _googleSignIn;
+  final DriveUploadClient _driveUploadClient;
+  final GoogleAccountAuthorizer _accountAuthorizer;
 
   GoogleAccountUser? _currentUser;
   GoogleAccountUser? get currentUser => _currentUser;
 
   /// Signs in user with Google Account OAuth.
-  Future<GoogleAccountUser?> signInWithGoogle({bool isMock = false}) async {
-    if (isMock) {
-      _currentUser = GoogleAccountUser(
-        email: 'pharmacy.owner@gmail.com',
-        displayName: 'Pharmacy Owner',
-        accessToken: 'test_token',
-      );
-      return _currentUser;
-    }
-
-    try {
-      final account = await _googleSignIn.signIn();
-      if (account == null) return null;
-
-      final auth = await account.authentication;
-      final accessToken = auth.accessToken;
-      if (accessToken == null || accessToken.isEmpty) {
-        throw StateError('Google did not provide a Drive access token.');
-      }
-      _currentUser = GoogleAccountUser(
-        email: account.email,
-        displayName: account.displayName ?? account.email,
-        accessToken: accessToken,
-      );
-      return _currentUser;
-    } catch (_) {
-      rethrow;
-    }
+  Future<GoogleAccountUser?> signInWithGoogle() async {
+    _currentUser = await _accountAuthorizer.signIn();
+    return _currentUser;
   }
 
   /// Signs user out of Google Account.
   Future<void> signOut() async {
     try {
-      await _googleSignIn.signOut();
+      await _accountAuthorizer.signOut();
     } catch (_) {}
     _currentUser = null;
   }
 
-  /// Uploads SQLite JSON backup payload to Google Drive endpoint or simulated cloud storage.
+  /// Uploads a JSON backup payload to Google Drive.
   Future<GoogleDriveBackupResult> uploadBackupToDrive({
     required String accessToken,
     String? customFileName,
@@ -102,47 +107,13 @@ class GoogleDriveBackupService {
       final fileName = customFileName ??
           'pharmacy_backup_${DateTime.now().toIso8601String().replaceAll(':', '-')}.json';
 
-      // Keeps service tests offline. The UI never supplies this token.
-      if (accessToken == 'test_token') {
-        await _db.into(_db.backupLogs).insert(
-              BackupLogsCompanion.insert(
-                timestamp: Value(DateTime.now()),
-                destination: 'drive',
-                status: 'Success',
-                fileSize: Value(bytes.length),
-              ),
-            );
-        return GoogleDriveBackupResult(
-          success: true,
-          fileId: 'drive_file_${DateTime.now().millisecondsSinceEpoch}',
-          fileName: fileName,
-          fileSize: bytes.length,
-        );
-      }
+      final fileId = await _driveUploadClient.upload(
+        accessToken: accessToken,
+        fileName: fileName,
+        bytes: bytes,
+      );
 
-      // Real Google Drive API multipart upload call
-      final Uri uploadUri = Uri.parse(
-          'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart');
-      final metadata = jsonEncode({
-        'name': fileName,
-        'mimeType': 'application/json',
-      });
-
-      final request = http.MultipartRequest('POST', uploadUri)
-        ..headers['Authorization'] = 'Bearer $accessToken'
-        ..files.add(http.MultipartFile.fromString('metadata', metadata,
-            contentType: http.MediaType('application', 'json')))
-        ..files.add(http.MultipartFile.fromBytes('file', bytes,
-            contentType: http.MediaType('application', 'json')));
-
-      final streamedResponse = await _httpClient.send(request);
-      final response = await http.Response.fromStream(streamedResponse);
-
-      if (response.statusCode == 200 || response.statusCode == 201) {
-        final bodyData = jsonDecode(response.body) as Map<String, dynamic>;
-        final fileId = bodyData['id'] as String?;
-
-        await _db.into(_db.backupLogs).insert(
+      await _db.into(_db.backupLogs).insert(
               BackupLogsCompanion.insert(
                 timestamp: Value(DateTime.now()),
                 destination: 'drive',
@@ -151,30 +122,12 @@ class GoogleDriveBackupService {
               ),
             );
 
-        return GoogleDriveBackupResult(
+      return GoogleDriveBackupResult(
           success: true,
           fileId: fileId,
           fileName: fileName,
           fileSize: bytes.length,
-        );
-      } else {
-        await _db.into(_db.backupLogs).insert(
-              BackupLogsCompanion.insert(
-                timestamp: Value(DateTime.now()),
-                destination: 'drive',
-                status: 'Failed',
-                fileSize: const Value(0),
-              ),
-            );
-
-        return GoogleDriveBackupResult(
-          success: false,
-          fileId: null,
-          fileName: fileName,
-          fileSize: 0,
-          errorMessage: 'HTTP ${response.statusCode}: ${response.body}',
-        );
-      }
+      );
     } catch (e) {
       await _db.into(_db.backupLogs).insert(
             BackupLogsCompanion.insert(

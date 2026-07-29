@@ -1,6 +1,7 @@
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:pharmacy_inventory_platform/data/database.dart';
+import 'package:pharmacy_inventory_platform/data/drive_upload_client.dart';
 import 'package:pharmacy_inventory_platform/data/google_drive_backup_service.dart';
 
 void main() {
@@ -9,16 +10,20 @@ void main() {
 
   setUp(() {
     db = AppDatabase(NativeDatabase.memory());
-    service = GoogleDriveBackupService(db);
+    service = GoogleDriveBackupService(
+      db,
+      driveUploadClient: _SuccessfulDriveUploadClient(),
+      accountAuthorizer: _AccountAuthorizer(),
+    );
   });
 
   tearDown(() async {
     await db.close();
   });
 
-  test('uploadBackupToDrive succeeds with test token and logs event', () async {
+  test('uploadBackupToDrive delegates to the injected upload client and logs event', () async {
     final result = await service.uploadBackupToDrive(
-      accessToken: 'test_token',
+      accessToken: 'access-token',
       customFileName: 'test_backup.json',
     );
 
@@ -32,13 +37,34 @@ void main() {
     expect(logs.first.status, equals('Success'));
   });
 
-  test('signInWithGoogle signs in mock user and stores currentUser', () async {
-    final user = await service.signInWithGoogle(isMock: true);
+  test('signInWithGoogle stores the account returned by the authorizer', () async {
+    final user = await service.signInWithGoogle();
     expect(user, isNotNull);
-    expect(user?.email, equals('pharmacy.owner@gmail.com'));
+    expect(user?.email, equals('owner@example.com'));
     expect(service.currentUser, isNotNull);
 
     await service.signOut();
     expect(service.currentUser, isNull);
   });
+}
+
+class _SuccessfulDriveUploadClient implements DriveUploadClient {
+  @override
+  Future<String> upload({
+    required String accessToken,
+    required String fileName,
+    required List<int> bytes,
+  }) async => 'drive-file-id';
+}
+
+class _AccountAuthorizer implements GoogleAccountAuthorizer {
+  @override
+  Future<GoogleAccountUser?> signIn() async => GoogleAccountUser(
+        email: 'owner@example.com',
+        displayName: 'Owner',
+        accessToken: 'access-token',
+      );
+
+  @override
+  Future<void> signOut() async {}
 }
