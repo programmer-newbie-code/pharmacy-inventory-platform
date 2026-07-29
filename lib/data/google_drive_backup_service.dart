@@ -67,19 +67,18 @@ class GoogleDriveBackupService {
       if (account == null) return null;
 
       final auth = await account.authentication;
+      final accessToken = auth.accessToken;
+      if (accessToken == null || accessToken.isEmpty) {
+        throw StateError('Google did not provide a Drive access token.');
+      }
       _currentUser = GoogleAccountUser(
         email: account.email,
         displayName: account.displayName ?? account.email,
-        accessToken: auth.accessToken ?? 'mock_drive_token',
+        accessToken: accessToken,
       );
       return _currentUser;
-    } catch (e) {
-      _currentUser = GoogleAccountUser(
-        email: 'pharmacy.owner@gmail.com',
-        displayName: 'Pharmacy Owner',
-        accessToken: 'mock_drive_token',
-      );
-      return _currentUser;
+    } catch (_) {
+      rethrow;
     }
   }
 
@@ -103,8 +102,8 @@ class GoogleDriveBackupService {
       final fileName = customFileName ??
           'pharmacy_backup_${DateTime.now().toIso8601String().replaceAll(':', '-')}.json';
 
-      // If token starts with mock_ or test environment, simulate cloud upload
-      if (accessToken.startsWith('mock_') || accessToken == 'test_token') {
+      // Keeps service tests offline. The UI never supplies this token.
+      if (accessToken == 'test_token') {
         await _db.into(_db.backupLogs).insert(
               BackupLogsCompanion.insert(
                 timestamp: Value(DateTime.now()),
