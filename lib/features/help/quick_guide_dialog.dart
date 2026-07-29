@@ -22,9 +22,11 @@ class QuickGuideDialog extends StatelessWidget {
             FutureBuilder<PackageInfo>(
               future: PackageInfo.fromPlatform(),
               builder: (context, snapshot) {
-                final version = snapshot.data?.version ?? '1.2.0';
+                final versionStr = (snapshot.hasData && snapshot.data!.version.isNotEmpty)
+                    ? ' v${snapshot.data!.version}'
+                    : '';
                 return Text(
-                  'Welcome to Pharmacy Inventory Platform v$version!',
+                  'Welcome to Pharmacy Inventory Platform$versionStr!',
                   style: const TextStyle(fontWeight: FontWeight.bold),
                 );
               },
