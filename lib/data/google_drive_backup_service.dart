@@ -57,7 +57,7 @@ class GoogleDriveBackupService {
       _currentUser = GoogleAccountUser(
         email: 'pharmacy.owner@gmail.com',
         displayName: 'Pharmacy Owner',
-        accessToken: 'mock_drive_token',
+        accessToken: 'test_token',
       );
       return _currentUser;
     }
