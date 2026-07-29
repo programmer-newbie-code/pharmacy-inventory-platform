@@ -19,7 +19,7 @@ class QuickGuideDialog extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              'Welcome to Pharmacy Inventory Platform v1.0.0!',
+              'Welcome to Pharmacy Inventory Platform!',
               style: TextStyle(fontWeight: FontWeight.bold),
             ),
             SizedBox(height: 12),
