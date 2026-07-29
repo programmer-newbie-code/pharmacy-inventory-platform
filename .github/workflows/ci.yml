@@ -65,13 +65,21 @@ jobs:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Auto-Inject Tag Version into pubspec.yaml
+        with:
+          fetch-depth: 0
+      - name: Auto-Inject Dynamic Version into pubspec.yaml
         shell: pwsh
         run: |
           if ("${{ github.ref }}" -like "refs/tags/v*") {
             $ver = "${{ github.ref_name }}".TrimStart('v')
-            (Get-Content pubspec.yaml) -replace '^version: .*', "version: $ver+$env:GITHUB_RUN_NUMBER" | Set-Content pubspec.yaml
+          } else {
+            $ver = (git describe --tags --abbrev=0 2>$null)
+            if (-not $ver) { $ver = "v1.2.0" }
+            $ver = $ver.TrimStart('v')
           }
+          Write-Host "Injecting dynamic version: $ver+$env:GITHUB_RUN_NUMBER"
+          (Get-Content pubspec.yaml) -replace '^version: .*', "version: $ver+$env:GITHUB_RUN_NUMBER" | Set-Content pubspec.yaml
+          echo "BUILD_VER=$ver" >> $env:GITHUB_ENV
       - uses: subosito/flutter-action@v2
         with:
           channel: stable
@@ -80,15 +88,6 @@ jobs:
       - run: flutter pub get
       - name: Generate drift code
         run: dart run build_runner build --delete-conflicting-outputs
-      - name: Determine Build Version
-        shell: pwsh
-        run: |
-          if ("${{ github.ref }}" -like "refs/tags/v*") {
-            $ver = "${{ github.ref_name }}".TrimStart('v')
-          } else {
-            $ver = "1.2.0"
-          }
-          echo "BUILD_VER=$ver" >> $env:GITHUB_ENV
       - run: flutter build windows --release --build-name=${{ env.BUILD_VER }} --build-number=${{ github.run_number }}
       - name: Upload Windows Release Artifact
         uses: actions/upload-artifact@v4
@@ -100,13 +99,20 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Auto-Inject Tag Version into pubspec.yaml
+        with:
+          fetch-depth: 0
+      - name: Auto-Inject Dynamic Version into pubspec.yaml
         shell: bash
         run: |
           if [[ "${{ github.ref }}" == refs/tags/v* ]]; then
             VER="${GITHUB_REF_NAME#v}"
-            sed -i "s/^version: .*/version: ${VER}+${{ github.run_number }}/" pubspec.yaml
+          else
+            VER=$(git describe --tags --abbrev=0 2>/dev/null | sed 's/^v//')
+            if [ -z "$VER" ]; then VER="1.2.0"; fi
           fi
+          echo "Injecting dynamic version: ${VER}+${{ github.run_number }}"
+          sed -i "s/^version: .*/version: ${VER}+${{ github.run_number }}/" pubspec.yaml
+          echo "BUILD_VER=$VER" >> $GITHUB_ENV
       - uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
@@ -117,15 +123,6 @@ jobs:
       - run: flutter pub get
       - name: Generate drift code
         run: dart run build_runner build --delete-conflicting-outputs
-      - name: Determine Build Version
-        shell: bash
-        run: |
-          if [[ "${{ github.ref }}" == refs/tags/v* ]]; then
-            VER="${GITHUB_REF_NAME#v}"
-          else
-            VER="1.2.0"
-          fi
-          echo "BUILD_VER=$VER" >> $GITHUB_ENV
       - run: flutter build apk --release --build-name=${{ env.BUILD_VER }} --build-number=${{ github.run_number }}
       - name: Upload APK Release Artifact
         uses: actions/upload-artifact@v4
