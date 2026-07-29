@@ -109,10 +109,20 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
 
     try {
       final driveService = ref.read(googleDriveBackupServiceProvider);
-      final result = await driveService.uploadBackupToDrive(accessToken: 'mock_drive_token');
+      final user = driveService.currentUser ?? await driveService.signInWithGoogle();
+      if (user == null) {
+        setState(() {
+          _statusMessage = 'Google sign-in was cancelled.';
+        });
+        return;
+      }
+
+      final result = await driveService.uploadBackupToDrive(
+        accessToken: user.accessToken,
+      );
       setState(() {
         _statusMessage = result.success
-            ? 'Cloud Backup uploaded to Google Drive: ${result.fileName} (${(result.fileSize / 1024).toStringAsFixed(1)} KB)'
+            ? 'Backup uploaded to Google Drive (${user.email}): ${result.fileName} (${(result.fileSize / 1024).toStringAsFixed(1)} KB)'
             : 'Cloud Backup failed: ${result.errorMessage}';
       });
       ref.invalidate(backupLogsFutureProvider);

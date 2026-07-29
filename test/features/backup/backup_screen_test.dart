@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:pharmacy_inventory_platform/core/providers.dart';
 import 'package:pharmacy_inventory_platform/data/database.dart';
+import 'package:pharmacy_inventory_platform/data/google_drive_backup_service.dart';
 import 'package:pharmacy_inventory_platform/features/backup/backup_screen.dart';
 import 'package:pharmacy_inventory_platform/l10n/app_localizations.dart';
 
@@ -11,8 +12,11 @@ void main() {
   testWidgets('renders BackupScreen with localized title and buttons', (tester) async {
     final db = AppDatabase(NativeDatabase.memory());
     addTearDown(db.close);
+    final driveService = GoogleDriveBackupService(db);
+    await driveService.signInWithGoogle(isMock: true);
     final container = ProviderContainer(overrides: [
       databaseProvider.overrideWithValue(db),
+      googleDriveBackupServiceProvider.overrideWithValue(driveService),
     ]);
     addTearDown(container.dispose);
 
@@ -38,6 +42,6 @@ void main() {
     await tester.tap(find.byKey(const Key('googleDriveBackupBtn')));
     await tester.pumpAndSettle();
 
-    expect(find.textContaining('Cloud Backup uploaded to Google Drive'), findsOneWidget);
+    expect(find.textContaining('Backup uploaded to Google Drive'), findsOneWidget);
   });
 }
