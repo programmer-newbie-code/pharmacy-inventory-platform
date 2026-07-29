@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
+import '../../core/app_theme.dart';
 import '../../core/providers.dart';
 import '../../data/report_repository.dart';
 import '../../l10n/app_localizations.dart';
@@ -45,7 +46,7 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Excel report saved to: ${file.path}'),
-            backgroundColor: Colors.green,
+            backgroundColor: AppTheme.successColor,
             duration: const Duration(seconds: 4),
           ),
         );
@@ -55,7 +56,7 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Export error: $err'),
-            backgroundColor: Colors.red,
+            backgroundColor: AppTheme.dangerColor,
           ),
         );
       }
@@ -72,93 +73,92 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Laporan Penjualan & Keuangan'),
+        title: Text(l10n.salesReportTitle),
       ),
       body: reportAsync.when(
         data: (summary) {
-      final marginPct = summary.totalRevenue > 0
-          ? (summary.grossProfit / summary.totalRevenue) * 100
-          : 0.0;
+          final marginPct = summary.totalRevenue > 0
+              ? (summary.grossProfit / summary.totalRevenue) * 100
+              : 0.0;
 
-      return SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Card(
-              elevation: 2,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'Ringkasan Bulan Ini',
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          return SingleChildScrollView(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Card(
+                  child: Padding(
+                    padding: const EdgeInsets.all(20),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          l10n.monthlySummary,
+                          style: Theme.of(context).textTheme.headlineSmall,
+                        ),
+                        const SizedBox(height: 20),
+                        _buildKpiRow(l10n.totalTransactions, '${summary.totalTransactions}', AppTheme.infoColor),
+                        const Divider(height: 24),
+                        _buildKpiRow(l10n.totalRevenue, currencyFormat.format(summary.totalRevenue), AppTheme.successColor),
+                        const Divider(height: 24),
+                        _buildKpiRow(l10n.cogs, currencyFormat.format(summary.totalCostOfGoods), AppTheme.warningColor),
+                        const Divider(height: 24),
+                        _buildKpiRow(l10n.grossProfit, currencyFormat.format(summary.grossProfit), Colors.purple),
+                        const Divider(height: 24),
+                        _buildKpiRow(l10n.grossMargin, '${marginPct.toStringAsFixed(1)}%', AppTheme.primaryColor),
+                      ],
                     ),
-                    const SizedBox(height: 16),
-                    _buildKpiRow('Total Transaksi', '${summary.totalTransactions} Transaksi', Colors.blue),
-                    const Divider(height: 24),
-                    _buildKpiRow('Total Pendapatan (Revenue)', currencyFormat.format(summary.totalRevenue), Colors.green),
-                    const Divider(height: 24),
-                    _buildKpiRow('Harga Pokok Penjualan (COGS)', currencyFormat.format(summary.totalCostOfGoods), Colors.orange),
-                    const Divider(height: 24),
-                    _buildKpiRow('Laba Kotor (Gross Profit)', currencyFormat.format(summary.grossProfit), Colors.purple),
-                    const Divider(height: 24),
-                    _buildKpiRow('Margin Kotor (%)', '${marginPct.toStringAsFixed(1)}%', Colors.teal),
-                  ],
+                  ),
                 ),
-              ),
+                const SizedBox(height: 16),
+                ElevatedButton.icon(
+                  key: const Key('navAnalyticsBtn'),
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    backgroundColor: AppTheme.secondaryColor,
+                    foregroundColor: Colors.white,
+                  ),
+                  icon: const Icon(Icons.analytics),
+                  label: Text(l10n.salesAnalytics),
+                  onPressed: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(builder: (_) => const SalesAnalyticsScreen()),
+                    );
+                  },
+                ),
+                const SizedBox(height: 12),
+                ElevatedButton.icon(
+                  key: const Key('exportExcelBtn'),
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    backgroundColor: AppTheme.primaryColor,
+                    foregroundColor: Colors.white,
+                  ),
+                  icon: _isExporting
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                        )
+                      : const Icon(Icons.table_chart),
+                  label: Text(_isExporting ? 'Exporting...' : l10n.exportExcelButton),
+                  onPressed: _isExporting ? null : () => _exportExcel(summary),
+                ),
+              ],
             ),
-            ElevatedButton.icon(
-              key: const Key('navAnalyticsBtn'),
-              style: ElevatedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                backgroundColor: Colors.indigo,
-                foregroundColor: Colors.white,
-              ),
-              icon: const Icon(Icons.analytics),
-              label: const Text('Sales Analytics & Executive Insights'),
-              onPressed: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(builder: (_) => const SalesAnalyticsScreen()),
-                );
-              },
-            ),
-            const SizedBox(height: 12),
-            ElevatedButton.icon(
-              key: const Key('exportExcelBtn'),
-              style: ElevatedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                backgroundColor: Colors.teal,
-                foregroundColor: Colors.white,
-              ),
-              icon: _isExporting
-                  ? const SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
-                    )
-                  : const Icon(Icons.table_chart),
-              label: Text(_isExporting ? 'Exporting...' : l10n.exportExcelButton),
-              onPressed: _isExporting ? null : () => _exportExcel(summary),
-            ),
-          ],
-        ),
-      );
-    },
-    loading: () => const Center(child: CircularProgressIndicator()),
-    error: (err, stack) => Center(child: Text('Error: $err')),
-  ),
-);
-}
+          );
+        },
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (err, stack) => Center(child: Text('Error: $err')),
+      ),
+    );
+  }
 
-Widget _buildKpiRow(String title, String value, Color color) {
-return Row(
-  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+  Widget _buildKpiRow(String title, String value, Color color) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(title, style: const TextStyle(fontSize: 15, color: Colors.black87)),
+        Text(title, style: const TextStyle(fontSize: 14, color: Color(0xFF333333))),
         Text(
           value,
           style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: color),

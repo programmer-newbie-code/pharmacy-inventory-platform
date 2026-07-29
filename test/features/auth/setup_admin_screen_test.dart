@@ -32,7 +32,10 @@ void main() {
 
     await tester.enterText(find.byKey(const Key('setupAdminUsername')), 'budi');
     await tester.enterText(find.byKey(const Key('setupAdminPassword')), 'secret123');
-    await tester.tap(find.byKey(const Key('setupAdminSubmit')));
+    await tester.enterText(find.byKey(const Key('setupAdminConfirmPassword')), 'secret123');
+    final submitBtn = find.byKey(const Key('setupAdminSubmit'));
+    await tester.ensureVisible(submitBtn);
+    await tester.tap(submitBtn);
     await tester.pumpAndSettle();
 
     expect(container.read(authSessionProvider)?.username, 'budi');

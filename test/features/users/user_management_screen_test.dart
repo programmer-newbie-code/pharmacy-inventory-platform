@@ -36,7 +36,7 @@ void main() {
 
     await tester.pumpAndSettle();
 
-    expect(find.text('Manajemen Karyawan & Pengguna'), findsOneWidget);
+    expect(find.text('Manajemen Karyawan'), findsOneWidget);
     expect(find.text('admin_test'), findsOneWidget);
 
     // 1. Test Add User Dialog

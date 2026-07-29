@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../core/app_theme.dart';
 import '../../core/providers.dart';
 import '../../data/database.dart';
+import '../../l10n/app_localizations.dart';
 import 'add_product_dialog.dart';
 import 'add_stock_batch_dialog.dart';
 
@@ -73,6 +75,7 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen> {
   }
 
   Future<void> _openImportCsvDialog() async {
+    final l10n = AppLocalizations.of(context)!;
     final csvController = TextEditingController(
       text: 'Barcode,InternalCode,ProductName,ActiveIngredient,BaseUnit,PurchaseUnit,UnitsPerPurchaseUnit,CostPrice,MarginPct,ReorderThreshold,Category,IsControlled\n'
             '899123456701,P001,Amoxicillin 500mg,Amoxicillin,tablet,box,100,500,20,50,Obat Keras,true\n'
@@ -82,14 +85,14 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen> {
     final importContent = await showDialog<String>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Import Inventory CSV'),
+        title: Text(l10n.importCsvTitle),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'Paste or edit CSV spreadsheet rows below:',
-              style: TextStyle(fontSize: 12, color: Colors.grey),
+            Text(
+              l10n.importCsvHint,
+              style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
             ),
             const SizedBox(height: 8),
             TextField(
@@ -106,12 +109,12 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text('Cancel'),
+            child: Text(l10n.cancelButton),
           ),
           ElevatedButton(
             key: const Key('submitCsvImportBtn'),
             onPressed: () => Navigator.of(ctx).pop(csvController.text),
-            child: const Text('Import Products'),
+            child: Text(l10n.importProducts),
           ),
         ],
       ),
@@ -126,9 +129,9 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              'Imported ${result.successCount} products successfully (${result.failedCount} failed).',
+              l10n.importSuccess(result.successCount, result.failedCount),
             ),
-            backgroundColor: result.failedCount == 0 ? Colors.green : Colors.orange,
+            backgroundColor: result.failedCount == 0 ? AppTheme.successColor : AppTheme.warningColor,
           ),
         );
       }
@@ -137,14 +140,16 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Inventory Catalog'),
+        title: Text(l10n.inventoryTitle),
         actions: [
           IconButton(
             key: const Key('importCsvBtn'),
-            icon: const Icon(Icons.file_upload),
-            tooltip: 'Import Inventory CSV',
+            icon: const Icon(Icons.file_upload_outlined),
+            tooltip: l10n.importCsvButton,
             onPressed: _openImportCsvDialog,
           ),
           IconButton(
@@ -157,12 +162,12 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen> {
       body: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.all(8.0),
+            padding: const EdgeInsets.all(12.0),
             child: TextField(
               key: const Key('productSearchInput'),
               controller: _searchController,
               decoration: InputDecoration(
-                labelText: 'Search product by name or barcode',
+                labelText: l10n.searchProductHint,
                 prefixIcon: const Icon(Icons.search),
                 suffixIcon: IconButton(
                   icon: const Icon(Icons.clear),
@@ -179,41 +184,95 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen> {
             child: _isLoading
                 ? const Center(child: CircularProgressIndicator())
                 : _products.isEmpty
-                    ? const Center(child: Text('No products found.'))
+                    ? Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.inventory_2_outlined, size: 64, color: Colors.grey.shade400),
+                            const SizedBox(height: 12),
+                            Text(
+                              l10n.noProductsFound,
+                              style: TextStyle(color: Colors.grey.shade600, fontSize: 16),
+                            ),
+                          ],
+                        ),
+                      )
                     : ListView.builder(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                         itemCount: _products.length,
                         itemBuilder: (ctx, idx) {
                           final prod = _products[idx];
                           final stock = _stockMap[prod.id] ?? 0;
                           final isLow = stock <= prod.reorderThreshold;
 
-                          return ListTile(
-                            key: Key('productTile_${prod.id}'),
-                            title: Text(
-                              prod.name,
-                              style: const TextStyle(fontWeight: FontWeight.bold),
-                            ),
-                            subtitle: Text(
-                              '${prod.barcode} | ${prod.category} | ${prod.baseUnit} | Stock: $stock ${prod.baseUnit}s',
-                            ),
-                            trailing: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                if (prod.isControlled)
-                                  const Chip(
-                                    label: Text('Obat Keras'),
-                                    backgroundColor: Colors.redAccent,
-                                    labelStyle: TextStyle(color: Colors.white, fontSize: 10),
+                          return Card(
+                            margin: const EdgeInsets.only(bottom: 8),
+                            child: ListTile(
+                              key: Key('productTile_${prod.id}'),
+                              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                              title: Row(
+                                children: [
+                                  Expanded(
+                                    child: Text(
+                                      prod.name,
+                                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                                    ),
                                   ),
-                                if (isLow)
-                                  const Icon(Icons.warning, color: Colors.orange),
-                                IconButton(
-                                  key: Key('addBatchBtn_${prod.id}'),
-                                  icon: const Icon(Icons.add_shopping_cart),
-                                  tooltip: 'Receive Stock',
-                                  onPressed: () => _openAddBatch(prod),
+                                  if (prod.isControlled)
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                      decoration: BoxDecoration(
+                                        color: AppTheme.golonganKeras.withAlpha(25),
+                                        borderRadius: BorderRadius.circular(6),
+                                        border: Border.all(color: AppTheme.golonganKeras.withAlpha(80)),
+                                      ),
+                                      child: Text(
+                                        l10n.obatKeras,
+                                        style: const TextStyle(
+                                          color: AppTheme.golonganKeras,
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    ),
+                                ],
+                              ),
+                              subtitle: Padding(
+                                padding: const EdgeInsets.only(top: 6),
+                                child: Wrap(
+                                  spacing: 8,
+                                  runSpacing: 4,
+                                  children: [
+                                    Text(prod.barcode, style: TextStyle(color: Colors.grey.shade700)),
+                                    Text('•', style: TextStyle(color: Colors.grey.shade400)),
+                                    Text(prod.category, style: TextStyle(color: Colors.grey.shade700)),
+                                    Text('•', style: TextStyle(color: Colors.grey.shade400)),
+                                    Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Text('${l10n.stockLabel}: ', style: const TextStyle(fontWeight: FontWeight.w500)),
+                                        Text(
+                                          '$stock ${prod.baseUnit}',
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            color: isLow ? AppTheme.warningColor : AppTheme.successColor,
+                                          ),
+                                        ),
+                                        if (isLow) ...[
+                                          const SizedBox(width: 4),
+                                          const Icon(Icons.warning_amber_rounded, size: 16, color: AppTheme.warningColor),
+                                        ],
+                                      ],
+                                    ),
+                                  ],
                                 ),
-                              ],
+                              ),
+                              trailing: IconButton(
+                                key: Key('addBatchBtn_${prod.id}'),
+                                icon: const Icon(Icons.add_shopping_cart, color: AppTheme.primaryColor),
+                                tooltip: l10n.receiveStock,
+                                onPressed: () => _openAddBatch(prod),
+                              ),
                             ),
                           );
                         },
@@ -225,7 +284,7 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen> {
         key: const Key('addProductFab'),
         onPressed: _openAddProduct,
         icon: const Icon(Icons.add),
-        label: const Text('Add Product'),
+        label: Text(l10n.addProductButton),
       ),
     );
   }
