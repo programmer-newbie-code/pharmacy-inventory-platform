@@ -1,6 +1,7 @@
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:pharmacy_inventory_platform/data/audit_logger.dart';
+import 'package:pharmacy_inventory_platform/data/cashier_shift_repository.dart';
 import 'package:pharmacy_inventory_platform/data/database.dart';
 import 'package:pharmacy_inventory_platform/data/product_repository.dart';
 import 'package:pharmacy_inventory_platform/data/sale_repository.dart';
@@ -12,6 +13,7 @@ void main() {
   late ProductRepository productRepo;
   late StockBatchRepository batchRepo;
   late SaleRepository saleRepo;
+  late CashierShiftRepository shiftRepo;
   late Product normalProduct;
   late Product controlledProduct;
 
@@ -21,6 +23,8 @@ void main() {
     productRepo = ProductRepository(db, auditLogger: auditLogger);
     batchRepo = StockBatchRepository(db, auditLogger: auditLogger);
     saleRepo = SaleRepository(db, auditLogger: auditLogger);
+    shiftRepo = CashierShiftRepository(db);
+    await shiftRepo.openShift(cashierId: 1, openingBalance: 0);
 
     final normalId = await productRepo.createProduct(
       barcode: '8991111111111',
@@ -109,6 +113,20 @@ void main() {
     final batchesAfter = await batchRepo.listBatchesForProduct(normalProduct.id);
     expect(batchesAfter.first.qtyRemaining, equals(0)); // Batch A fully depleted
     expect(batchesAfter.last.qtyRemaining, equals(45)); // Batch B reduced by 5
+  });
+
+  test('throws ShiftRequiredException when checkout has no active shift', () async {
+    final shift = await shiftRepo.getActiveShift(1);
+    await shiftRepo.closeShift(shiftId: shift!.id, actualCash: 0);
+
+    expect(
+      () => saleRepo.createSaleTransaction(
+        cashierId: 1,
+        items: [CartItemInput(product: normalProduct, qtyBaseUnit: 1, unitPrice: 250)],
+        paymentMethod: 'Cash',
+      ),
+      throwsA(isA<ShiftRequiredException>()),
+    );
   });
 
   test('throws MinSellPriceException when selling below cost price', () async {

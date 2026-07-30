@@ -1,6 +1,8 @@
+import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:pharmacy_inventory_platform/data/database.dart';
+import 'package:pharmacy_inventory_platform/data/cashier_shift_repository.dart';
 import 'package:pharmacy_inventory_platform/data/product_repository.dart';
 import 'package:pharmacy_inventory_platform/data/report_repository.dart';
 import 'package:pharmacy_inventory_platform/data/sale_repository.dart';
@@ -13,12 +15,21 @@ void main() {
   late SaleRepository saleRepo;
   late ReportRepository reportRepo;
 
-  setUp(() {
+  setUp(() async {
     db = AppDatabase(NativeDatabase.memory());
     productRepo = ProductRepository(db);
     batchRepo = StockBatchRepository(db);
     saleRepo = SaleRepository(db);
     reportRepo = ReportRepository(db);
+    await db.into(db.users).insert(
+          UsersCompanion.insert(
+            id: const Value(1),
+            username: 'cashier',
+            passwordHash: 'hash',
+            role: 'kasir',
+          ),
+        );
+    await CashierShiftRepository(db).openShift(cashierId: 1, openingBalance: 0);
   });
 
   tearDown(() async {

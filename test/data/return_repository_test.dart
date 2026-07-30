@@ -23,6 +23,13 @@ void main() {
             role: 'kasir',
           ),
         );
+    await db.into(db.cashierShifts).insert(
+          CashierShiftsCompanion.insert(
+            cashierId: 1,
+            openingBalance: 0,
+            status: 'open',
+          ),
+        );
     await db.into(db.products).insert(
           ProductsCompanion.insert(
             id: const Value(10),
