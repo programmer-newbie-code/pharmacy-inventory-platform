@@ -95,6 +95,7 @@ class PurchaseOrderRepository {
     required int poId,
     required String batchNoPrefix,
     required DateTime expiryDate,
+    Map<int, int>? quantitiesByItemId,
   }) async {
     final now = DateTime.now();
 
@@ -111,21 +112,35 @@ class PurchaseOrderRepository {
             ..where((tbl) => tbl.purchaseOrderId.equals(poId)))
           .get();
 
-      // Update PO items qtyReceived
+      // Receive only the delivered quantity for each line. Omitting a map keeps
+      // the existing full-delivery behavior for callers that receive all lines.
       for (final item in poItems) {
-        final updatedItem = item.copyWith(qtyReceived: item.qtyOrdered);
+        final remaining = item.qtyOrdered - item.qtyReceived;
+        final delivered = quantitiesByItemId == null
+            ? remaining
+            : quantitiesByItemId[item.id] ?? 0;
+        if (delivered < 0 || delivered > remaining) {
+          throw ArgumentError.value(
+            delivered,
+            'quantitiesByItemId',
+            'must be between zero and the unreceived quantity',
+          );
+        }
+        if (delivered == 0) continue;
+
+        final updatedItem = item.copyWith(qtyReceived: item.qtyReceived + delivered);
         await _db.update(_db.purchaseOrderItems).replace(updatedItem);
 
         // Auto-create StockBatch in database
-        final batchNo = '$batchNoPrefix-${item.productId}';
+        final batchNo = '$batchNoPrefix-${item.productId}-${updatedItem.qtyReceived}';
         await _db.into(_db.stockBatches).insert(
               StockBatchesCompanion.insert(
                 productId: item.productId,
                 batchNo: batchNo,
                 receivedDate: now,
                 expiryDate: expiryDate,
-                qtyReceived: item.qtyOrdered,
-                qtyRemaining: item.qtyOrdered,
+                qtyReceived: delivered,
+                qtyRemaining: delivered,
                 costPricePerBaseUnit: item.unitCost,
                 supplier: supplier.name,
                 createdBy: po.createdBy,
@@ -134,10 +149,17 @@ class PurchaseOrderRepository {
             );
       }
 
-      // Update PO status
+      final updatedItems = await (_db.select(_db.purchaseOrderItems)
+            ..where((table) => table.purchaseOrderId.equals(poId)))
+          .get();
+      final isComplete = updatedItems.every(
+        (item) => item.qtyReceived >= item.qtyOrdered,
+      );
+
+      // Keep a partially received PO open until every ordered line arrives.
       final updatedPo = po.copyWith(
-        status: 'received',
-        receivedAt: Value(now),
+        status: isComplete ? 'received' : 'sent',
+        receivedAt: isComplete ? Value(now) : const Value.absent(),
       );
       await _db.update(_db.purchaseOrders).replace(updatedPo);
 
