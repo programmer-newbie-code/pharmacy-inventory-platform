@@ -107,4 +107,46 @@ void main() {
     final invalidBatch = await batchRepo.deductBatchStock(99999, 10);
     expect(invalidBatch, isFalse);
   });
+
+  test('adjustStock records the correction and rejects negative stock', () async {
+    final batchId = await batchRepo.createStockBatch(
+      productId: productId,
+      batchNo: 'BATCH-ADJUST',
+      receivedDate: DateTime(2026, 7, 1),
+      expiryDate: DateTime(2027, 1, 1),
+      qtyReceivedBaseUnit: 10,
+      costPricePerBaseUnit: 500,
+      supplier: 'PT Pharos',
+      createdBy: 'admin',
+    );
+
+    expect(
+      await batchRepo.adjustStock(
+        batchId: batchId,
+        delta: -4,
+        reason: 'Damaged packaging',
+        userId: 1,
+      ),
+      isTrue,
+    );
+    expect(await batchRepo.getTotalStockForProduct(productId), 6);
+
+    final adjustments = await db.select(db.stockAdjustments).get();
+    expect(adjustments, hasLength(1));
+    expect(adjustments.single.quantityDelta, -4);
+    expect(adjustments.single.reason, 'Damaged packaging');
+    expect(adjustments.single.createdBy, '1');
+
+    expect(
+      await batchRepo.adjustStock(
+        batchId: batchId,
+        delta: -7,
+        reason: 'Cannot go below zero',
+        userId: 1,
+      ),
+      isFalse,
+    );
+    expect(await batchRepo.getTotalStockForProduct(productId), 6);
+    expect(await db.select(db.stockAdjustments).get(), hasLength(1));
+  });
 }
