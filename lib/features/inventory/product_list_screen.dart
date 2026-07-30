@@ -8,6 +8,7 @@ import '../../l10n/app_localizations.dart';
 import '../auth/auth_session.dart';
 import 'add_product_dialog.dart';
 import 'add_stock_batch_dialog.dart';
+import 'csv_import_dialog.dart';
 
 class ProductListScreen extends ConsumerStatefulWidget {
   const ProductListScreen({super.key});
@@ -76,66 +77,12 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen> {
   }
 
   Future<void> _openImportCsvDialog() async {
-    final l10n = AppLocalizations.of(context)!;
-    final csvController = TextEditingController(
-      text: 'Barcode,InternalCode,ProductName,ActiveIngredient,BaseUnit,PurchaseUnit,UnitsPerPurchaseUnit,CostPrice,MarginPct,ReorderThreshold,Category,IsControlled\n'
-            '899123456701,P001,Amoxicillin 500mg,Amoxicillin,tablet,box,100,500,20,50,Obat Keras,true\n'
-            '899123456702,P002,Paracetamol 500mg,Paracetamol,tablet,box,100,200,25,30,Obat Bebas,false',
-    );
-
-    final importContent = await showDialog<String>(
+    final imported = await showDialog<bool>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(l10n.importCsvTitle),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              l10n.importCsvHint,
-              style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
-            ),
-            const SizedBox(height: 8),
-            TextField(
-              key: const Key('csvTextInput'),
-              controller: csvController,
-              maxLines: 6,
-              decoration: const InputDecoration(
-                border: OutlineInputBorder(),
-                hintText: 'Barcode,InternalCode,ProductName,...',
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(),
-            child: Text(l10n.cancelButton),
-          ),
-          ElevatedButton(
-            key: const Key('submitCsvImportBtn'),
-            onPressed: () => Navigator.of(ctx).pop(csvController.text),
-            child: Text(l10n.importProducts),
-          ),
-        ],
-      ),
+      builder: (ctx) => const CsvImportDialog(),
     );
-
-    if (importContent != null && importContent.isNotEmpty) {
-      final csvService = ref.read(csvImportServiceProvider);
-      final result = await csvService.importProductsFromCsv(importContent);
+    if (imported == true) {
       _fetchProducts();
-
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              l10n.importSuccess(result.successCount, result.failedCount),
-            ),
-            backgroundColor: result.failedCount == 0 ? AppTheme.successColor : AppTheme.warningColor,
-          ),
-        );
-      }
     }
   }
 
