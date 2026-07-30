@@ -82,8 +82,63 @@ void main() {
     // Check that a new StockBatch was auto-created in database
     final batches = await (db.select(db.stockBatches)..where((b) => b.productId.equals(10))).get();
     expect(batches, hasLength(1));
-    expect(batches.first.batchNo, equals('BATCH-2026-10'));
+    expect(batches.first.batchNo, equals('BATCH-2026-10-100'));
     expect(batches.first.qtyRemaining, equals(100));
     expect(batches.first.supplier, equals('PT Biofarma'));
+  });
+
+  test('partial receipt creates batches only for delivered lines and keeps PO open', () async {
+    await db.into(db.products).insert(
+          ProductsCompanion.insert(
+            id: const Value(11),
+            barcode: '899123456702',
+            internalCode: 'P002',
+            name: 'Vitamin D 1000IU',
+            activeIngredient: 'Cholecalciferol',
+            ingredientPct: 100,
+            baseUnit: 'tablet',
+            purchaseUnit: 'bottle',
+            unitsPerPurchaseUnit: 30,
+            costPricePerBaseUnit: 700,
+            marginPct: 50,
+            reorderThreshold: 50,
+            category: 'Vitamin',
+            createdBy: 'admin',
+          ),
+        );
+    final supplier = await supplierRepo.createSupplier(name: 'PT Biofarma');
+    final po = await poRepo.createPurchaseOrder(
+      supplierId: supplier.id,
+      createdBy: 'admin',
+      items: [
+        POItemInput(productId: 10, qtyOrdered: 100, unitCost: 500),
+        POItemInput(productId: 11, qtyOrdered: 40, unitCost: 700),
+      ],
+    );
+    final items = await poRepo.getPOItems(po.id);
+
+    final partial = await poRepo.receivePurchaseOrder(
+      poId: po.id,
+      batchNoPrefix: 'PARTIAL',
+      expiryDate: DateTime(2027, 1, 1),
+      quantitiesByItemId: {items.first.id: 25},
+    );
+
+    expect(partial.status, 'sent');
+    expect(partial.receivedAt, isNull);
+    final afterPartial = await poRepo.getPOItems(po.id);
+    expect(afterPartial.first.qtyReceived, 25);
+    expect(afterPartial.last.qtyReceived, 0);
+    expect(await (db.select(db.stockBatches)..where((batch) => batch.productId.equals(10))).get(), hasLength(1));
+    expect(await (db.select(db.stockBatches)..where((batch) => batch.productId.equals(11))).get(), isEmpty);
+
+    final complete = await poRepo.receivePurchaseOrder(
+      poId: po.id,
+      batchNoPrefix: 'COMPLETE',
+      expiryDate: DateTime(2027, 1, 1),
+    );
+    expect(complete.status, 'received');
+    final batches = await (db.select(db.stockBatches)..where((batch) => batch.productId.isIn([10, 11]))).get();
+    expect(batches, hasLength(3));
   });
 }
