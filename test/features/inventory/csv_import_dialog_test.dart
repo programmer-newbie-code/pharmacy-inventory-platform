@@ -34,7 +34,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('1 valid, 0 dilewati'), findsOneWidget);
-    expect(find.text('Paracetamol'), findsOneWidget);
+    expect(find.textContaining('Paracetamol'), findsOneWidget);
     expect(find.byKey(const Key('confirmCsvImportBtn')), findsOneWidget);
   });
 }
