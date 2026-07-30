@@ -46,4 +46,3 @@ class AuthSession extends Notifier<User?> {
 }
 
 final authSessionProvider = NotifierProvider<AuthSession, User?>(AuthSession.new);
-import 'dart:async';
