@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/app_theme.dart';
 import '../../core/providers.dart';
 import '../../data/database.dart';
+import '../../data/product_repository.dart';
 import '../../l10n/app_localizations.dart';
 import '../auth/auth_session.dart';
 import 'add_product_dialog.dart';
