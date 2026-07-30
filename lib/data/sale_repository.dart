@@ -13,6 +13,14 @@ class MinSellPriceException implements Exception {
   String toString() => message;
 }
 
+class PriceOverrideAuthorizationException implements Exception {
+  PriceOverrideAuthorizationException(this.message);
+  final String message;
+
+  @override
+  String toString() => message;
+}
+
 class PrescriptionRequiredException implements Exception {
   PrescriptionRequiredException(this.message);
   final String message;
@@ -67,6 +75,7 @@ class SaleRepository {
     String? doctorName,
     String? prescriptionPhotoPath,
     bool hasPrescription = false,
+    String? priceOverrideReason,
   }) async {
     if (items.isEmpty) {
       throw ArgumentError('Cart items cannot be empty.');
@@ -80,14 +89,27 @@ class SaleRepository {
       throw ShiftRequiredException('An active cashier shift is required before checkout.');
     }
 
-    // 1. Validation: Minimum sell price & Controlled Drug prescription requirement
-    for (final item in items) {
-      if (item.unitPrice < item.product.costPricePerBaseUnit) {
+    final belowCostItems = items
+        .where((item) => item.unitPrice < item.product.costPricePerBaseUnit)
+        .toList();
+    if (belowCostItems.isNotEmpty) {
+      if (priceOverrideReason == null || priceOverrideReason.trim().isEmpty) {
         throw MinSellPriceException(
-          'Selling price for ${item.product.name} (Rp ${item.unitPrice}) is below cost price (Rp ${item.product.costPricePerBaseUnit}).',
+          'A documented reason is required to sell below cost price.',
         );
       }
+      final cashier = await (_db.select(_db.users)
+            ..where((user) => user.id.equals(cashierId)))
+          .getSingleOrNull();
+      if (cashier?.role.trim().toLowerCase() != 'admin') {
+        throw PriceOverrideAuthorizationException(
+          'Only an administrator can authorize a below-cost sale.',
+        );
+      }
+    }
 
+    // 1. Validation: minimum sell price and controlled-drug prescription.
+    for (final item in items) {
       if (item.product.isControlled && !hasPrescription) {
         throw PrescriptionRequiredException(
           '${item.product.name} is a controlled drug. Prescription details and doctor name are required.',
@@ -181,6 +203,9 @@ class SaleRepository {
             'txnNo': txnNo,
             'totalAmount': totalAmount,
             'itemCount': items.length,
+            if (belowCostItems.isNotEmpty) 'priceOverrideReason': priceOverrideReason!.trim(),
+            if (belowCostItems.isNotEmpty)
+              'belowCostProducts': belowCostItems.map((item) => item.product.id).toList(),
           }),
           userId: cashierId,
         );
