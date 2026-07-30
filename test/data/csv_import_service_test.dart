@@ -43,4 +43,14 @@ void main() {
     expect(result.successCount, equals(0));
     expect(result.errors, contains('CSV file is empty.'));
   });
+
+  test('rejects CSV missing required columns without importing products', () async {
+    const csvData = 'Barcode,ProductName\n899123456701,Paracetamol';
+
+    final result = await service.importProductsFromCsv(csvData);
+
+    expect(result.successCount, 0);
+    expect(result.errors.single, contains('internalcode'));
+    expect(await productRepo.listProducts(), isEmpty);
+  });
 }
