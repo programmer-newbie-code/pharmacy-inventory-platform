@@ -20,13 +20,16 @@ class PharmacyInventoryApp extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final locale = ref.watch(localeProvider);
 
-    return MaterialApp(
-      title: 'Pharmacy Inventory Platform',
-      theme: AppTheme.lightTheme,
-      localizationsDelegates: AppLocalizations.localizationsDelegates,
-      supportedLocales: AppLocalizations.supportedLocales,
-      locale: locale,
-      home: const AuthGate(),
+    return Listener(
+      onPointerDown: (_) => ref.read(authSessionProvider.notifier).recordActivity(),
+      child: MaterialApp(
+        title: 'Pharmacy Inventory Platform',
+        theme: AppTheme.lightTheme,
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        locale: locale,
+        home: const AuthGate(),
+      ),
     );
   }
 }
