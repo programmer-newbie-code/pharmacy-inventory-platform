@@ -29,6 +29,14 @@ class InsufficientStockException implements Exception {
   String toString() => message;
 }
 
+class ShiftRequiredException implements Exception {
+  ShiftRequiredException(this.message);
+  final String message;
+
+  @override
+  String toString() => message;
+}
+
 class CartItemInput {
   CartItemInput({
     required this.product,
@@ -62,6 +70,14 @@ class SaleRepository {
   }) async {
     if (items.isEmpty) {
       throw ArgumentError('Cart items cannot be empty.');
+    }
+
+    final activeShift = await (_db.select(_db.cashierShifts)
+          ..where((shift) =>
+              shift.cashierId.equals(cashierId) & shift.status.equals('open')))
+        .getSingleOrNull();
+    if (activeShift == null) {
+      throw ShiftRequiredException('An active cashier shift is required before checkout.');
     }
 
     // 1. Validation: Minimum sell price & Controlled Drug prescription requirement
