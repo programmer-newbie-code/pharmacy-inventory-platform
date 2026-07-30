@@ -58,6 +58,16 @@ class CsvImportService {
     final categoryIdx = getIndex('category');
     final isControlledIdx = getIndex('iscontrolled');
 
+    const requiredHeaders = ['barcode', 'internalcode', 'productname'];
+    final missingHeaders = requiredHeaders.where((header) => getIndex(header) < 0);
+    if (missingHeaders.isNotEmpty) {
+      return CsvImportResult(
+        successCount: 0,
+        failedCount: rows.length - 1,
+        errors: ['Missing required CSV columns: ${missingHeaders.join(', ')}.'],
+      );
+    }
+
     for (int i = 1; i < rows.length; i++) {
       final row = rows[i];
       if (row.isEmpty || row.every((element) => element.toString().trim().isEmpty)) {
