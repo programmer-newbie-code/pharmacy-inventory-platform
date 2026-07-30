@@ -44,6 +44,59 @@ void main() {
     expect(result.errors, contains('CSV file is empty.'));
   });
 
+  test('preview validates rows without writing products', () async {
+    const csvData =
+        'Barcode,InternalCode,ProductName\n'
+        '899123456701,P001,Paracetamol\n'
+        '899123456701,P002,Duplicate barcode\n'
+        ',P003,Missing barcode';
+
+    final preview = await service.previewProductsFromCsv(csvData);
+
+    expect(preview.rows, hasLength(3));
+    expect(preview.validRows, hasLength(1));
+    expect(preview.rows[1].errors, contains('Duplicate barcode in this CSV.'));
+    expect(preview.rows[2].errors, contains('Barcode is required.'));
+    expect(await productRepo.listProducts(), isEmpty);
+  });
+
+  test('preview identifies a barcode already stored in inventory', () async {
+    await productRepo.createProduct(
+      barcode: '899123456701',
+      internalCode: 'EXISTING',
+      name: 'Existing product',
+      activeIngredient: '',
+      ingredientPct: 100,
+      baseUnit: 'tablet',
+      purchaseUnit: 'box',
+      unitsPerPurchaseUnit: 1,
+      costPricePerBaseUnit: 100,
+      marginPct: 20,
+      reorderThreshold: 1,
+      category: 'Obat Bebas',
+      createdBy: 'admin',
+    );
+
+    final preview = await service.previewProductsFromCsv(
+      'Barcode,InternalCode,ProductName\n899123456701,P001,Paracetamol',
+    );
+
+    expect(preview.validRows, isEmpty);
+    expect(preview.rows.single.errors, contains('Barcode already exists in inventory.'));
+  });
+
+  test('importPreview writes only validated rows and reports rejected rows', () async {
+    final preview = await service.previewProductsFromCsv(
+      'Barcode,InternalCode,ProductName\n899123456701,P001,Paracetamol\n,P002,Missing barcode',
+    );
+
+    final result = await service.importPreview(preview);
+
+    expect(result.successCount, 1);
+    expect(result.failedCount, 1);
+    expect(await productRepo.listProducts(), hasLength(1));
+  });
+
   test('rejects CSV missing required columns without importing products', () async {
     const csvData = 'Barcode,ProductName\n899123456701,Paracetamol';
 
