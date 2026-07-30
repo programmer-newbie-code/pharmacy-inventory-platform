@@ -38,6 +38,16 @@ void main() {
     expect(logs.first.status, equals('Success'));
   });
 
+  test('previews a validated backup before restore', () async {
+    final json = await backupService.exportDatabaseToJson();
+
+    final preview = backupService.previewBackupData(json);
+
+    expect(preview.schemaVersion, 2);
+    expect(preview.createdAt, isA<DateTime>());
+    expect(preview.counts['products'], 0);
+  });
+
   test('restores database records atomically from backup JSON file', () async {
     // 1. Populate initial data
     await db.into(db.users).insert(

@@ -12,6 +12,25 @@ class BackupService {
 
   final AppDatabase _db;
 
+  Future<BackupPreview> previewBackupJson(String filePath) async {
+    final file = File(filePath);
+    if (!await file.exists()) {
+      throw const BackupPreviewException('Backup file was not found.');
+    }
+    return previewBackupData(await file.readAsString());
+  }
+
+  BackupPreview previewBackupData(String json) {
+    final document = BackupDocument.parseAndValidate(json);
+    return BackupPreview(
+      createdAt: document.createdAt,
+      schemaVersion: document.schemaVersion,
+      counts: {
+        for (final entry in document.data.entries) entry.key: entry.value.length,
+      },
+    );
+  }
+
   /// Creates a full local database backup JSON export string.
   Future<String> exportDatabaseToJson() async {
     final users = await _db.select(_db.users).get();
@@ -181,5 +200,26 @@ class BackupService {
 
   Map<String, dynamic> _json(Map<String, Object?> row) =>
       Map<String, dynamic>.from(row);
+}
+
+class BackupPreview {
+  const BackupPreview({
+    required this.createdAt,
+    required this.schemaVersion,
+    required this.counts,
+  });
+
+  final DateTime createdAt;
+  final int schemaVersion;
+  final Map<String, int> counts;
+}
+
+class BackupPreviewException implements Exception {
+  const BackupPreviewException(this.message);
+
+  final String message;
+
+  @override
+  String toString() => 'BackupPreviewException: $message';
 }
 

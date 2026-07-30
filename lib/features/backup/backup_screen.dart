@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:path_provider/path_provider.dart';
 
 import '../../core/app_theme.dart';
@@ -16,7 +17,9 @@ final backupLogsFutureProvider = FutureProvider.autoDispose<List<BackupLog>>((re
 });
 
 class BackupScreen extends ConsumerStatefulWidget {
-  const BackupScreen({super.key});
+  const BackupScreen({super.key, this.selectBackupFile});
+
+  final Future<String?> Function()? selectBackupFile;
 
   @override
   ConsumerState<BackupScreen> createState() => _BackupScreenState();
@@ -25,6 +28,7 @@ class BackupScreen extends ConsumerStatefulWidget {
 class _BackupScreenState extends ConsumerState<BackupScreen> {
   bool _isLoading = false;
   String? _statusMessage;
+  BackupPreview? _preview;
 
   Future<void> _handleCreateBackup() async {
     setState(() {
@@ -99,6 +103,36 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
         _isLoading = false;
       });
     }
+  }
+
+  Future<void> _selectRestoreBackup() async {
+    final path = await (widget.selectBackupFile?.call() ?? _pickBackupFile());
+    if (path == null) return;
+    setState(() {
+      _isLoading = true;
+      _statusMessage = null;
+      _preview = null;
+    });
+    try {
+      final preview = await ref.read(backupServiceProvider).previewBackupJson(path);
+      if (!mounted) return;
+      setState(() => _preview = preview);
+      await _handleRestoreBackup(path);
+    } on BackupPreviewException catch (_) {
+      if (mounted) setState(() => _statusMessage = 'Invalid backup file. Choose another file.');
+    } catch (error) {
+      if (mounted) setState(() => _statusMessage = 'Restore error: $error');
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  Future<String?> _pickBackupFile() async {
+    final result = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['json'],
+    );
+    return result?.files.singleOrNull?.path;
   }
 
   Future<void> _handleGoogleDriveBackup() async {
@@ -206,35 +240,7 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
                           key: const Key('restoreBackupBtn'),
                           icon: const Icon(Icons.restore),
                           label: Text(l10n.restoreBackupButton),
-                          onPressed: _isLoading ? null : () async {
-                            final pathController = TextEditingController();
-                            final path = await showDialog<String>(
-                              context: context,
-                              builder: (ctx) => AlertDialog(
-                                title: Text(l10n.restoreBackupButton),
-                                content: TextField(
-                                  controller: pathController,
-                                  decoration: const InputDecoration(
-                                    labelText: 'Backup JSON File Path',
-                                    hintText: '/path/to/backup.json',
-                                  ),
-                                ),
-                                actions: [
-                                  TextButton(
-                                    onPressed: () => Navigator.of(ctx).pop(),
-                                    child: Text(l10n.cancelButton),
-                                  ),
-                                  ElevatedButton(
-                                    onPressed: () => Navigator.of(ctx).pop(pathController.text),
-                                    child: const Text('OK'),
-                                  ),
-                                ],
-                              ),
-                            );
-                            if (path != null && path.isNotEmpty) {
-                              await _handleRestoreBackup(path);
-                            }
-                          },
+                          onPressed: _isLoading ? null : _selectRestoreBackup,
                         ),
                       ],
                     ),
@@ -244,6 +250,15 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
                         _statusMessage!,
                         style: const TextStyle(fontWeight: FontWeight.bold),
                         textAlign: TextAlign.center,
+                      ),
+                    ],
+                    if (_preview != null) ...[
+                      const SizedBox(height: 12),
+                      Text('Backup: ${_preview!.createdAt.toLocal()}'),
+                      Text(
+                        'Products: ${_preview!.counts['products']} • '
+                        'Batches: ${_preview!.counts['stockBatches']} • '
+                        'Sales: ${_preview!.counts['saleTransactions']}',
                       ),
                     ],
                   ],
