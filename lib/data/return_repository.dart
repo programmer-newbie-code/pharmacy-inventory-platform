@@ -52,6 +52,30 @@ class ReturnRepository {
     }
 
     return _db.transaction(() async {
+      final priorReturns = await (_db.select(_db.returnTransactions)
+            ..where((txn) => txn.originalTxnId.equals(originalTxnId)))
+          .get();
+      final priorReturnIds = priorReturns.map((txn) => txn.id).toList();
+
+      for (final item in returnItems) {
+        final priorItems = priorReturnIds.isEmpty
+            ? <ReturnItem>[]
+            : await (_db.select(_db.returnItems)
+                  ..where((returned) =>
+                      returned.returnTxnId.isIn(priorReturnIds) &
+                      returned.saleItemId.equals(item.saleItem.id)))
+                .get();
+        final alreadyReturned = priorItems.fold<int>(
+          0,
+          (total, returned) => total + returned.qtyReturned,
+        );
+        if (alreadyReturned + item.qtyReturned > item.saleItem.qtySold) {
+          throw ArgumentError(
+            'Return quantity exceeds the quantity originally sold for SaleItem #${item.saleItem.id}.',
+          );
+        }
+      }
+
       // 1. Insert ReturnTransaction master
       final returnId = await _db.into(_db.returnTransactions).insert(
             ReturnTransactionsCompanion.insert(

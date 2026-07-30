@@ -111,4 +111,32 @@ void main() {
     final allReturns = await returnRepo.listReturns();
     expect(allReturns, isNotEmpty);
   });
+
+  test('rejects cumulative returns above the quantity sold', () async {
+    final product = await (db.select(db.products)..where((p) => p.id.equals(10))).getSingle();
+    final txn = await saleRepo.createSaleTransaction(
+      cashierId: 1,
+      items: [CartItemInput(product: product, qtyBaseUnit: 3, unitPrice: 1500)],
+      paymentMethod: 'Cash',
+    );
+    final saleItem = (await saleRepo.getSaleItemsForTransaction(txn.id)).single;
+    await returnRepo.processReturn(
+      originalTxnId: txn.id,
+      processedBy: 1,
+      reason: 'wrong_product',
+      refundMethod: 'Cash',
+      returnItems: [ReturnItemInput(saleItem: saleItem, qtyReturned: 2)],
+    );
+
+    await expectLater(
+      returnRepo.processReturn(
+        originalTxnId: txn.id,
+        processedBy: 1,
+        reason: 'wrong_product',
+        refundMethod: 'Cash',
+        returnItems: [ReturnItemInput(saleItem: saleItem, qtyReturned: 2)],
+      ),
+      throwsArgumentError,
+    );
+  });
 }
