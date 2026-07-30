@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/app_theme.dart';
+import '../../core/formatters.dart';
 import '../../core/providers.dart';
 import '../../data/database.dart';
 import '../../data/sale_repository.dart';
@@ -236,7 +237,7 @@ class _PosScreenState extends ConsumerState<PosScreen> {
                                 fontWeight: FontWeight.bold, fontSize: 14),
                           ),
                           subtitle: Text(
-                            '${p.barcode} • Rp ${price.toStringAsFixed(0)} / ${p.baseUnit}',
+                            '${p.barcode} • ${formatIdr(price)} / ${p.baseUnit}',
                             style: TextStyle(color: Colors.grey.shade600),
                           ),
                           trailing: IconButton(
@@ -330,7 +331,7 @@ class _PosScreenState extends ConsumerState<PosScreen> {
                                       fontWeight: FontWeight.bold),
                                 ),
                                 subtitle: Text(
-                                  'Rp ${item.unitPrice.toStringAsFixed(0)} / ${item.product.baseUnit}',
+                                  '${formatIdr(item.unitPrice)} / ${item.product.baseUnit}',
                                 ),
                                 trailing: Row(
                                   mainAxisSize: MainAxisSize.min,
@@ -350,7 +351,7 @@ class _PosScreenState extends ConsumerState<PosScreen> {
                                     ),
                                     const SizedBox(width: 8),
                                     Text(
-                                      'Rp ${item.subtotal.toStringAsFixed(0)}',
+                                      formatIdr(item.subtotal),
                                       style: const TextStyle(
                                         fontWeight: FontWeight.bold,
                                         color: AppTheme.primaryColor,
@@ -467,7 +468,7 @@ class _PosScreenState extends ConsumerState<PosScreen> {
                             ),
                           ),
                           Text(
-                            'Rp ${_totalCartAmount.toStringAsFixed(0)}',
+                            formatIdr(_totalCartAmount),
                             style: const TextStyle(
                               fontSize: 22,
                               fontWeight: FontWeight.bold,

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/app_theme.dart';
+import '../../core/formatters.dart';
 import '../../core/locale_provider.dart';
 import '../../core/providers.dart';
 import '../../l10n/app_localizations.dart';
@@ -356,7 +357,7 @@ class _StatsRow extends StatelessWidget {
             icon: Icons.payments,
             color: AppTheme.successColor,
             label: l10n.todayRevenue,
-            value: 'Rp ${stats.revenue.toStringAsFixed(0)}',
+            value: formatIdr(stats.revenue),
           ),
         ),
         const SizedBox(width: 10),
