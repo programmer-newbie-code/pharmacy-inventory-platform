@@ -1,3 +1,4 @@
+import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:pharmacy_inventory_platform/data/audit_logger.dart';
@@ -155,6 +156,49 @@ void main() {
       ),
       throwsA(isA<MinSellPriceException>()),
     );
+  });
+
+  test('requires an admin reason and audits an authorized below-cost sale', () async {
+    await db.into(db.users).insert(
+          UsersCompanion.insert(
+            id: const Value(1),
+            username: 'admin',
+            passwordHash: 'hash',
+            role: 'admin',
+          ),
+        );
+    await batchRepo.createStockBatch(
+      productId: normalProduct.id,
+      batchNo: 'BATCH-OVERRIDE',
+      receivedDate: DateTime(2026, 7, 1),
+      expiryDate: DateTime(2027, 1, 1),
+      qtyReceivedBaseUnit: 10,
+      costPricePerBaseUnit: 200,
+      supplier: 'Kimia Farma',
+      createdBy: 'admin',
+    );
+
+    await expectLater(
+      saleRepo.createSaleTransaction(
+        cashierId: 1,
+        items: [CartItemInput(product: normalProduct, qtyBaseUnit: 1, unitPrice: 150)],
+        paymentMethod: 'Cash',
+      ),
+      throwsA(isA<MinSellPriceException>()),
+    );
+
+    final transaction = await saleRepo.createSaleTransaction(
+      cashierId: 1,
+      items: [CartItemInput(product: normalProduct, qtyBaseUnit: 1, unitPrice: 150)],
+      paymentMethod: 'Cash',
+      priceOverrideReason: 'Damaged packaging clearance',
+    );
+    final audit = await (db.select(db.auditLogs)
+          ..where((entry) =>
+              entry.recordId.equals(transaction.id) &
+              entry.entityTable.equals('sale_transactions')))
+        .getSingle();
+    expect(audit.newValue, contains('Damaged packaging clearance'));
   });
 
   test('throws PrescriptionRequiredException for controlled drugs without prescription',
