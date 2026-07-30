@@ -6,6 +6,11 @@ class AppTheme {
   static const secondaryColor = Color(0xFF3F51B5); // Indigo
   static const accentColor = Color(0xFF00BFA5); // Teal Accent
   static const backgroundColor = Color(0xFFF5F7FA);
+  static const surfaceColor = Colors.white;
+  static const surfaceVariantColor = Color(0xFFF8F9FB);
+  static const outlineColor = Color(0xFFE0E5EB);
+  static const textPrimaryColor = Color(0xFF1A1A2E);
+  static const textSecondaryColor = Color(0xFF4B5563);
 
   // ── Semantic Colors ──
   static const successColor = Color(0xFF2E7D32);
@@ -39,46 +44,48 @@ class AppTheme {
         seedColor: primaryColor,
         primary: primaryColor,
         secondary: secondaryColor,
-        surface: Colors.white,
+        surface: surfaceColor,
         error: dangerColor,
       ),
       scaffoldBackgroundColor: backgroundColor,
+      visualDensity: VisualDensity.standard,
+      materialTapTargetSize: MaterialTapTargetSize.padded,
 
       // ── Typography ──
       textTheme: const TextTheme(
         headlineLarge: TextStyle(
           fontSize: 28,
           fontWeight: FontWeight.bold,
-          color: Color(0xFF1A1A2E),
+          color: textPrimaryColor,
           letterSpacing: -0.5,
         ),
         headlineMedium: TextStyle(
           fontSize: 22,
           fontWeight: FontWeight.bold,
-          color: Color(0xFF1A1A2E),
+          color: textPrimaryColor,
         ),
         headlineSmall: TextStyle(
           fontSize: 18,
           fontWeight: FontWeight.w600,
-          color: Color(0xFF1A1A2E),
+          color: textPrimaryColor,
         ),
         titleLarge: TextStyle(
           fontSize: 16,
           fontWeight: FontWeight.w600,
-          color: Color(0xFF1A1A2E),
+          color: textPrimaryColor,
         ),
         titleMedium: TextStyle(
           fontSize: 14,
           fontWeight: FontWeight.w500,
-          color: Color(0xFF333333),
+          color: textSecondaryColor,
         ),
         bodyLarge: TextStyle(
           fontSize: 15,
-          color: Color(0xFF333333),
+          color: textSecondaryColor,
         ),
         bodyMedium: TextStyle(
           fontSize: 13,
-          color: Color(0xFF666666),
+          color: textSecondaryColor,
         ),
         labelLarge: TextStyle(
           fontSize: 14,
@@ -109,10 +116,10 @@ class AppTheme {
       // ── Cards ──
       cardTheme: CardThemeData(
         elevation: 0,
-        color: Colors.white,
+        color: surfaceColor,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
-          side: BorderSide(color: Colors.grey.shade200),
+          side: const BorderSide(color: outlineColor),
         ),
         margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 0),
       ),
@@ -165,14 +172,14 @@ class AppTheme {
       // ── Input Fields ──
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: const Color(0xFFF8F9FB),
+        fillColor: surfaceVariantColor,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Colors.grey.shade300),
+          borderSide: const BorderSide(color: outlineColor),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Colors.grey.shade300),
+          borderSide: const BorderSide(color: outlineColor),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
