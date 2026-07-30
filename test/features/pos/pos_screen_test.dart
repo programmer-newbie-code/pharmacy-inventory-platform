@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:pharmacy_inventory_platform/core/providers.dart';
 import 'package:pharmacy_inventory_platform/data/database.dart';
+import 'package:pharmacy_inventory_platform/data/cashier_shift_repository.dart';
 import 'package:pharmacy_inventory_platform/data/product_repository.dart';
 import 'package:pharmacy_inventory_platform/data/stock_batch_repository.dart';
 import 'package:pharmacy_inventory_platform/features/pos/pos_screen.dart';
@@ -16,6 +17,7 @@ void main() {
 
     final productRepo = ProductRepository(db);
     final batchRepo = StockBatchRepository(db);
+    await CashierShiftRepository(db).openShift(cashierId: 1, openingBalance: 0);
 
     final prodId = await productRepo.createProduct(
       barcode: '8990000111222',
