@@ -66,6 +66,17 @@ class StockBatches extends Table {
   TextColumn get deviceId => text().nullable()();
 }
 
+@DataClassName('StockAdjustment')
+class StockAdjustments extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  IntColumn get productId => integer().references(Products, #id)();
+  IntColumn get batchId => integer().nullable().references(StockBatches, #id)();
+  IntColumn get quantityDelta => integer()();
+  TextColumn get reason => text()();
+  TextColumn get createdBy => text()();
+  DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
+}
+
 @DataClassName('SaleTransaction')
 class SaleTransactions extends Table {
   IntColumn get id => integer().autoIncrement()();
@@ -189,6 +200,7 @@ class PurchaseOrderItems extends Table {
   StorageLocations,
   Products,
   StockBatches,
+  StockAdjustments,
   SaleTransactions,
   SaleItems,
   AuditLogs,
@@ -206,5 +218,15 @@ class AppDatabase extends _$AppDatabase {
   factory AppDatabase.defaultConnection() => AppDatabase(openConnection());
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
+
+  @override
+  MigrationStrategy get migration => MigrationStrategy(
+        onCreate: (m) => m.createAll(),
+        onUpgrade: (m, from, to) async {
+          if (from < 2) {
+            await m.createTable(stockAdjustments);
+          }
+        },
+      );
 }

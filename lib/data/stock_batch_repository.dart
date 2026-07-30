@@ -108,4 +108,44 @@ class StockBatchRepository {
 
     return _db.update(_db.stockBatches).replace(updated);
   }
+
+  /// Applies a traceable stock correction to one batch.
+  ///
+  /// Returns false without changing stock when the adjustment would make the
+  /// batch quantity negative.
+  Future<bool> adjustStock({
+    required int batchId,
+    required int delta,
+    required String reason,
+    required int userId,
+  }) async {
+    if (delta == 0) throw ArgumentError.value(delta, 'delta', 'must not be zero');
+    if (reason.trim().isEmpty) {
+      throw ArgumentError.value(reason, 'reason', 'must not be empty');
+    }
+
+    return _db.transaction(() async {
+      final batch = await (_db.select(_db.stockBatches)
+            ..where((table) => table.id.equals(batchId)))
+          .getSingleOrNull();
+      if (batch == null || batch.qtyRemaining + delta < 0) return false;
+
+      await _db.update(_db.stockBatches).replace(
+            batch.copyWith(
+              qtyRemaining: batch.qtyRemaining + delta,
+              updatedAt: Value(DateTime.now()),
+            ),
+          );
+      await _db.into(_db.stockAdjustments).insert(
+            StockAdjustmentsCompanion.insert(
+              productId: batch.productId,
+              batchId: Value(batchId),
+              quantityDelta: delta,
+              reason: reason.trim(),
+              createdBy: userId.toString(),
+            ),
+          );
+      return true;
+    });
+  }
 }
