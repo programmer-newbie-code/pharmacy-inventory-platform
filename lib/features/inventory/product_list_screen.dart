@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/app_theme.dart';
 import '../../core/providers.dart';
 import '../../data/database.dart';
+import '../../data/product_repository.dart';
 import '../../l10n/app_localizations.dart';
 import '../auth/auth_session.dart';
 import 'add_product_dialog.dart';
@@ -19,8 +20,7 @@ class ProductListScreen extends ConsumerStatefulWidget {
 
 class _ProductListScreenState extends ConsumerState<ProductListScreen> {
   final _searchController = TextEditingController();
-  List<Product> _products = [];
-  Map<int, int> _stockMap = {};
+  List<ProductStockSummary> _products = [];
   bool _isLoading = false;
 
   @override
@@ -38,20 +38,12 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen> {
   Future<void> _fetchProducts() async {
     setState(() => _isLoading = true);
     final repo = ref.read(productRepositoryProvider);
-    final batchRepo = ref.read(stockBatchRepositoryProvider);
-
-    final list = await repo.listProducts(
+    final list = await repo.listProductsWithStock(
       searchQuery: _searchController.text.trim(),
     );
 
-    final stockMap = <int, int>{};
-    for (final prod in list) {
-      stockMap[prod.id] = await batchRepo.getTotalStockForProduct(prod.id);
-    }
-
     setState(() {
       _products = list;
-      _stockMap = stockMap;
       _isLoading = false;
     });
   }
@@ -153,8 +145,9 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen> {
                         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                         itemCount: _products.length,
                         itemBuilder: (ctx, idx) {
-                          final prod = _products[idx];
-                          final stock = _stockMap[prod.id] ?? 0;
+                          final summary = _products[idx];
+                          final prod = summary.product;
+                          final stock = summary.stock;
                           final isLow = stock <= prod.reorderThreshold;
 
                           return Card(

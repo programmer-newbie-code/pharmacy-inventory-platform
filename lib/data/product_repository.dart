@@ -5,6 +5,12 @@ import 'package:drift/drift.dart';
 import 'audit_logger.dart';
 import 'database.dart';
 
+class ProductStockSummary {
+  const ProductStockSummary({required this.product, required this.stock});
+  final Product product;
+  final int stock;
+}
+
 class ProductRepository {
   ProductRepository(this._db, {AuditLogger? auditLogger})
       : _auditLogger = auditLogger;
@@ -145,5 +151,28 @@ class ProductRepository {
       query.where((tbl) => tbl.isControlled.equals(true));
     }
     return query.get();
+  }
+
+  Future<List<ProductStockSummary>> listProductsWithStock({String? searchQuery}) async {
+    final products = await listProducts(searchQuery: searchQuery);
+    if (products.isEmpty) return const [];
+    final productIds = products.map((product) => product.id).toList();
+    final batches = await (_db.select(_db.stockBatches)
+          ..where((batch) => batch.productId.isIn(productIds)))
+        .get();
+    final stockByProduct = <int, int>{};
+    for (final batch in batches) {
+      stockByProduct.update(
+        batch.productId,
+        (stock) => stock + batch.qtyRemaining,
+        ifAbsent: () => batch.qtyRemaining,
+      );
+    }
+    return products
+        .map((product) => ProductStockSummary(
+              product: product,
+              stock: stockByProduct[product.id] ?? 0,
+            ))
+        .toList();
   }
 }
