@@ -120,7 +120,7 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
       setState(() => _preview = preview);
       await _handleRestoreBackup(path);
     } on BackupPreviewException catch (_) {
-      if (mounted) setState(() => _statusMessage = 'Invalid backup file. Choose another file.');
+      if (mounted) setState(() => _statusMessage = AppLocalizations.of(context)!.invalidBackupFile);
     } catch (error) {
       if (mounted) setState(() => _statusMessage = 'Restore error: $error');
     } finally {
@@ -189,12 +189,12 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
               Icon(Icons.lock_outline, size: 64, color: AppTheme.dangerColor.withAlpha(150)),
               const SizedBox(height: 16),
               Text(
-                'Akses Ditolak',
+                l10n.backupAccessDenied,
                 style: Theme.of(context).textTheme.headlineSmall,
               ),
               const SizedBox(height: 8),
               Text(
-                'Fitur pencadangan data hanya dapat diakses oleh Admin.',
+                l10n.backupAccessDeniedDetail,
                 style: TextStyle(color: Colors.grey.shade600),
               ),
             ],
@@ -234,7 +234,7 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
                           key: const Key('googleDriveBackupBtn'),
                           style: ElevatedButton.styleFrom(backgroundColor: Colors.indigo, foregroundColor: Colors.white),
                           icon: const Icon(Icons.cloud_upload),
-                          label: const Text('Google Drive Backup'),
+                          label: Text(l10n.googleDriveBackup),
                           onPressed: _isLoading ? null : _handleGoogleDriveBackup,
                         ),
                         OutlinedButton.icon(
@@ -276,8 +276,8 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
               child: logsAsync.when(
                 data: (logs) {
                   if (logs.isEmpty) {
-                    return const Center(
-                      child: Text('No backup logs recorded yet.'),
+                    return Center(
+                      child: Text(l10n.noBackupLogs),
                     );
                   }
                   return ListView.builder(
@@ -295,7 +295,7 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
                               : Colors.red,
                         ),
                         title: Text(
-                          'Destination: ${log.destination} (${log.status})',
+                          '${l10n.backupLogDestination}: ${log.destination} (${log.status})',
                         ),
                         subtitle: Text(
                           '${log.timestamp.toIso8601String().split('.').first} • ${sizeKb.toStringAsFixed(1)} KB',
@@ -305,7 +305,7 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
                   );
                 },
                 loading: () => const Center(child: CircularProgressIndicator()),
-                error: (err, stack) => Center(child: Text('Error: $err')),
+                error: (err, stack) => Center(child: Text('${l10n.backupLogError}: $err')),
               ),
             ),
           ],
