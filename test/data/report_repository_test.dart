@@ -20,6 +20,14 @@ void main() {
     batchRepo = StockBatchRepository(db);
     saleRepo = SaleRepository(db);
     reportRepo = ReportRepository(db);
+    await db.into(db.users).insert(
+          UsersCompanion.insert(
+            id: const Value(1),
+            username: 'cashier',
+            passwordHash: 'hash',
+            role: 'kasir',
+          ),
+        );
     await CashierShiftRepository(db).openShift(cashierId: 1, openingBalance: 0);
   });
 
