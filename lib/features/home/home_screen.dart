@@ -5,6 +5,7 @@ import '../../core/app_theme.dart';
 import '../../core/formatters.dart';
 import '../../core/locale_provider.dart';
 import '../../core/providers.dart';
+import '../../domain/permission_checker.dart';
 import '../../l10n/app_localizations.dart';
 import '../auth/auth_session.dart';
 
@@ -201,6 +202,13 @@ class HomeScreen extends ConsumerWidget {
             ),
             const SizedBox(height: 24),
 
+            _PrimaryWorkflowAction(
+              role: permChecker.parseRole(roleStr),
+              onStartSale: () => _navigate(context, const PosScreen()),
+              onReceiveStock: () => _navigate(context, const PurchaseOrderScreen()),
+            ),
+            const SizedBox(height: 16),
+
             // ── Quick Stats ──
             todayStats.when(
               data: (stats) => _StatsRow(stats: stats, l10n: l10n),
@@ -208,7 +216,12 @@ class HomeScreen extends ConsumerWidget {
                 height: 80,
                 child: Center(child: CircularProgressIndicator()),
               ),
-              error: (_, __) => const SizedBox.shrink(),
+              error: (_, __) => OutlinedButton.icon(
+                key: const Key('retryDashboardStatsBtn'),
+                onPressed: () => ref.invalidate(_todayStatsProvider),
+                icon: const Icon(Icons.refresh),
+                label: const Text('Retry dashboard status'),
+              ),
             ),
             const SizedBox(height: 24),
 
@@ -332,6 +345,29 @@ class HomeScreen extends ConsumerWidget {
 }
 
 // ── Stats Row ──
+
+class _PrimaryWorkflowAction extends StatelessWidget {
+  const _PrimaryWorkflowAction({
+    required this.role,
+    required this.onStartSale,
+    required this.onReceiveStock,
+  });
+
+  final Role role;
+  final VoidCallback onStartSale;
+  final VoidCallback onReceiveStock;
+
+  @override
+  Widget build(BuildContext context) {
+    final inventory = role == Role.inventory;
+    return FilledButton.icon(
+      key: Key(inventory ? 'primaryReceiveStockBtn' : 'primaryStartSaleBtn'),
+      onPressed: inventory ? onReceiveStock : onStartSale,
+      icon: Icon(inventory ? Icons.inventory_2_outlined : Icons.point_of_sale),
+      label: Text(inventory ? 'Receive Stock' : 'Start Sale'),
+    );
+  }
+}
 
 class _StatsRow extends StatelessWidget {
   final _TodayStats stats;
