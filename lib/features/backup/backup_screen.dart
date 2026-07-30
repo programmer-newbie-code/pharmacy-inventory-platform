@@ -7,6 +7,7 @@ import 'package:path_provider/path_provider.dart';
 
 import '../../core/app_theme.dart';
 import '../../core/providers.dart';
+import '../../data/backup_service.dart';
 import '../../data/database.dart';
 import '../../l10n/app_localizations.dart';
 import '../auth/auth_session.dart';
