@@ -75,6 +75,7 @@ class _ShiftManagementScreenState extends ConsumerState<ShiftManagementScreen> {
   Future<void> _handleCloseShift() async {
     if (_activeShift == null) return;
     final actualController = TextEditingController();
+    final reasonController = TextEditingController();
 
     final actualStr = await showDialog<String>(
       context: context,
@@ -93,6 +94,14 @@ class _ShiftManagementScreenState extends ConsumerState<ShiftManagementScreen> {
               decoration: const InputDecoration(
                 labelText: 'Counted Actual Cash in Drawer (Rp)',
                 prefixText: 'Rp ',
+              ),
+            ),
+            const SizedBox(height: 8),
+            TextField(
+              key: const Key('discrepancyReasonInput'),
+              controller: reasonController,
+              decoration: const InputDecoration(
+                labelText: 'Reason required if cash is over or short',
               ),
             ),
           ],
@@ -115,7 +124,11 @@ class _ShiftManagementScreenState extends ConsumerState<ShiftManagementScreen> {
     if (actualStr != null && actualStr.isNotEmpty) {
       final actual = double.tryParse(actualStr) ?? 0.0;
       final repo = ref.read(cashierShiftRepositoryProvider);
-      final closed = await repo.closeShift(shiftId: _activeShift!.id, actualCash: actual);
+      final closed = await repo.closeShift(
+        shiftId: _activeShift!.id,
+        actualCash: actual,
+        discrepancyReason: reasonController.text,
+      );
       
       _loadActiveShift();
       ref.invalidate(shiftListFutureProvider);

@@ -135,6 +135,7 @@ class CashierShifts extends Table {
   RealColumn get expectedCash => real().nullable()(); // calculated on close
   RealColumn get actualCash => real().nullable()();   // entered by cashier
   RealColumn get discrepancy => real().nullable()();  // actual - expected
+  TextColumn get discrepancyReason => text().nullable()();
   TextColumn get status => text()(); // open|closed
   DateTimeColumn get openedAt => dateTime().withDefault(currentDateAndTime)();
   DateTimeColumn get closedAt => dateTime().nullable()();
@@ -218,7 +219,7 @@ class AppDatabase extends _$AppDatabase {
   factory AppDatabase.defaultConnection() => AppDatabase(openConnection());
 
   @override
-  int get schemaVersion => 2;
+  int get schemaVersion => 3;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -226,6 +227,9 @@ class AppDatabase extends _$AppDatabase {
         onUpgrade: (m, from, to) async {
           if (from < 2) {
             await m.createTable(stockAdjustments);
+          }
+          if (from < 3) {
+            await m.addColumn(cashierShifts, cashierShifts.discrepancyReason);
           }
         },
       );
