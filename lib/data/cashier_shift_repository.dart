@@ -6,6 +6,9 @@ class CashierShiftRepository {
 
   final AppDatabase _db;
 
+  static const _discrepancyReasonRequired =
+      'A discrepancy reason is required before closing an unbalanced shift.';
+
   /// Opens a new cashier shift with an opening cash balance.
   Future<CashierShift> openShift({
     required int cashierId,
@@ -33,6 +36,7 @@ class CashierShiftRepository {
   Future<CashierShift> closeShift({
     required int shiftId,
     required double actualCash,
+    String? discrepancyReason,
   }) async {
     final shift = await (_db.select(_db.cashierShifts)
           ..where((tbl) => tbl.id.equals(shiftId)))
@@ -51,11 +55,15 @@ class CashierShiftRepository {
     final totalCashSales = cashTxns.fold<double>(0, (sum, t) => sum + t.totalAmount);
     final expectedCash = shift.openingBalance + totalCashSales;
     final discrepancy = actualCash - expectedCash;
+    if (discrepancy != 0 && (discrepancyReason == null || discrepancyReason.trim().isEmpty)) {
+      throw ArgumentError(_discrepancyReasonRequired);
+    }
 
     final updated = shift.copyWith(
       expectedCash: Value(expectedCash),
       actualCash: Value(actualCash),
       discrepancy: Value(discrepancy),
+      discrepancyReason: Value(discrepancy == 0 ? null : discrepancyReason!.trim()),
       status: 'closed',
       closedAt: Value(now),
     );

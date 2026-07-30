@@ -108,12 +108,24 @@ void main() {
     final shift = await shiftRepo.openShift(cashierId: 1, openingBalance: 50000);
 
     // Shortage case (Counted 45,000 when expected 50,000) -> disc = -5,000
-    final closedShortage = await shiftRepo.closeShift(shiftId: shift.id, actualCash: 45000);
+    await expectLater(
+      shiftRepo.closeShift(shiftId: shift.id, actualCash: 45000),
+      throwsArgumentError,
+    );
+    final closedShortage = await shiftRepo.closeShift(
+      shiftId: shift.id,
+      actualCash: 45000,
+      discrepancyReason: 'Cash count was short',
+    );
     expect(closedShortage.discrepancy, equals(-5000));
 
     // Overage case
     final shift2 = await shiftRepo.openShift(cashierId: 1, openingBalance: 50000);
-    final closedOverage = await shiftRepo.closeShift(shiftId: shift2.id, actualCash: 55000);
+    final closedOverage = await shiftRepo.closeShift(
+      shiftId: shift2.id,
+      actualCash: 55000,
+      discrepancyReason: 'Cash count was over',
+    );
     expect(closedOverage.discrepancy, equals(5000));
   });
 }
