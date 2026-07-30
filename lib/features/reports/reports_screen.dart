@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:intl/intl.dart';
 
 import '../../core/app_theme.dart';
+import '../../core/formatters.dart';
 import '../../core/providers.dart';
 import '../../data/report_repository.dart';
 import '../../l10n/app_localizations.dart';
@@ -69,7 +69,6 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final reportAsync = ref.watch(salesReportFutureProvider);
-    final currencyFormat = NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0);
 
     return Scaffold(
       appBar: AppBar(
@@ -99,11 +98,11 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
                         const SizedBox(height: 20),
                         _buildKpiRow(l10n.totalTransactions, '${summary.totalTransactions}', AppTheme.infoColor),
                         const Divider(height: 24),
-                        _buildKpiRow(l10n.totalRevenue, currencyFormat.format(summary.totalRevenue), AppTheme.successColor),
+                        _buildKpiRow(l10n.totalRevenue, formatIdr(summary.totalRevenue), AppTheme.successColor),
                         const Divider(height: 24),
-                        _buildKpiRow(l10n.cogs, currencyFormat.format(summary.totalCostOfGoods), AppTheme.warningColor),
+                        _buildKpiRow(l10n.cogs, formatIdr(summary.totalCostOfGoods), AppTheme.warningColor),
                         const Divider(height: 24),
-                        _buildKpiRow(l10n.grossProfit, currencyFormat.format(summary.grossProfit), Colors.purple),
+                        _buildKpiRow(l10n.grossProfit, formatIdr(summary.grossProfit), Colors.purple),
                         const Divider(height: 24),
                         _buildKpiRow(l10n.grossMargin, '${marginPct.toStringAsFixed(1)}%', AppTheme.primaryColor),
                       ],
