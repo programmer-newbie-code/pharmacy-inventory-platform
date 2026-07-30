@@ -276,7 +276,7 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
               child: logsAsync.when(
                 data: (logs) {
                   if (logs.isEmpty) {
-                    return const Center(
+                    return Center(
                       child: Text(l10n.noBackupLogs),
                     );
                   }
