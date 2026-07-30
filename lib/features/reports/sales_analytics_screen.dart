@@ -1,6 +1,8 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import '../../core/formatters.dart';
 import '../../core/providers.dart';
 import '../../data/report_repository.dart';
 
@@ -180,7 +182,7 @@ class _SalesAnalyticsScreenState extends ConsumerState<SalesAnalyticsScreen> {
                           Expanded(
                             child: _MetricCard(
                               title: 'GROSS REVENUE',
-                              value: 'Rp ${summary.totalRevenue.toStringAsFixed(0)}',
+                              value: formatIdr(summary.totalRevenue),
                               icon: Icons.monetization_on,
                               color: Colors.green,
                             ),
@@ -202,7 +204,7 @@ class _SalesAnalyticsScreenState extends ConsumerState<SalesAnalyticsScreen> {
                           Expanded(
                             child: _MetricCard(
                               title: 'GROSS PROFIT',
-                              value: 'Rp ${summary.grossProfit.toStringAsFixed(0)} (${marginPct.toStringAsFixed(1)}%)',
+                              value: '${formatIdr(summary.grossProfit)} (${marginPct.toStringAsFixed(1)}%)',
                               icon: Icons.trending_up,
                               color: Colors.teal,
                             ),
@@ -211,7 +213,7 @@ class _SalesAnalyticsScreenState extends ConsumerState<SalesAnalyticsScreen> {
                           Expanded(
                             child: _MetricCard(
                               title: 'TOTAL REFUNDS',
-                              value: 'Rp ${totalRefunds.toStringAsFixed(0)}',
+                              value: formatIdr(totalRefunds),
                               icon: Icons.assignment_return,
                               color: Colors.red,
                             ),
@@ -240,7 +242,7 @@ class _SalesAnalyticsScreenState extends ConsumerState<SalesAnalyticsScreen> {
                                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                   children: [
                                     Text(e.key, style: const TextStyle(fontWeight: FontWeight.w600)),
-                                    Text('Rp ${e.value.toStringAsFixed(0)} (${(pct * 100).toStringAsFixed(1)}%)'),
+                                    Text('${formatIdr(e.value)} (${(pct * 100).toStringAsFixed(1)}%)'),
                                   ],
                                 ),
                                 const SizedBox(height: 4),
@@ -336,7 +338,7 @@ class _SalesAnalyticsScreenState extends ConsumerState<SalesAnalyticsScreen> {
                                       cells: [
                                         DataCell(Text(p.productName)),
                                         DataCell(Text('${p.unitsSold}')),
-                                        DataCell(Text('Rp ${p.revenue.toStringAsFixed(0)}')),
+                                        DataCell(Text(formatIdr(p.revenue))),
                                       ],
                                     ),
                                   )
