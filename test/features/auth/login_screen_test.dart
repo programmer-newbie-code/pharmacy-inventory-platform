@@ -44,7 +44,7 @@ void main() {
     await tester.enterText(find.byKey(const Key('loginUsername')), 'budi');
     await tester.enterText(find.byKey(const Key('loginPassword')), 'secret123');
     await tester.tap(find.byKey(const Key('loginSubmit')));
-    await tester.pumpAndSettle();
+    await tester.pump();
 
     expect(container.read(authSessionProvider)?.username, 'budi');
   });
@@ -55,7 +55,7 @@ void main() {
     await tester.enterText(find.byKey(const Key('loginUsername')), 'budi');
     await tester.enterText(find.byKey(const Key('loginPassword')), 'wrong');
     await tester.tap(find.byKey(const Key('loginSubmit')));
-    await tester.pumpAndSettle();
+    await tester.pump();
 
     expect(container.read(authSessionProvider), isNull);
     expect(find.text('Nama pengguna atau kata sandi salah. Coba lagi.'), findsOneWidget);

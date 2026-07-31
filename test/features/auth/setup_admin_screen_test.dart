@@ -36,7 +36,7 @@ void main() {
     final submitBtn = find.byKey(const Key('setupAdminSubmit'));
     await tester.ensureVisible(submitBtn);
     await tester.tap(submitBtn);
-    await tester.pumpAndSettle();
+    await tester.pump();
 
     expect(container.read(authSessionProvider)?.username, 'budi');
     expect(container.read(authSessionProvider)?.role, 'admin');
