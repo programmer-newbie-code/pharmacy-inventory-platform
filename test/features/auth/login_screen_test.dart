@@ -47,6 +47,9 @@ void main() {
     await tester.pump();
 
     expect(container.read(authSessionProvider)?.username, 'budi');
+
+    // Cancel the inactivity timer so it does not trip '!timersPending'.
+    container.read(authSessionProvider.notifier).logout();
   });
 
   testWidgets('wrong password shows the error and does not log in', (tester) async {
@@ -59,5 +62,8 @@ void main() {
 
     expect(container.read(authSessionProvider), isNull);
     expect(find.text('Nama pengguna atau kata sandi salah. Coba lagi.'), findsOneWidget);
+
+    // No timer started (login failed), but be safe.
+    container.read(authSessionProvider.notifier).logout();
   });
 }

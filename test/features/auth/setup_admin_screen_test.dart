@@ -41,5 +41,8 @@ void main() {
     expect(container.read(authSessionProvider)?.username, 'budi');
     expect(container.read(authSessionProvider)?.role, 'admin');
     expect(await container.read(userRepositoryProvider).countUsers(), 1);
+
+    // Cancel the inactivity timer so it does not trip '!timersPending'.
+    container.read(authSessionProvider.notifier).logout();
   });
 }
