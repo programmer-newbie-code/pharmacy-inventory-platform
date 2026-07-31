@@ -38,4 +38,28 @@ void main() {
     container.read(authSessionProvider.notifier).logout();
     expect(container.read(authSessionProvider), isNull);
   });
+
+  test('logs out automatically after inactivity', () async {
+    final db = AppDatabase(NativeDatabase.memory());
+    final container = ProviderContainer(overrides: [
+      databaseProvider.overrideWithValue(db),
+      authSessionProvider.overrideWith(
+        () => AuthSession(inactivityTimeout: Duration.zero),
+      ),
+    ]);
+    addTearDown(container.dispose);
+    addTearDown(db.close);
+
+    final hasher = container.read(passwordHasherProvider);
+    await container.read(userRepositoryProvider).createUser(
+          username: 'budi',
+          passwordHash: hasher.hash('secret123'),
+          role: 'admin',
+        );
+
+    await container.read(authSessionProvider.notifier).login('budi', 'secret123');
+    await Future<void>.delayed(Duration.zero);
+
+    expect(container.read(authSessionProvider), isNull);
+  });
 }

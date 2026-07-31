@@ -44,9 +44,12 @@ void main() {
     await tester.enterText(find.byKey(const Key('loginUsername')), 'budi');
     await tester.enterText(find.byKey(const Key('loginPassword')), 'secret123');
     await tester.tap(find.byKey(const Key('loginSubmit')));
-    await tester.pumpAndSettle();
+    await tester.pump();
 
     expect(container.read(authSessionProvider)?.username, 'budi');
+
+    // Cancel the inactivity timer so it does not trip '!timersPending'.
+    container.read(authSessionProvider.notifier).logout();
   });
 
   testWidgets('wrong password shows the error and does not log in', (tester) async {
@@ -55,9 +58,12 @@ void main() {
     await tester.enterText(find.byKey(const Key('loginUsername')), 'budi');
     await tester.enterText(find.byKey(const Key('loginPassword')), 'wrong');
     await tester.tap(find.byKey(const Key('loginSubmit')));
-    await tester.pumpAndSettle();
+    await tester.pump();
 
     expect(container.read(authSessionProvider), isNull);
     expect(find.text('Nama pengguna atau kata sandi salah. Coba lagi.'), findsOneWidget);
+
+    // No timer started (login failed), but be safe.
+    container.read(authSessionProvider.notifier).logout();
   });
 }

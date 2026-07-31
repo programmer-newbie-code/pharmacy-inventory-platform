@@ -36,10 +36,13 @@ void main() {
     final submitBtn = find.byKey(const Key('setupAdminSubmit'));
     await tester.ensureVisible(submitBtn);
     await tester.tap(submitBtn);
-    await tester.pumpAndSettle();
+    await tester.pump();
 
     expect(container.read(authSessionProvider)?.username, 'budi');
     expect(container.read(authSessionProvider)?.role, 'admin');
     expect(await container.read(userRepositoryProvider).countUsers(), 1);
+
+    // Cancel the inactivity timer so it does not trip '!timersPending'.
+    container.read(authSessionProvider.notifier).logout();
   });
 }
