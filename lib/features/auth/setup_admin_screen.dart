@@ -6,6 +6,7 @@ import '../../core/locale_provider.dart';
 import '../../core/providers.dart';
 import '../../l10n/app_localizations.dart';
 import 'auth_session.dart';
+import '../../domain/password_policy.dart';
 
 class SetupAdminScreen extends ConsumerStatefulWidget {
   const SetupAdminScreen({super.key});
@@ -45,6 +46,13 @@ class _SetupAdminScreenState extends ConsumerState<SetupAdminScreen> {
     if (password != confirm) {
       setState(() => _errorText = l10n.passwordMismatchError);
       return;
+
+    final policy = PasswordPolicy();
+    final validation = policy.validate(password);
+    if (!validation.isValid) {
+      setState(() => _errorText = validation.errors.join('\n'));
+      return;
+    }
     }
 
     setState(() {
@@ -269,3 +277,4 @@ class _SetupAdminScreenState extends ConsumerState<SetupAdminScreen> {
     );
   }
 }
+

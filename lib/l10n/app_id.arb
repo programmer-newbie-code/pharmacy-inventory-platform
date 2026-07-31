@@ -127,5 +127,8 @@
   "saveBranding": "Simpan Branding",
   "transactions": "Transaksi",
   "items": "item",
-  "okButton": "OK"
+  "okButton": "OK",
+  "passwordTooShort": "Kata sandi minimal 8 karakter.",
+  "passwordTooSimple": "Kata sandi harus mengandung huruf dan angka.",
+  "passwordTooCommon": "Kata sandi terlalu umum. Pilih yang lebih unik."
 }
