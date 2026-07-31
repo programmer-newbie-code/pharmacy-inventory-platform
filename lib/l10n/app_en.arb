@@ -127,5 +127,8 @@
   "saveBranding": "Save Branding",
   "transactions": "Transactions",
   "items": "items",
-  "okButton": "OK"
+  "okButton": "OK",
+  "passwordTooShort": "Password must be at least 8 characters.",
+  "passwordTooSimple": "Password must contain at least one letter and one digit.",
+  "passwordTooCommon": "Password is too common. Choose a more unique password."
 }
