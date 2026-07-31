@@ -46,13 +46,13 @@ class _SetupAdminScreenState extends ConsumerState<SetupAdminScreen> {
     if (password != confirm) {
       setState(() => _errorText = l10n.passwordMismatchError);
       return;
+    }
 
     final policy = PasswordPolicy();
     final validation = policy.validate(password);
     if (!validation.isValid) {
       setState(() => _errorText = validation.errors.join('\n'));
       return;
-    }
     }
 
     setState(() {
