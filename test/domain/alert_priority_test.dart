@@ -20,7 +20,7 @@ void main() {
     });
 
     test('values are in correct order', () {
-      final values = AlertPriority.values;
+      const values = AlertPriority.values;
       for (int i = 1; i < values.length; i++) {
         expect(values[i].priority, greaterThan(values[i - 1].priority));
       }
