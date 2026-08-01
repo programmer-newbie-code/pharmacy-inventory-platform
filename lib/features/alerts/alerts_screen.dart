@@ -2,9 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/providers.dart';
-import '../../data/alert_repository.dart';
 import '../../domain/alert_priority.dart';
-import '../suppliers/purchase_order_screen.dart';
 
 final _allAlertsProvider = FutureProvider<List<AlertItem>>((ref) async {
   final repo = ref.read(alertRepositoryProvider);
