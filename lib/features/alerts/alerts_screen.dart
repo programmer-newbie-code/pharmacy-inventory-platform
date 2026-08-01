@@ -19,14 +19,14 @@ final _allAlertsProvider = FutureProvider<List<AlertItem>>((ref) async {
             : e.daysUntilExpiry <= 30
                 ? AlertPriority.expiring
                 : AlertPriority.lowStock,
-        message: '${e.product.name} — Batch #${e.batch.batchNo} expires in ${e.daysUntilExpiry} days',
+        message: '${e.product.name} - Batch #${e.batch.batchNo} expires in ${e.daysUntilExpiry} days',
         details:
             'Exp: ${e.batch.expiryDate.toIso8601String().split('T').first} | Remaining: ${e.batch.qtyRemaining} ${e.product.baseUnit}s',
       ),
     for (final l in lowStock)
       AlertItem(
         priority: AlertPriority.lowStock,
-        message: '${l.product.name} — Stock: ${l.currentTotalStock} / Threshold: ${l.product.reorderThreshold}',
+        message: '${l.product.name} - Stock: ${l.currentTotalStock} / Threshold: ${l.product.reorderThreshold}',
         details: 'Barcode: ${l.product.barcode}',
       ),
   ];

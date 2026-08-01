@@ -60,9 +60,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Pharmacy Alerts'), findsOneWidget);
-    // Both the expiring batch and low-stock alerts reference the product
     expect(find.textContaining('Alert Test Medicine'), findsWidgets);
-    // Priority labels appear as chips
     expect(find.text('expiring'), findsOneWidget);
     expect(find.text('lowStock'), findsOneWidget);
   });
