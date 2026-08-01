@@ -9,7 +9,7 @@ import 'package:pharmacy_inventory_platform/data/stock_batch_repository.dart';
 import 'package:pharmacy_inventory_platform/features/alerts/alerts_screen.dart';
 
 void main() {
-  testWidgets('renders AlertsScreen and switches tabs', (tester) async {
+  testWidgets('renders AlertsScreen with prioritized alerts', (tester) async {
     final db = AppDatabase(NativeDatabase.memory());
     addTearDown(db.close);
 
@@ -59,13 +59,9 @@ void main() {
 
     await tester.pumpAndSettle();
 
-    expect(find.text('Expiry & Low Stock Alerts'), findsOneWidget);
-    expect(find.text('Alert Test Medicine'), findsOneWidget);
-
-    // Switch to Low Stock tab
-    await tester.tap(find.byIcon(Icons.warning_amber));
-    await tester.pumpAndSettle();
-
-    expect(find.text('Alert Test Medicine'), findsOneWidget);
+    expect(find.text('Pharmacy Alerts'), findsOneWidget);
+    expect(find.textContaining('Alert Test Medicine'), findsWidgets);
+    expect(find.text('expiring'), findsOneWidget);
+    expect(find.text('lowStock'), findsOneWidget);
   });
 }

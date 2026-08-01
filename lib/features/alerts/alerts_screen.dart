@@ -2,180 +2,103 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/providers.dart';
-import '../../data/alert_repository.dart';
-import '../suppliers/purchase_order_screen.dart';
+import '../../domain/alert_priority.dart';
 
-class AlertsScreen extends ConsumerStatefulWidget {
+final _allAlertsProvider = FutureProvider<List<AlertItem>>((ref) async {
+  final repo = ref.read(alertRepositoryProvider);
+  final expiring = await repo.listExpiringBatches();
+  final lowStock = await repo.listLowStockProducts();
+
+  final items = <AlertItem>[
+    for (final e in expiring)
+      AlertItem(
+        priority: e.daysUntilExpiry <= 0
+            ? AlertPriority.expired
+            : e.daysUntilExpiry <= 30
+                ? AlertPriority.expiring
+                : AlertPriority.lowStock,
+        message: '${e.product.name} - Batch #${e.batch.batchNo} expires in ${e.daysUntilExpiry} days',
+        details:
+            'Exp: ${e.batch.expiryDate.toIso8601String().split('T').first} | Remaining: ${e.batch.qtyRemaining} ${e.product.baseUnit}s',
+      ),
+    for (final l in lowStock)
+      AlertItem(
+        priority: AlertPriority.lowStock,
+        message: '${l.product.name} - Stock: ${l.currentTotalStock} / Threshold: ${l.product.reorderThreshold}',
+        details: 'Barcode: ${l.product.barcode}',
+      ),
+  ];
+  items.sort((a, b) => a.priority.priority.compareTo(b.priority.priority));
+  return items;
+});
+
+class AlertItem {
+  final AlertPriority priority;
+  final String message;
+  final String details;
+  const AlertItem({
+    required this.priority,
+    required this.message,
+    required this.details,
+  });
+}
+
+class AlertsScreen extends ConsumerWidget {
   const AlertsScreen({super.key});
 
   @override
-  ConsumerState<AlertsScreen> createState() => _AlertsScreenState();
-}
+  Widget build(BuildContext context, WidgetRef ref) {
+    final alertsAsync = ref.watch(_allAlertsProvider);
 
-class _AlertsScreenState extends ConsumerState<AlertsScreen> {
-  int _daysThreshold = 90;
-  List<ExpiringBatchDetail> _expiringBatches = [];
-  List<LowStockProductDetail> _lowStockProducts = [];
-  bool _isLoading = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadAlerts();
-  }
-
-  Future<void> _loadAlerts() async {
-    setState(() => _isLoading = true);
-    final repo = ref.read(alertRepositoryProvider);
-
-    final expiring = await repo.listExpiringBatches(daysThreshold: _daysThreshold);
-    final lowStock = await repo.listLowStockProducts();
-
-    setState(() {
-      _expiringBatches = expiring;
-      _lowStockProducts = lowStock;
-      _isLoading = false;
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return DefaultTabController(
-      length: 2,
-      child: Scaffold(
-        appBar: AppBar(
-          title: const Text('Expiry & Low Stock Alerts'),
-          bottom: TabBar(
-            tabs: [
-              Tab(
-                text: 'Expiring Batches (${_expiringBatches.length})',
-                icon: const Icon(Icons.access_time),
-              ),
-              Tab(
-                text: 'Low Stock (${_lowStockProducts.length})',
-                icon: const Icon(Icons.warning_amber),
-              ),
-            ],
-          ),
-        ),
-        body: _isLoading
-            ? const Center(child: CircularProgressIndicator())
-            : TabBarView(
-                children: [
-                  // Tab 1: Expiring Batches
-                  Column(
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Row(
-                          children: [
-                            const Text('Show batches expiring within: '),
-                            DropdownButton<int>(
-                              value: _daysThreshold,
-                              items: const [
-                                DropdownMenuItem(value: 30, child: Text('30 Days')),
-                                DropdownMenuItem(value: 60, child: Text('60 Days')),
-                                DropdownMenuItem(value: 90, child: Text('90 Days')),
-                                DropdownMenuItem(value: 180, child: Text('180 Days')),
-                              ],
-                              onChanged: (val) {
-                                if (val != null) {
-                                  setState(() => _daysThreshold = val);
-                                  _loadAlerts();
-                                }
-                              },
-                            ),
-                          ],
-                        ),
-                      ),
-                      Expanded(
-                        child: _expiringBatches.isEmpty
-                            ? const Center(child: Text('No batches expiring within threshold.'))
-                            : ListView.builder(
-                                itemCount: _expiringBatches.length,
-                                itemBuilder: (ctx, idx) {
-                                  final item = _expiringBatches[idx];
-                                  final isCritical = item.daysUntilExpiry <= 30;
-
-                                  return ListTile(
-                                    key: Key('expiringBatchTile_$idx'),
-                                    leading: CircleAvatar(
-                                      backgroundColor:
-                                          isCritical ? Colors.red : Colors.orange,
-                                      child: const Icon(Icons.event, color: Colors.white),
-                                    ),
-                                    title: Text(item.product.name),
-                                    subtitle: Text(
-                                      'Batch #${item.batch.batchNo} | Exp: ${item.batch.expiryDate.toIso8601String().split('T').first} | Remaining: ${item.batch.qtyRemaining} ${item.product.baseUnit}s',
-                                    ),
-                                    trailing: Chip(
-                                      label: Text('${item.daysUntilExpiry} days left'),
-                                      backgroundColor: isCritical
-                                          ? Colors.red.shade100
-                                          : Colors.orange.shade100,
-                                    ),
-                                  );
-                                },
-                              ),
-                      ),
-                    ],
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Pharmacy Alerts'),
+      ),
+      body: alertsAsync.when(
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (e, _) => Center(child: Text('Failed to load alerts: $e')),
+        data: (alerts) {
+          if (alerts.isEmpty) {
+            return const Center(child: Text('No active alerts.'));
+          }
+          return ListView.builder(
+            itemCount: alerts.length,
+            itemBuilder: (ctx, idx) {
+              final item = alerts[idx];
+              Color color;
+              IconData icon;
+              switch (item.priority) {
+                case AlertPriority.expired:
+                  color = Colors.red;
+                  icon = Icons.gavel;
+                case AlertPriority.expiring:
+                  color = Colors.orange;
+                  icon = Icons.access_time;
+                case AlertPriority.failedBackup:
+                  color = Colors.deepOrange;
+                  icon = Icons.cloud_off;
+                case AlertPriority.lowStock:
+                  color = Colors.amber;
+                  icon = Icons.inventory_2;
+                case AlertPriority.openShift:
+                  color = Colors.blueGrey;
+                  icon = Icons.logout;
+              }
+              return ListTile(
+                leading: CircleAvatar(backgroundColor: color, child: Icon(icon, color: Colors.white)),
+                title: Text(item.message, style: const TextStyle(fontWeight: FontWeight.w500)),
+                subtitle: Text(item.details),
+                trailing: Chip(
+                  label: Text(
+                    item.priority.name,
+                    style: const TextStyle(fontSize: 11),
                   ),
-
-                  // Tab 2: Low Stock Products
-                  _lowStockProducts.isEmpty
-                      ? const Center(child: Text('All products have adequate stock.'))
-                      : ListView.builder(
-                          itemCount: _lowStockProducts.length,
-                          itemBuilder: (ctx, idx) {
-                            final item = _lowStockProducts[idx];
-                            return ListTile(
-                              key: Key('lowStockTile_$idx'),
-                              leading: const CircleAvatar(
-                                backgroundColor: Colors.amber,
-                                child: Icon(Icons.inventory_2, color: Colors.white),
-                              ),
-                              title: Text(item.product.name),
-                              subtitle: Text(
-                                'Barcode: ${item.product.barcode} | Location: ${item.product.category}',
-                              ),
-                              trailing: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    crossAxisAlignment: CrossAxisAlignment.end,
-                                    children: [
-                                      Text(
-                                        'Stock: ${item.currentTotalStock} / Threshold: ${item.product.reorderThreshold}',
-                                        style: const TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.red,
-                                        ),
-                                      ),
-                                      Text(
-                                        '${item.product.baseUnit}s',
-                                        style: const TextStyle(fontSize: 12, color: Colors.grey),
-                                      ),
-                                    ],
-                                  ),
-                                  const SizedBox(width: 8),
-                                  IconButton(
-                                    key: Key('createPoFromAlert_${item.product.id}'),
-                                    icon: const Icon(Icons.add_shopping_cart, color: Colors.blue),
-                                    tooltip: 'Create Purchase Order',
-                                    onPressed: () {
-                                      Navigator.of(context).push(
-                                        MaterialPageRoute(builder: (_) => const PurchaseOrderScreen()),
-                                      );
-                                    },
-                                  ),
-                                ],
-                              ),
-                            );
-                          },
-                        ),
-                ],
-              ),
+                  backgroundColor: color.withAlpha(30),
+                ),
+              );
+            },
+          );
+        },
       ),
     );
   }
