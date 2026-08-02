@@ -1,25 +1,35 @@
 import 'package:drift/drift.dart';
 
+import 'audit_logger.dart';
 import 'database.dart';
 
 class SalesSummary {
-  SalesSummary({
+  const SalesSummary({
     required this.totalTransactions,
     required this.totalRevenue,
     required this.totalCostOfGoods,
     required this.grossProfit,
+    required this.totalRefunds,
+    required this.netRevenue,
   });
 
   final int totalTransactions;
   final double totalRevenue;
   final double totalCostOfGoods;
   final double grossProfit;
+  final double totalRefunds;
+  final double netRevenue;
+
+  double get grossMarginPct =>
+      totalRevenue > 0 ? (grossProfit / totalRevenue) * 100 : 0;
 }
 
 class ReportRepository {
-  ReportRepository(this._db);
+  ReportRepository(this._db, {AuditLogger? auditLogger})
+      : _auditLogger = auditLogger;
 
   final AppDatabase _db;
+  final AuditLogger? _auditLogger;
 
   /// Generates sales summary report for a given date range.
   Future<SalesSummary> getSalesSummary({
@@ -52,12 +62,66 @@ class ReportRepository {
       }
     }
 
+    // Total refunds in the same period
+    final refunds = await (_db.select(_db.returnTransactions)
+          ..where((tbl) =>
+              tbl.createdAt.isBiggerOrEqual(Variable(startDate)) &
+              tbl.createdAt.isSmallerOrEqual(Variable(endDate))))
+        .get();
+    final totalRefunds =
+        refunds.fold(0.0, (sum, r) => sum + r.refundAmount);
+
     return SalesSummary(
       totalTransactions: count,
       totalRevenue: revenue,
       totalCostOfGoods: cogs,
       grossProfit: revenue - cogs,
+      totalRefunds: totalRefunds,
+      netRevenue: revenue - totalRefunds,
     );
+  }
+
+  /// Returns cash discrepancies for closed shifts in the date range.
+  Future<List<ShiftDiscrepancy>> getShiftDiscrepancies({
+    required DateTime startDate,
+    required DateTime endDate,
+  }) async {
+    final shifts = await (_db.select(_db.cashierShifts)
+          ..where((tbl) =>
+              tbl.status.equals('closed') &
+              tbl.closedAt.isBiggerOrEqual(Variable(startDate)) &
+              tbl.closedAt.isSmallerOrEqual(Variable(endDate))))
+        .get();
+
+    return shifts
+        .where((s) => s.discrepancy != null && s.discrepancy != 0)
+        .map((s) => ShiftDiscrepancy(
+              shiftId: s.id,
+              cashierId: s.cashierId,
+              expectedCash: s.expectedCash ?? 0,
+              actualCash: s.actualCash ?? 0,
+              discrepancy: s.discrepancy ?? 0,
+              discrepancyReason: s.discrepancyReason,
+              closedAt: s.closedAt!,
+            ))
+        .toList();
+  }
+
+  /// Logs a report export to the audit trail.
+  Future<void> logExport({
+    required int userId,
+    required String exportType,
+    String? details,
+  }) async {
+    if (_auditLogger != null) {
+      await _auditLogger!.log(
+        tableName: 'report_exports',
+        recordId: 0,
+        action: 'export_',
+        userId: userId,
+        newValue: details,
+      );
+    }
   }
 
   /// Exports prescription sales log as CSV format for BPOM / Kemenkes compliance.
@@ -73,7 +137,7 @@ class ReportRepository {
 
     for (final t in txns) {
       buffer.writeln(
-        '${t.txnNo},${t.createdAt.toIso8601String()},${t.cashierId},"${t.patientName ?? ''}","${t.doctorName ?? ''}",${t.totalAmount},${t.paymentMethod}',
+        ',,,"","",,',
       );
     }
 
@@ -118,6 +182,26 @@ class ReportRepository {
     }
     return rows;
   }
+}
+
+class ShiftDiscrepancy {
+  const ShiftDiscrepancy({
+    required this.shiftId,
+    required this.cashierId,
+    required this.expectedCash,
+    required this.actualCash,
+    required this.discrepancy,
+    this.discrepancyReason,
+    required this.closedAt,
+  });
+
+  final int shiftId;
+  final int cashierId;
+  final double expectedCash;
+  final double actualCash;
+  final double discrepancy;
+  final String? discrepancyReason;
+  final DateTime closedAt;
 }
 
 class DetailedSaleRow {
