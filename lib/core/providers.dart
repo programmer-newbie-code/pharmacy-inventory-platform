@@ -24,6 +24,8 @@ import '../data/return_repository.dart';
 import '../data/supplier_repository.dart';
 import '../data/purchase_order_repository.dart';
 import '../data/pharmacy_settings_service.dart';
+
+import '../data/audit_log_repository.dart';
 import '../data/drug_lookup_service.dart';
 
 final databaseProvider = Provider<AppDatabase>((ref) {
@@ -117,7 +119,15 @@ final drugLookupServiceProvider = Provider<DrugLookupService>(
 
 final passwordHasherProvider = Provider<PasswordHasher>((ref) => PasswordHasher());
 
+
+
+final auditLogRepositoryProvider = Provider<AuditLogRepository>(
+  (ref) => AuditLogRepository(ref.watch(databaseProvider)),
+);
+
 final permissionCheckerProvider = Provider<PermissionChecker>((ref) => PermissionChecker());
+
+
 
 
 
