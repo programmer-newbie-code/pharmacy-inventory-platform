@@ -56,9 +56,9 @@ class AuditLogRepository {
 
   /// Queries audit logs with optional filters, pagination, and ordering (newest first).
   Future<List<AuditLogEntry>> query(AuditLogFilter filter) async {
-    final query = _db.select(_db.auditLogs).join(
-      [_db.users],
-    );
+    final query = _db.select(_db.auditLogs).join([
+      innerJoin(_db.users, _db.users.id.equalsExp(_db.auditLogs.userId)),
+    ]);
 
     if (filter.userId != null) {
       query.where(_db.auditLogs.userId.equals(filter.userId!));
@@ -107,3 +107,4 @@ class AuditLogRepository {
     }).toList();
   }
 }
+
