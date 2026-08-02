@@ -49,7 +49,7 @@ void main() {
   });
 
   test('returns all logs ordered newest first', () async {
-    final logs = await repo.query(AuditLogFilter());
+    final logs = await repo.query(const AuditLogFilter());
     expect(logs.length, 12);
     for (int i = 0; i < logs.length - 1; i++) {
       expect(
@@ -61,25 +61,25 @@ void main() {
   });
 
   test('filters by userId', () async {
-    final logs = await repo.query(AuditLogFilter(userId: 1));
+    final logs = await repo.query(const AuditLogFilter(userId: 1));
     expect(logs.length, 6);
     expect(logs.every((l) => l.userId == 1), isTrue);
   });
 
   test('filters by entityTable', () async {
-    final logs = await repo.query(AuditLogFilter(entityTable: 'sales'));
+    final logs = await repo.query(const AuditLogFilter(entityTable: 'sales'));
     expect(logs.length, 6);
     expect(logs.every((l) => l.entityTable == 'sales'), isTrue);
   });
 
   test('filters by action', () async {
-    final logs = await repo.query(AuditLogFilter(action: 'create'));
+    final logs = await repo.query(const AuditLogFilter(action: 'create'));
     expect(logs.length, 6);
     expect(logs.every((l) => l.action == 'create'), isTrue);
   });
 
   test('filters by recordId', () async {
-    final logs = await repo.query(AuditLogFilter(recordId: 105));
+    final logs = await repo.query(const AuditLogFilter(recordId: 105));
     expect(logs.length, 1);
     expect(logs.single.recordId, 105);
   });
@@ -95,10 +95,10 @@ void main() {
   });
 
   test('paginates with limit and offset', () async {
-    final page1 = await repo.query(AuditLogFilter(limit: 5, offset: 0));
+    final page1 = await repo.query(const AuditLogFilter(limit: 5, offset: 0));
     expect(page1.length, 5);
 
-    final page2 = await repo.query(AuditLogFilter(limit: 5, offset: 5));
+    final page2 = await repo.query(const AuditLogFilter(limit: 5, offset: 5));
     expect(page2.length, 5);
 
     // Ensure pages don't overlap
@@ -108,10 +108,11 @@ void main() {
   });
 
   test('returns username from join', () async {
-    final logs = await repo.query(AuditLogFilter(userId: 1));
+    final logs = await repo.query(const AuditLogFilter(userId: 1));
     expect(logs.isNotEmpty, isTrue);
     expect(logs.first.username, 'admin');
   });
 }
+
 
 
