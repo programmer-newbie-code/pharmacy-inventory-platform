@@ -1,6 +1,7 @@
 import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:pharmacy_inventory_platform/data/audit_logger.dart';
 import 'package:pharmacy_inventory_platform/data/database.dart';
 import 'package:pharmacy_inventory_platform/data/cashier_shift_repository.dart';
 import 'package:pharmacy_inventory_platform/data/product_repository.dart';
@@ -8,7 +9,6 @@ import 'package:pharmacy_inventory_platform/data/report_repository.dart';
 import 'package:pharmacy_inventory_platform/data/sale_repository.dart';
 import 'package:pharmacy_inventory_platform/data/stock_batch_repository.dart';
 import 'package:pharmacy_inventory_platform/data/return_repository.dart';
-
 void main() {
   late AppDatabase db;
   late ProductRepository productRepo;
