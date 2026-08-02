@@ -15,6 +15,8 @@ void main() {
       totalRevenue: 55000,
       totalCostOfGoods: 35000,
       grossProfit: 20000,
+      totalRefunds: 0,
+      netRevenue: 55000,
     );
 
     final rows = [
@@ -40,4 +42,3 @@ void main() {
     expect(bytes, isNotEmpty);
   });
 }
-
