@@ -117,7 +117,7 @@ class ReportRepository {
       await _auditLogger.log(
         tableName: 'report_exports',
         recordId: 0,
-        action: 'export_',
+        action: 'export_$exportType',
         userId: userId,
         newValue: details,
       );
