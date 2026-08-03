@@ -73,12 +73,14 @@ class HomeScreen extends ConsumerWidget {
     final permChecker = ref.watch(permissionCheckerProvider);
 
     final roleStr = user?.role;
+    final isAdmin = permChecker.parseRole(roleStr) == Role.admin;
     final canManageUsers = permChecker.canManageUsers(roleStr);
     final canManageBackup = permChecker.canManageBackup(roleStr);
     final canManageBranding = permChecker.canManageBranding(roleStr);
     final canManageSuppliers = permChecker.canManageSuppliers(roleStr);
     final canManageShifts = permChecker.canManageShifts(roleStr);
     final canManageReturns = permChecker.canManageReturns(roleStr);
+
 
     return Scaffold(
       appBar: AppBar(
@@ -189,15 +191,20 @@ class HomeScreen extends ConsumerWidget {
                                 Container(
                                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
                                   decoration: BoxDecoration(
-                                    color: Colors.white.withAlpha(40),
+                                    color: isAdmin
+                                        ? Colors.amber.withAlpha(50)
+                                        : Colors.white.withAlpha(40),
                                     borderRadius: BorderRadius.circular(20),
+                                    border: isAdmin
+                                        ? Border.all(color: Colors.amber.shade300.withAlpha(150))
+                                        : null,
                                   ),
                                   child: Text(
                                     (user?.role ?? 'kasir').toUpperCase(),
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                       fontSize: 11,
                                       fontWeight: FontWeight.w700,
-                                      color: Colors.white,
+                                      color: isAdmin ? Colors.amber.shade200 : Colors.white,
                                       letterSpacing: 0.8,
                                     ),
                                   ),
