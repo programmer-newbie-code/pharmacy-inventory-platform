@@ -130,5 +130,8 @@
   "okButton": "OK",
   "passwordTooShort": "Kata sandi minimal 8 karakter.",
   "passwordTooSimple": "Kata sandi harus mengandung huruf dan angka.",
-  "passwordTooCommon": "Kata sandi terlalu umum. Pilih yang lebih unik."
+  "passwordTooCommon": "Kata sandi terlalu umum. Pilih yang lebih unik.",
+  "dailySummarySection": "Ringkasan Hari Ini",
+  "platformModulesSection": "Modul Aplikasi"
 }
+
