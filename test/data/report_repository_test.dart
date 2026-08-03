@@ -1,19 +1,22 @@
 import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:pharmacy_inventory_platform/data/audit_logger.dart';
 import 'package:pharmacy_inventory_platform/data/database.dart';
 import 'package:pharmacy_inventory_platform/data/cashier_shift_repository.dart';
 import 'package:pharmacy_inventory_platform/data/product_repository.dart';
 import 'package:pharmacy_inventory_platform/data/report_repository.dart';
 import 'package:pharmacy_inventory_platform/data/sale_repository.dart';
 import 'package:pharmacy_inventory_platform/data/stock_batch_repository.dart';
-
+import 'package:pharmacy_inventory_platform/data/return_repository.dart';
 void main() {
   late AppDatabase db;
   late ProductRepository productRepo;
   late StockBatchRepository batchRepo;
   late SaleRepository saleRepo;
   late ReportRepository reportRepo;
+  late ReturnRepository returnRepo;
+  late CashierShiftRepository shiftRepo;
 
   setUp(() async {
     db = AppDatabase(NativeDatabase.memory());
@@ -21,6 +24,9 @@ void main() {
     batchRepo = StockBatchRepository(db);
     saleRepo = SaleRepository(db);
     reportRepo = ReportRepository(db);
+    returnRepo = ReturnRepository(db);
+    shiftRepo = CashierShiftRepository(db);
+
     await db.into(db.users).insert(
           UsersCompanion.insert(
             id: const Value(1),
@@ -29,14 +35,14 @@ void main() {
             role: 'kasir',
           ),
         );
-    await CashierShiftRepository(db).openShift(cashierId: 1, openingBalance: 0);
+    await shiftRepo.openShift(cashierId: 1, openingBalance: 0);
   });
 
   tearDown(() async {
     await db.close();
   });
 
-  test('calculates sales summary revenue, COGS, and gross profit correctly', () async {
+  test('calculates sales summary revenue, COGS, and gross profit', () async {
     final prodId = await productRepo.createProduct(
       barcode: '8999999000111',
       internalCode: 'RPT-1',
@@ -66,15 +72,10 @@ void main() {
       createdBy: 'admin',
     );
 
-    // Sell 10 tablets at Rp 150 each (Total revenue = 1500, COGS = 1000, Profit = 500)
     await saleRepo.createSaleTransaction(
       cashierId: 1,
       items: [
-        CartItemInput(
-          product: product,
-          qtyBaseUnit: 10,
-          unitPrice: 150.0,
-        ),
+        CartItemInput(product: product, qtyBaseUnit: 10, unitPrice: 150.0),
       ],
       paymentMethod: 'Cash',
     );
@@ -89,5 +90,138 @@ void main() {
     expect(summary.totalRevenue, equals(1500.0));
     expect(summary.totalCostOfGoods, equals(1000.0));
     expect(summary.grossProfit, equals(500.0));
+    expect(summary.totalRefunds, equals(0.0));
+    expect(summary.netRevenue, equals(1500.0));
+  });
+
+  test('includes refunds in sales summary', () async {
+    final prodId = await productRepo.createProduct(
+      barcode: '8999999000222',
+      internalCode: 'RPT-2',
+      name: 'Refundable Medicine',
+      activeIngredient: 'TestIng',
+      ingredientPct: 100.0,
+      baseUnit: 'tablet',
+      purchaseUnit: 'box',
+      unitsPerPurchaseUnit: 10,
+      costPricePerBaseUnit: 100.0,
+      marginPct: 50.0,
+      reorderThreshold: 10,
+      category: 'General',
+      createdBy: 'admin',
+    );
+    final product = (await productRepo.getProductById(prodId))!;
+
+    await batchRepo.createStockBatch(
+      productId: prodId,
+      batchNo: 'B-RPT-02',
+      receivedDate: DateTime.now(),
+      expiryDate: DateTime.now().add(const Duration(days: 180)),
+      qtyReceivedBaseUnit: 50,
+      costPricePerBaseUnit: 100.0,
+      supplier: 'Kimia Farma',
+      createdBy: 'admin',
+    );
+
+    final txn = await saleRepo.createSaleTransaction(
+      cashierId: 1,
+      items: [
+        CartItemInput(product: product, qtyBaseUnit: 10, unitPrice: 200.0),
+      ],
+      paymentMethod: 'Cash',
+    );
+
+    // Get the sale items for the return
+    final saleItems = await (db.select(db.saleItems)
+          ..where((t) => t.transactionId.equals(txn.id)))
+        .get();
+
+    await returnRepo.processReturn(
+      originalTxnId: txn.id,
+      processedBy: 1,
+      reason: 'defective',
+      refundMethod: 'Cash',
+      returnItems: [
+        ReturnItemInput(
+          saleItem: saleItems.first,
+          qtyReturned: 5,
+        ),
+      ],
+    );
+
+    final now = DateTime.now();
+    final summary = await reportRepo.getSalesSummary(
+      startDate: now.subtract(const Duration(days: 1)),
+      endDate: now.add(const Duration(days: 1)),
+    );
+
+    expect(summary.totalTransactions, equals(1));
+    expect(summary.totalRevenue, equals(2000.0));
+    expect(summary.totalRefunds, equals(1000.0));
+    expect(summary.netRevenue, equals(1000.0));
+  });
+
+  test('returns shift discrepancies for date range', () async {
+    final prodId = await productRepo.createProduct(
+      barcode: '8999999000333',
+      internalCode: 'RPT-3',
+      name: 'Disc Test',
+      activeIngredient: 'TestIng',
+      ingredientPct: 100.0,
+      baseUnit: 'tablet',
+      purchaseUnit: 'box',
+      unitsPerPurchaseUnit: 10,
+      costPricePerBaseUnit: 100.0,
+      marginPct: 50.0,
+      reorderThreshold: 10,
+      category: 'General',
+      createdBy: 'admin',
+    );
+    final product = (await productRepo.getProductById(prodId))!;
+    await batchRepo.createStockBatch(
+      productId: prodId,
+      batchNo: 'B-RPT-03',
+      receivedDate: DateTime.now(),
+      expiryDate: DateTime.now().add(const Duration(days: 180)),
+      qtyReceivedBaseUnit: 50,
+      costPricePerBaseUnit: 100.0,
+      supplier: 'Kimia Farma',
+      createdBy: 'admin',
+    );
+    await saleRepo.createSaleTransaction(
+      cashierId: 1,
+      items: [CartItemInput(product: product, qtyBaseUnit: 5, unitPrice: 1000.0)],
+      paymentMethod: 'Cash',
+    );
+
+    // actualCash = 4000 but expected = 0 + 5000 = 5000, so discrepancy = -1000
+    await shiftRepo.closeShift(
+      shiftId: 1,
+      actualCash: 4000,
+      discrepancyReason: 'cashier miscount',
+    );
+
+    final now = DateTime.now();
+    final discrepancies = await reportRepo.getShiftDiscrepancies(
+      startDate: now.subtract(const Duration(days: 1)),
+      endDate: now.add(const Duration(days: 1)),
+    );
+
+    expect(discrepancies.length, equals(1));
+    expect(discrepancies.single.discrepancyReason, equals('cashier miscount'));
+  });
+
+  test('logExport writes to audit trail', () async {
+    final auditRepo = ReportRepository(db, auditLogger: AuditLogger(db));
+
+    await auditRepo.logExport(
+      userId: 1,
+      exportType: 'excel_sales',
+      details: 'Period: 2026-07-01 to 2026-07-31',
+    );
+
+    final logs = await db.select(db.auditLogs).get();
+    expect(logs.length, equals(1));
+    expect(logs.single.action, equals('export_excel_sales'));
   });
 }
