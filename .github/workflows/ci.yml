@@ -57,7 +57,7 @@ jobs:
           sudo apt-get update && sudo apt-get install -y lcov
           lcov --remove coverage/lcov.info '**/*.g.dart' 'lib/l10n/app_localizations*.dart' 'lib/data/database.dart' -o coverage/lcov_filtered.info
           lcov --summary coverage/lcov_filtered.info
-          COVERAGE=$(lcov --summary coverage/lcov_filtered.info | grep -oE '[0-9]+\.[0-9]+%' | tr -d '%')
+          COVERAGE=$(lcov --summary coverage/lcov_filtered.info | grep -i 'lines' | grep -oE '[0-9]+\.[0-9]+%' | head -n 1 | tr -d '%')
           echo "Line coverage: $COVERAGE%"
           awk -v cov="$COVERAGE" 'BEGIN { if (cov + 0 < 80) { print "Coverage below 80%"; exit 1 } }'
 
