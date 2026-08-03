@@ -3,6 +3,12 @@ layout: default
 title: Documentation & User Manual — Pharmacy Inventory Platform
 ---
 
+### 📱 Multi-Platform Interface Overview
+
+| 💻 Windows Desktop Interface | 📱 Android Mobile Interface |
+| :---: | :---: |
+| ![Pharmacy Desktop UI](assets/images/desktop_ui.png) | ![Pharmacy Android Mobile UI](assets/images/android_ui.png) |
+
 ## 📖 User Guide & Operating Manual
 
 ### 1. First-Time Administrator Setup
@@ -58,6 +64,23 @@ When launching the application for the first time on Windows or Android:
 
 ---
 
+### 7. Google Cloud OAuth & Google Drive Setup
+1. Enable **Google Drive API** in Google Cloud Console.
+2. Configure **OAuth Consent Screen** with scope `https://www.googleapis.com/auth/drive.appdata`.
+3. Set up **Android OAuth Client ID** with package name `com.programmernewbiecode.pharmacy_inventory_platform` and SHA-1 signing certificate fingerprint.
+4. Set up **Desktop OAuth Client ID** with authorized redirect URI `http://localhost:8080`.
+
+---
+
+### 8. Verified Device-to-Device Transfer Checklist
+- [ ] Perform final Local Backup & Google Drive Sync on the old device.
+- [ ] Verify `BackupLogs` audit trail shows `SUCCESS` and non-zero backup file size.
+- [ ] Transfer backup `.json` file to the new device via USB or Google Drive download.
+- [ ] Launch app on new device and select **Restore from Backup**.
+- [ ] Verify inventory stock, POS sales history, and user permissions match on the new device.
+
+---
+
 ## 💻 Technical Architecture & Setup
 
 ```bash
@@ -77,3 +100,4 @@ flutter test --coverage
 # 5. Launch Application on Windows
 flutter run -d windows
 ```
+
