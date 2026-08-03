@@ -3,7 +3,11 @@ layout: default
 title: Documentation & User Manual — Pharmacy Inventory Platform
 ---
 
-![Pharmacy Inventory & POS Dashboard](assets/images/app_screenshot.png)
+### 📱 Multi-Platform Interface Overview
+
+| 💻 Windows Desktop Interface | 📱 Android Mobile Interface |
+| :---: | :---: |
+| ![Pharmacy Desktop UI](assets/images/desktop_ui.png) | ![Pharmacy Android Mobile UI](assets/images/android_ui.png) |
 
 ## 📖 User Guide & Operating Manual
 
