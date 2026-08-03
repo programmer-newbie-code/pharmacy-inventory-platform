@@ -135,7 +135,7 @@ class ReportRepository {
       'TransactionNo,Date,CashierID,PatientName,DoctorName,TotalAmount,PaymentMethod',
     );
 
-    for (final txn in txns) {
+    for (final _ in txns) {
       buffer.writeln(
         ',,,"","",,',
       );
