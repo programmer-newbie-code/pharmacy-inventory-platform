@@ -114,7 +114,7 @@ class ReportRepository {
     String? details,
   }) async {
     if (_auditLogger != null) {
-      await _auditLogger!.log(
+      await _auditLogger.log(
         tableName: 'report_exports',
         recordId: 0,
         action: 'export_',
@@ -135,7 +135,7 @@ class ReportRepository {
       'TransactionNo,Date,CashierID,PatientName,DoctorName,TotalAmount,PaymentMethod',
     );
 
-    for (final t in txns) {
+    for (final txn in txns) {
       buffer.writeln(
         ',,,"","",,',
       );
@@ -225,3 +225,5 @@ class DetailedSaleRow {
   final double unitPrice;
   final double subtotal;
 }
+
+

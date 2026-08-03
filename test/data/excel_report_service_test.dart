@@ -10,7 +10,7 @@ void main() {
   });
 
   test('generateSalesReport creates non-empty Excel bytes for summary and detailed rows', () {
-    final summary = SalesSummary(
+    final summary = const SalesSummary(
       totalTransactions: 1,
       totalRevenue: 55000,
       totalCostOfGoods: 35000,
