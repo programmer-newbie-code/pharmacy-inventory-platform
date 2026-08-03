@@ -410,7 +410,24 @@
 
     <!-- User Guide Content -->
     <div class="content-box">
-      <h2 id="-user-guide--operating-manual">📖 User Guide &amp; Operating Manual</h2>
+      <h3 id="-multi-platform-interface-overview">📱 Multi-Platform Interface Overview</h3>
+
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: center">💻 Windows Desktop Interface</th>
+      <th style="text-align: center">📱 Android Mobile Interface</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: center"><img src="assets/images/desktop_ui.png" alt="Pharmacy Desktop UI" /></td>
+      <td style="text-align: center"><img src="assets/images/android_ui.png" alt="Pharmacy Android Mobile UI" /></td>
+    </tr>
+  </tbody>
+</table>
+
+<h2 id="-user-guide--operating-manual">📖 User Guide &amp; Operating Manual</h2>
 
 <h3 id="1-first-time-administrator-setup">1. First-Time Administrator Setup</h3>
 <p>When launching the application for the first time on Windows or Android:</p>
@@ -486,6 +503,27 @@
 
 <hr />
 
+<h3 id="7-google-cloud-oauth--google-drive-setup">7. Google Cloud OAuth &amp; Google Drive Setup</h3>
+<ol>
+  <li>Enable <strong>Google Drive API</strong> in Google Cloud Console.</li>
+  <li>Configure <strong>OAuth Consent Screen</strong> with scope <code class="language-plaintext highlighter-rouge">https://www.googleapis.com/auth/drive.appdata</code>.</li>
+  <li>Set up <strong>Android OAuth Client ID</strong> with package name <code class="language-plaintext highlighter-rouge">com.programmernewbiecode.pharmacy_inventory_platform</code> and SHA-1 signing certificate fingerprint.</li>
+  <li>Set up <strong>Desktop OAuth Client ID</strong> with authorized redirect URI <code class="language-plaintext highlighter-rouge">http://localhost:8080</code>.</li>
+</ol>
+
+<hr />
+
+<h3 id="8-verified-device-to-device-transfer-checklist">8. Verified Device-to-Device Transfer Checklist</h3>
+<ul class="task-list">
+  <li class="task-list-item"><input type="checkbox" class="task-list-item-checkbox" disabled="disabled" />Perform final Local Backup &amp; Google Drive Sync on the old device.</li>
+  <li class="task-list-item"><input type="checkbox" class="task-list-item-checkbox" disabled="disabled" />Verify <code class="language-plaintext highlighter-rouge">BackupLogs</code> audit trail shows <code class="language-plaintext highlighter-rouge">SUCCESS</code> and non-zero backup file size.</li>
+  <li class="task-list-item"><input type="checkbox" class="task-list-item-checkbox" disabled="disabled" />Transfer backup <code class="language-plaintext highlighter-rouge">.json</code> file to the new device via USB or Google Drive download.</li>
+  <li class="task-list-item"><input type="checkbox" class="task-list-item-checkbox" disabled="disabled" />Launch app on new device and select <strong>Restore from Backup</strong>.</li>
+  <li class="task-list-item"><input type="checkbox" class="task-list-item-checkbox" disabled="disabled" />Verify inventory stock, POS sales history, and user permissions match on the new device.</li>
+</ul>
+
+<hr />
+
 <h2 id="-technical-architecture--setup">💻 Technical Architecture &amp; Setup</h2>
 
 <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># 1. Clone Repository</span>
@@ -504,6 +542,7 @@ flutter <span class="nb">test</span> <span class="nt">--coverage</span>
 <span class="c"># 5. Launch Application on Windows</span>
 flutter run <span class="nt">-d</span> windows
 </code></pre></div></div>
+
 
     </div>
   </main>
