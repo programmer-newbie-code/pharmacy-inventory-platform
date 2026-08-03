@@ -35,9 +35,9 @@
 
 ---
 
-## 🏷️ 5. Version Bump & Tagging Procedure
-- [ ] Increment `version` string in `pubspec.yaml` (e.g., `1.3.0+4`).
-- [ ] Commit version bump via PR: `chore(release): bump version to 1.3.0+4`.
-- [ ] Merge PR after ALL GitHub Actions CI checks pass 100% GREEN.
-- [ ] Create annotated git tag on `main`: `git tag -a v1.3.0 -m "Release v1.3.0"`.
-- [ ] Push tag to origin: `git push origin v1.3.0` to trigger automated release workflow.
+## 🏷️ 5. Automated Release Tagging Procedure
+- [ ] Ensure all feature PRs are merged to `main` with passing CI.
+- [ ] Create annotated git tag on `main`: `git tag -a v1.3.X -m "Release v1.3.X"`.
+- [ ] Push tag to origin: `git push origin v1.3.X`.
+- [ ] GitHub Actions CI automatically extracts the version from the tag, injects it into Windows and Android builds, and publishes the release binaries automatically!
+
