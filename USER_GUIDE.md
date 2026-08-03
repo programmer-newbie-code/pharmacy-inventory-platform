@@ -56,8 +56,66 @@ Navigate to **Expiry & Low Stock Alerts**:
 
 ---
 
+---
+
+## ☁️ 6. Google Cloud OAuth & Google Drive Backup Configuration
+
+To enable cloud backup and restore to Google Drive:
+
+### 1. Google Cloud Console Setup
+1. Go to [Google Cloud Console](https://console.cloud.google.com/) and create a project (e.g., `pharmacy-inventory-platform`).
+2. Navigate to **APIs & Services > Library** and enable **Google Drive API**.
+3. Configure the **OAuth Consent Screen**:
+   - User Type: External or Internal (depending on organization setup).
+   - Scopes: Add `https://www.googleapis.com/auth/drive.appdata` (Application Data folder) and `https://www.googleapis.com/auth/drive.file`.
+
+### 2. Android Client Credentials
+1. In **APIs & Services > Credentials**, click **Create Credentials > OAuth client ID**.
+2. Select Application Type: **Android**.
+3. Package Name: `com.programmernewbiecode.pharmacy_inventory_platform`.
+4. SHA-1 Fingerprint:
+   - For debug builds: Get via `keytool -list -v -keystore ~/.android/debug.keystore -alias androiddebugkey`.
+   - For release builds: Get SHA-1 and SHA-256 fingerprints from your release keystore or Play Console App Signing.
+
+### 3. Windows Desktop Client Credentials
+1. Create OAuth client ID with type **Desktop Application**.
+2. Set Authorized Redirect URI: `http://localhost:8080` (or loopback IP redirect).
+3. Save `client_id` and `client_secret` into app configuration.
+
+---
+
+## 📲 7. Verified Device-to-Device Transfer Checklist
+
+When migrating pharmacy data to a new Windows or Android device:
+
+- [ ] **Step 1: Perform Final Backup on Old Device**
+  - Open **Database Backup** screen.
+  - Perform a **Local Backup** (`pharmacy_backup_<timestamp>.json`) AND trigger a **Google Drive Sync**.
+  - Verify that the backup status indicates `SUCCESS` with a valid timestamp and checksum.
+
+- [ ] **Step 2: Verify Backup Integrity**
+  - Check `BackupLogs` audit trail on old device to verify no data corruption occurred.
+  - Ensure the `.json` file size is non-zero and matching expected record count.
+
+- [ ] **Step 3: Transfer to New Device**
+  - Install **Pharmacy Inventory Platform** on the new device.
+  - Copy the backup `.json` file via USB/Local Network, OR sign in with Google to download from Drive.
+
+- [ ] **Step 4: Execute Verified Restore**
+  - On the new device setup screen, select **Restore from Backup**.
+  - Provide admin credentials when prompted to authorize data overwrite.
+  - Wait for schema verification and database restoration to complete.
+
+- [ ] **Step 5: Post-Restore Verification**
+  - Log in with existing admin credentials.
+  - Check **Inventory Catalog** to verify product count and stock batches match.
+  - Verify **POS Sales History** and **Shift Logs** match pre-transfer totals.
+
+---
+
 ## 🔒 Security & Support
 - **Role Permissions Matrix**:
   - `Admin`: Full system access, user management, and database configuration.
   - `Pharmacist`: Catalog management, stock receipt, and expiry audit logs.
   - `Cashier`: POS sales counter and transaction processing.
+
