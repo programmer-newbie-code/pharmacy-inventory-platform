@@ -141,6 +141,19 @@
   "passwordTooSimple": "Kata sandi harus mengandung huruf dan angka.",
   "passwordTooCommon": "Kata sandi terlalu umum. Pilih yang lebih unik.",
   "dailySummarySection": "Ringkasan Hari Ini",
-  "platformModulesSection": "Modul Aplikasi"
+  "platformModulesSection": "Modul Aplikasi",
+  "chooseCsvFile": "Pilih file CSV",
+  "csvChooseDescription": "Pilih file .csv untuk ditinjau sebelum data produk disimpan.",
+  "csvRequiredColumns": "Kolom wajib: Barcode, InternalCode, ProductName.",
+  "csvCatalogNotice": "Katalog obat bawaan hanya membantu nama, kategori, dan unit. Katalog tidak membuat stok, batch, harga, pemasok, atau tanggal kedaluwarsa.",
+  "csvPreviewSummary": "{valid} valid, {invalid} dilewati",
+  "@csvPreviewSummary": {"placeholders": {"valid": {"type": "int"}, "invalid": {"type": "int"}}},
+  "csvImportValidRows": "Impor {count} baris valid",
+  "@csvImportValidRows": {"placeholders": {"count": {"type": "int"}}},
+  "csvExistingDuplicates": "Duplikat yang sudah ada akan dilewati; baris valid lainnya tetap dapat diimpor.",
+  "csvResultSummary": "{success} produk diimpor, {failed} dilewati.",
+  "@csvResultSummary": {"placeholders": {"success": {"type": "int"}, "failed": {"type": "int"}}},
+  "csvReadFailed": "File CSV tidak dapat dibaca. Pilih file lain lalu coba lagi.",
+  "csvUnnamedProduct": "(tanpa nama)"
 }
 

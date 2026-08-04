@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/providers.dart';
 import '../../data/csv_import_service.dart';
+import '../../l10n/app_localizations.dart';
 
 class CsvImportDialog extends ConsumerStatefulWidget {
   const CsvImportDialog({super.key, this.pickCsvText});
@@ -38,11 +39,14 @@ class _CsvImportDialogState extends ConsumerState<CsvImportDialog> {
     try {
       final csv = await _pickCsvText();
       if (csv == null) return;
-      final preview = await ref.read(csvImportServiceProvider).previewProductsFromCsv(csv);
+      final preview =
+          await ref.read(csvImportServiceProvider).previewProductsFromCsv(csv);
       if (mounted) setState(() => _preview = preview);
-    } on FormatException catch (error) {
+    } on FormatException {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('CSV tidak dapat dibaca: $error')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(AppLocalizations.of(context)!.csvReadFailed)),
+        );
       }
     } finally {
       if (mounted) setState(() => _isLoading = false);
@@ -53,17 +57,19 @@ class _CsvImportDialogState extends ConsumerState<CsvImportDialog> {
     final preview = _preview;
     if (preview == null) return;
     setState(() => _isLoading = true);
-    final result = await ref.read(csvImportServiceProvider).importPreview(preview);
+    final result =
+        await ref.read(csvImportServiceProvider).importPreview(preview);
     if (mounted) setState(() => _result = result);
     if (mounted) setState(() => _isLoading = false);
   }
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final preview = _preview;
     final result = _result;
     return AlertDialog(
-      title: const Text('Impor Inventaris CSV'),
+      title: Text(l10n.importCsvTitle),
       content: SizedBox(
         width: 640,
         child: _isLoading
@@ -80,20 +86,20 @@ class _CsvImportDialogState extends ConsumerState<CsvImportDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(result != null),
-          child: Text(result == null ? 'Batal' : 'Selesai'),
+          child: Text(result == null ? l10n.cancelButton : l10n.doneButton),
         ),
         if (preview == null && result == null)
           ElevatedButton.icon(
             key: const Key('chooseCsvFileBtn'),
             onPressed: _chooseFile,
             icon: const Icon(Icons.upload_file_outlined),
-            label: const Text('Pilih file CSV'),
+            label: Text(l10n.chooseCsvFile),
           ),
         if (preview != null && result == null)
           ElevatedButton(
             key: const Key('confirmCsvImportBtn'),
             onPressed: preview.validRows.isEmpty ? null : _import,
-            child: Text('Impor ${preview.validRows.length} baris valid'),
+            child: Text(l10n.csvImportValidRows(preview.validRows.length)),
           ),
       ],
     );
@@ -104,19 +110,20 @@ class _ChooseFileView extends StatelessWidget {
   const _ChooseFileView();
 
   @override
-  Widget build(BuildContext context) => const Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text('Pilih file .csv untuk ditinjau sebelum data disimpan.'),
-          SizedBox(height: 12),
-          Text('Kolom wajib: Barcode, InternalCode, ProductName.'),
-          SizedBox(height: 12),
-          Text(
-            'Katalog obat bawaan hanya membantu nama, kategori, dan unit. Katalog tidak membuat stok, batch, harga beli, pemasok, atau tanggal kedaluwarsa.',
-          ),
-        ],
-      );
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(l10n.csvChooseDescription),
+        const SizedBox(height: 12),
+        Text(l10n.csvRequiredColumns),
+        const SizedBox(height: 12),
+        Text(l10n.csvCatalogNotice),
+      ],
+    );
+  }
 }
 
 class _PreviewView extends StatelessWidget {
@@ -124,35 +131,48 @@ class _PreviewView extends StatelessWidget {
   final CsvImportPreview preview;
 
   @override
-  Widget build(BuildContext context) => Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text('${preview.validRows.length} valid, ${preview.invalidRowCount} dilewati'),
-          if (preview.errors.isNotEmpty) ...[
-            const SizedBox(height: 8),
-            ...preview.errors.map((error) => Text(error, style: const TextStyle(color: Colors.red))),
-          ],
-          const SizedBox(height: 12),
-          SizedBox(
-            height: 260,
-            child: ListView.builder(
-              itemCount: preview.rows.length > 20 ? 20 : preview.rows.length,
-              itemBuilder: (context, index) {
-                final row = preview.rows[index];
-                return ListTile(
-                  dense: true,
-                  leading: Icon(row.errors.isEmpty ? Icons.check_circle_outline : Icons.error_outline,
-                      color: row.errors.isEmpty ? Colors.green : Colors.red),
-                  title: Text('${row.rowNumber}. ${row.name.isEmpty ? '(tanpa nama)' : row.name}'),
-                  subtitle: Text(row.errors.isEmpty ? row.barcode : row.errors.join(' ')),
-                );
-              },
-            ),
-          ),
-          const Text('Duplikat yang sudah ada akan dilewati; baris valid lainnya tetap dapat diimpor.'),
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(l10n.csvPreviewSummary(
+          preview.validRows.length,
+          preview.invalidRowCount,
+        )),
+        if (preview.errors.isNotEmpty) ...[
+          const SizedBox(height: 8),
+          ...preview.errors.map((error) =>
+              Text(error, style: const TextStyle(color: Colors.red))),
         ],
-      );
+        const SizedBox(height: 12),
+        SizedBox(
+          height: 260,
+          child: ListView.builder(
+            itemCount: preview.rows.length > 20 ? 20 : preview.rows.length,
+            itemBuilder: (context, index) {
+              final row = preview.rows[index];
+              return ListTile(
+                dense: true,
+                leading: Icon(
+                    row.errors.isEmpty
+                        ? Icons.check_circle_outline
+                        : Icons.error_outline,
+                    color: row.errors.isEmpty ? Colors.green : Colors.red),
+                title: Text(
+                  '${row.rowNumber}. ${row.name.isEmpty ? l10n.csvUnnamedProduct : row.name}',
+                ),
+                subtitle: Text(
+                    row.errors.isEmpty ? row.barcode : row.errors.join(' ')),
+              );
+            },
+          ),
+        ),
+        Text(l10n.csvExistingDuplicates),
+      ],
+    );
+  }
 }
 
 class _ResultView extends StatelessWidget {
@@ -160,15 +180,18 @@ class _ResultView extends StatelessWidget {
   final CsvImportResult result;
 
   @override
-  Widget build(BuildContext context) => Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text('${result.successCount} produk diimpor, ${result.failedCount} dilewati.'),
-          if (result.errors.isNotEmpty) ...[
-            const SizedBox(height: 12),
-            ...result.errors.take(20).map((error) => Text(error)),
-          ],
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(l10n.csvResultSummary(result.successCount, result.failedCount)),
+        if (result.errors.isNotEmpty) ...[
+          const SizedBox(height: 12),
+          ...result.errors.take(20).map((error) => Text(error)),
         ],
-      );
+      ],
+    );
+  }
 }

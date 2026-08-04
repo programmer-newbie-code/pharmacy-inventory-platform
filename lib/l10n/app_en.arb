@@ -141,6 +141,19 @@
   "passwordTooSimple": "Password must contain at least one letter and one digit.",
   "passwordTooCommon": "Password is too common. Choose a more unique password.",
   "dailySummarySection": "Daily Overview",
-  "platformModulesSection": "Application Modules"
+  "platformModulesSection": "Application Modules",
+  "chooseCsvFile": "Choose CSV file",
+  "csvChooseDescription": "Choose a .csv file to review before saving products.",
+  "csvRequiredColumns": "Required columns: Barcode, InternalCode, ProductName.",
+  "csvCatalogNotice": "The included drug catalog only helps with name, category, and unit. It does not create stock, batches, prices, suppliers, or expiry dates.",
+  "csvPreviewSummary": "{valid} valid, {invalid} skipped",
+  "@csvPreviewSummary": {"placeholders": {"valid": {"type": "int"}, "invalid": {"type": "int"}}},
+  "csvImportValidRows": "Import {count} valid rows",
+  "@csvImportValidRows": {"placeholders": {"count": {"type": "int"}}},
+  "csvExistingDuplicates": "Existing duplicates will be skipped; other valid rows can still be imported.",
+  "csvResultSummary": "{success} products imported, {failed} skipped.",
+  "@csvResultSummary": {"placeholders": {"success": {"type": "int"}, "failed": {"type": "int"}}},
+  "csvReadFailed": "The CSV file could not be read. Choose another file and try again.",
+  "csvUnnamedProduct": "(unnamed product)"
 }
 

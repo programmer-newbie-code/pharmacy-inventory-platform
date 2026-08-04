@@ -5,6 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:pharmacy_inventory_platform/core/providers.dart';
 import 'package:pharmacy_inventory_platform/data/database.dart';
 import 'package:pharmacy_inventory_platform/features/inventory/csv_import_dialog.dart';
+import 'package:pharmacy_inventory_platform/l10n/app_localizations.dart';
 
 void main() {
   testWidgets('previews a selected CSV before enabling import', (tester) async {
@@ -19,6 +20,9 @@ void main() {
       UncontrolledProviderScope(
         container: container,
         child: MaterialApp(
+          locale: const Locale('id'),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
           home: Scaffold(
             body: CsvImportDialog(
               pickCsvText: () async =>
@@ -36,5 +40,19 @@ void main() {
     expect(find.text('1 valid, 0 dilewati'), findsOneWidget);
     expect(find.textContaining('Paracetamol'), findsOneWidget);
     expect(find.byKey(const Key('confirmCsvImportBtn')), findsOneWidget);
+  });
+
+  testWidgets('uses localized CSV workflow labels', (tester) async {
+    await tester.pumpWidget(
+      const MaterialApp(
+        locale: Locale('en'),
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: Scaffold(body: CsvImportDialog()),
+      ),
+    );
+
+    expect(find.text('Import Inventory CSV'), findsOneWidget);
+    expect(find.text('Choose CSV file'), findsOneWidget);
   });
 }
