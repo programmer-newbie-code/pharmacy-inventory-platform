@@ -18,6 +18,9 @@ class ProductRepository {
   final AppDatabase _db;
   final AuditLogger? _auditLogger;
 
+  Future<T> transaction<T>(Future<T> Function() action) =>
+      _db.transaction(action);
+
   Future<int> createStorageLocation({
     required String code,
     required String name,
@@ -82,7 +85,8 @@ class ProductRepository {
         tableName: 'products',
         recordId: id,
         action: 'create',
-        newValue: jsonEncode({'name': name, 'barcode': barcode, 'category': category}),
+        newValue: jsonEncode(
+            {'name': name, 'barcode': barcode, 'category': category}),
         userId: userIdForAudit,
       );
     }
@@ -121,6 +125,13 @@ class ProductRepository {
     return rows.isEmpty ? null : rows.first;
   }
 
+  Future<Product?> findProductByInternalCode(String internalCode) async {
+    final rows = await (_db.select(_db.products)
+          ..where((tbl) => tbl.internalCode.equals(internalCode)))
+        .get();
+    return rows.isEmpty ? null : rows.first;
+  }
+
   Future<Product?> getProductById(int id) async {
     final rows = await (_db.select(_db.products)
           ..where((tbl) => tbl.id.equals(id)))
@@ -153,7 +164,8 @@ class ProductRepository {
     return query.get();
   }
 
-  Future<List<ProductStockSummary>> listProductsWithStock({String? searchQuery}) async {
+  Future<List<ProductStockSummary>> listProductsWithStock(
+      {String? searchQuery}) async {
     final products = await listProducts(searchQuery: searchQuery);
     if (products.isEmpty) return const [];
     final productIds = products.map((product) => product.id).toList();

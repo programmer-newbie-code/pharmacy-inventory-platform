@@ -19,7 +19,8 @@ void main() {
     await db.close();
   });
 
-  test('importProductsFromCsv parses valid CSV and creates product records', () async {
+  test('importProductsFromCsv parses valid CSV and creates product records',
+      () async {
     const csvData =
         'Barcode,InternalCode,ProductName,ActiveIngredient,BaseUnit,PurchaseUnit,UnitsPerPurchaseUnit,CostPrice,MarginPct,ReorderThreshold,Category,IsControlled\n'
         '899123456701,P001,Amoxicillin 500mg,Amoxicillin,tablet,box,100,500,20,50,Obat Keras,true\n'
@@ -45,8 +46,7 @@ void main() {
   });
 
   test('preview validates rows without writing products', () async {
-    const csvData =
-        'Barcode,InternalCode,ProductName\n'
+    const csvData = 'Barcode,InternalCode,ProductName\n'
         '899123456701,P001,Paracetamol\n'
         '899123456701,P002,Duplicate barcode\n'
         ',P003,Missing barcode';
@@ -82,10 +82,58 @@ void main() {
     );
 
     expect(preview.validRows, isEmpty);
-    expect(preview.rows.single.errors, contains('Barcode already exists in inventory.'));
+    expect(preview.rows.single.errors,
+        contains('Barcode already exists in inventory.'));
   });
 
-  test('importPreview writes only validated rows and reports rejected rows', () async {
+  test('preview identifies an internal code already stored in inventory',
+      () async {
+    await productRepo.createProduct(
+      barcode: '899123456701',
+      internalCode: 'EXISTING',
+      name: 'Existing product',
+      activeIngredient: '',
+      ingredientPct: 100,
+      baseUnit: 'tablet',
+      purchaseUnit: 'box',
+      unitsPerPurchaseUnit: 1,
+      costPricePerBaseUnit: 100,
+      marginPct: 20,
+      reorderThreshold: 1,
+      category: 'Obat Bebas',
+      createdBy: 'admin',
+    );
+
+    final preview = await service.previewProductsFromCsv(
+      'Barcode,InternalCode,ProductName\n899123456702,EXISTING,Paracetamol',
+    );
+
+    expect(preview.validRows, isEmpty);
+    expect(
+      preview.rows.single.errors,
+      contains('Internal code already exists in inventory.'),
+    );
+  });
+
+  test('preview rejects malformed and non-positive numeric values', () async {
+    final preview = await service.previewProductsFromCsv(
+      'Barcode,InternalCode,ProductName,UnitsPerPurchaseUnit,CostPrice,MarginPct,ReorderThreshold\n'
+      '899123456701,P001,Paracetamol,zero,0,nope,-1',
+    );
+
+    expect(preview.validRows, isEmpty);
+    expect(preview.rows.single.errors,
+        contains('Units per purchase unit must be a positive integer.'));
+    expect(preview.rows.single.errors,
+        contains('Cost price must be a positive number.'));
+    expect(preview.rows.single.errors,
+        contains('Margin percentage must be a valid number.'));
+    expect(preview.rows.single.errors,
+        contains('Reorder threshold must be zero or greater.'));
+  });
+
+  test('importPreview writes only validated rows and reports rejected rows',
+      () async {
     final preview = await service.previewProductsFromCsv(
       'Barcode,InternalCode,ProductName\n899123456701,P001,Paracetamol\n,P002,Missing barcode',
     );
@@ -97,7 +145,52 @@ void main() {
     expect(await productRepo.listProducts(), hasLength(1));
   });
 
-  test('rejects CSV missing required columns without importing products', () async {
+  test('importPreview rolls back valid rows when a write fails unexpectedly',
+      () async {
+    const row = CsvProductImportRow(
+      rowNumber: 2,
+      barcode: '899123456701',
+      internalCode: 'P001',
+      name: 'Paracetamol',
+      activeIngredient: 'Paracetamol',
+      baseUnit: 'tablet',
+      purchaseUnit: 'box',
+      unitsPerPurchaseUnit: 100,
+      costPrice: 100,
+      marginPct: 20,
+      reorderThreshold: 10,
+      category: 'Obat Bebas',
+      isControlled: false,
+      errors: [],
+    );
+    const conflictingRow = CsvProductImportRow(
+      rowNumber: 3,
+      barcode: '899123456701',
+      internalCode: 'P002',
+      name: 'Duplicate barcode',
+      activeIngredient: '',
+      baseUnit: 'tablet',
+      purchaseUnit: 'box',
+      unitsPerPurchaseUnit: 100,
+      costPrice: 100,
+      marginPct: 20,
+      reorderThreshold: 10,
+      category: 'Obat Bebas',
+      isControlled: false,
+      errors: [],
+    );
+
+    final result = await service.importPreview(
+      const CsvImportPreview(rows: [row, conflictingRow], errors: []),
+    );
+
+    expect(result.successCount, 0);
+    expect(result.failedCount, 2);
+    expect(await productRepo.listProducts(), isEmpty);
+  });
+
+  test('rejects CSV missing required columns without importing products',
+      () async {
     const csvData = 'Barcode,ProductName\n899123456701,Paracetamol';
 
     final result = await service.importProductsFromCsv(csvData);
