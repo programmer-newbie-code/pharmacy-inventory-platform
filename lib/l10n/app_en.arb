@@ -142,6 +142,7 @@
   "passwordTooCommon": "Password is too common. Choose a more unique password.",
   "dailySummarySection": "Daily Overview",
   "platformModulesSection": "Application Modules",
+  "windowsScannerGuidance": "Use a USB/Bluetooth scanner; camera scanning is unavailable on Windows.",
   "chooseCsvFile": "Choose CSV file",
   "csvChooseDescription": "Choose a .csv file to review before saving products.",
   "csvRequiredColumns": "Required columns: Barcode, InternalCode, ProductName.",
