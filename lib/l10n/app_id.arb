@@ -155,6 +155,18 @@
   "csvResultSummary": "{success} produk diimpor, {failed} dilewati.",
   "@csvResultSummary": {"placeholders": {"success": {"type": "int"}, "failed": {"type": "int"}}},
   "csvReadFailed": "File CSV tidak dapat dibaca. Pilih file lain lalu coba lagi.",
-  "csvUnnamedProduct": "(tanpa nama)"
+  "csvUnnamedProduct": "(tanpa nama)",
+  "csvImportHistoryButton": "Riwayat impor",
+  "csvImportHistoryTitle": "Riwayat impor CSV",
+  "csvImportHistoryEmpty": "Belum ada riwayat impor.",
+  "csvImportHistorySuccess": "Berhasil: {imported} diimpor, {rejected} dilewati",
+  "csvImportHistoryFailed": "Gagal: tidak ada produk yang disimpan",
+  "csvImportHistoryActor": "Oleh {user} • {date}",
+  "csvImportHistoryError": "Detail: {error}",
+  "csvImportHistoryCounts": "Total {total} baris",
+  "@csvImportHistorySuccess": {"placeholders": {"imported": {"type": "int"}, "rejected": {"type": "int"}}},
+  "@csvImportHistoryActor": {"placeholders": {"user": {}, "date": {}}},
+  "@csvImportHistoryError": {"placeholders": {"error": {}}},
+  "@csvImportHistoryCounts": {"placeholders": {"total": {"type": "int"}}}
 }
 

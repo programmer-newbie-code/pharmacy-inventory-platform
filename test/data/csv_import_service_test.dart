@@ -152,6 +152,24 @@ void main() {
     expect(await productRepo.listProducts(), hasLength(1));
   });
 
+  test('importPreview preserves source and initiating user metadata', () async {
+    final preview = await service.previewProductsFromCsv(
+      'Barcode,InternalCode,ProductName\n899123456701,P001,Paracetamol',
+    );
+
+    await service.importPreview(
+      preview,
+      sourceName: 'stock-take.csv',
+      createdBy: 'davit',
+    );
+
+    final product = (await productRepo.listProducts()).single;
+    expect(product.createdBy, equals('davit'));
+    final log = (await productRepo.listCsvImportLogs()).single;
+    expect(log.sourceName, equals('stock-take.csv'));
+    expect(log.createdBy, equals('davit'));
+  });
+
   test('importPreview rolls back valid rows when a write fails unexpectedly',
       () async {
     const row = CsvProductImportRow(
