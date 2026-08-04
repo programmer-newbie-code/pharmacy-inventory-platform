@@ -5,9 +5,20 @@ title: Documentation & User Manual — Pharmacy Inventory Platform
 
 ### 📱 Multi-Platform Interface Overview
 
-| 💻 Windows Desktop Interface | 📱 Android Mobile Interface |
-| :---: | :---: |
-| ![Pharmacy Desktop UI](assets/images/desktop_ui.png) | ![Pharmacy Android Mobile UI](assets/images/android_ui.png) |
+<div class="platform-gallery">
+  <figure class="platform-gallery__item">
+    <figcaption>💻 Windows Desktop Interface</figcaption>
+    <a href="assets/images/desktop_ui.png">
+      <img src="assets/images/desktop_ui.png" alt="Pharmacy Inventory Platform dashboard on Windows desktop">
+    </a>
+  </figure>
+  <figure class="platform-gallery__item">
+    <figcaption>📱 Android Mobile Interface</figcaption>
+    <a href="assets/images/android_ui.png">
+      <img src="assets/images/android_ui.png" alt="Pharmacy Inventory Platform dashboard on Android mobile">
+    </a>
+  </figure>
+</div>
 
 ## 📖 User Guide & Operating Manual
 

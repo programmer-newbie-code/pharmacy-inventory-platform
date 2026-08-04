@@ -276,6 +276,55 @@
       margin-bottom: 0.4rem;
     }
 
+    .platform-gallery {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 1.5rem;
+      margin: 1.5rem 0 2.5rem;
+    }
+
+    .platform-gallery__item {
+      min-width: 0;
+      margin: 0;
+      overflow: hidden;
+      background: rgba(9, 13, 22, 0.72);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+    }
+
+    .platform-gallery__item figcaption {
+      padding: 0.9rem 1rem;
+      color: #e2e8f0;
+      font-family: 'Outfit', sans-serif;
+      font-weight: 600;
+    }
+
+    .platform-gallery__item a {
+      display: block;
+      line-height: 0;
+    }
+
+    .platform-gallery__item a:focus-visible {
+      outline: 3px solid var(--cyan-accent);
+      outline-offset: -3px;
+    }
+
+    .platform-gallery__item img {
+      display: block;
+      width: 100%;
+      height: auto;
+    }
+
+    @media (max-width: 700px) {
+      .content-box {
+        padding: 1.5rem;
+      }
+
+      .platform-gallery {
+        grid-template-columns: minmax(0, 1fr);
+      }
+    }
+
     pre {
       background: #090d16;
       border: 1px solid rgba(255, 255, 255, 0.1);
