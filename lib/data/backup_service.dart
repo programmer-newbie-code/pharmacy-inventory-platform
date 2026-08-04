@@ -26,7 +26,8 @@ class BackupService {
       createdAt: document.createdAt,
       schemaVersion: document.schemaVersion,
       counts: {
-        for (final entry in document.data.entries) entry.key: entry.value.length,
+        for (final entry in document.data.entries)
+          entry.key: entry.value.length,
       },
     );
   }
@@ -41,6 +42,7 @@ class BackupService {
     final saleItems = await _db.select(_db.saleItems).get();
     final auditLogs = await _db.select(_db.auditLogs).get();
     final backupLogs = await _db.select(_db.backupLogs).get();
+    final csvImportLogs = await _db.select(_db.csvImportLogs).get();
     final cashierShifts = await _db.select(_db.cashierShifts).get();
     final returnTransactions = await _db.select(_db.returnTransactions).get();
     final returnItems = await _db.select(_db.returnItems).get();
@@ -57,12 +59,15 @@ class BackupService {
       'saleItems': saleItems.map((row) => row.toJson()).toList(),
       'auditLogs': auditLogs.map((row) => row.toJson()).toList(),
       'backupLogs': backupLogs.map((row) => row.toJson()).toList(),
+      'csvImportLogs': csvImportLogs.map((row) => row.toJson()).toList(),
       'cashierShifts': cashierShifts.map((row) => row.toJson()).toList(),
-      'returnTransactions': returnTransactions.map((row) => row.toJson()).toList(),
+      'returnTransactions':
+          returnTransactions.map((row) => row.toJson()).toList(),
       'returnItems': returnItems.map((row) => row.toJson()).toList(),
       'suppliers': suppliers.map((row) => row.toJson()).toList(),
       'purchaseOrders': purchaseOrders.map((row) => row.toJson()).toList(),
-      'purchaseOrderItems': purchaseOrderItems.map((row) => row.toJson()).toList(),
+      'purchaseOrderItems':
+          purchaseOrderItems.map((row) => row.toJson()).toList(),
     };
     final counts = <String, int>{
       for (final entry in data.entries) entry.key: entry.value.length,
@@ -114,6 +119,7 @@ class BackupService {
       await _db.delete(_db.stockBatches).go();
       await _db.delete(_db.cashierShifts).go();
       await _db.delete(_db.auditLogs).go();
+      await _db.delete(_db.csvImportLogs).go();
       await _db.delete(_db.products).go();
       await _db.delete(_db.suppliers).go();
       await _db.delete(_db.storageLocations).go();
@@ -123,7 +129,9 @@ class BackupService {
         await _db.into(_db.users).insert(User.fromJson(_json(row)));
       }
       for (final row in data['storageLocations']!) {
-        await _db.into(_db.storageLocations).insert(StorageLocation.fromJson(_json(row)));
+        await _db
+            .into(_db.storageLocations)
+            .insert(StorageLocation.fromJson(_json(row)));
       }
       for (final row in data['suppliers']!) {
         await _db.into(_db.suppliers).insert(Supplier.fromJson(_json(row)));
@@ -132,10 +140,14 @@ class BackupService {
         await _db.into(_db.products).insert(Product.fromJson(_json(row)));
       }
       for (final row in data['stockBatches']!) {
-        await _db.into(_db.stockBatches).insert(StockBatch.fromJson(_json(row)));
+        await _db
+            .into(_db.stockBatches)
+            .insert(StockBatch.fromJson(_json(row)));
       }
       for (final row in data['saleTransactions']!) {
-        await _db.into(_db.saleTransactions).insert(SaleTransaction.fromJson(_json(row)));
+        await _db
+            .into(_db.saleTransactions)
+            .insert(SaleTransaction.fromJson(_json(row)));
       }
       for (final row in data['saleItems']!) {
         await _db.into(_db.saleItems).insert(SaleItem.fromJson(_json(row)));
@@ -143,20 +155,33 @@ class BackupService {
       for (final row in data['auditLogs']!) {
         await _db.into(_db.auditLogs).insert(AuditLog.fromJson(_json(row)));
       }
+      for (final row in data['csvImportLogs'] ?? const []) {
+        await _db
+            .into(_db.csvImportLogs)
+            .insert(CsvImportLog.fromJson(_json(row)));
+      }
       for (final row in data['cashierShifts']!) {
-        await _db.into(_db.cashierShifts).insert(CashierShift.fromJson(_json(row)));
+        await _db
+            .into(_db.cashierShifts)
+            .insert(CashierShift.fromJson(_json(row)));
       }
       for (final row in data['returnTransactions']!) {
-        await _db.into(_db.returnTransactions).insert(ReturnTransaction.fromJson(_json(row)));
+        await _db
+            .into(_db.returnTransactions)
+            .insert(ReturnTransaction.fromJson(_json(row)));
       }
       for (final row in data['returnItems']!) {
         await _db.into(_db.returnItems).insert(ReturnItem.fromJson(_json(row)));
       }
       for (final row in data['purchaseOrders']!) {
-        await _db.into(_db.purchaseOrders).insert(PurchaseOrder.fromJson(_json(row)));
+        await _db
+            .into(_db.purchaseOrders)
+            .insert(PurchaseOrder.fromJson(_json(row)));
       }
       for (final row in data['purchaseOrderItems']!) {
-        await _db.into(_db.purchaseOrderItems).insert(PurchaseOrderItem.fromJson(_json(row)));
+        await _db
+            .into(_db.purchaseOrderItems)
+            .insert(PurchaseOrderItem.fromJson(_json(row)));
       }
 
       await _db.delete(_db.backupLogs).go();
@@ -222,4 +247,3 @@ class BackupPreviewException implements Exception {
   @override
   String toString() => 'BackupPreviewException: $message';
 }
-
