@@ -21,7 +21,9 @@ void main() {
     await db.close();
   });
 
-  test('uploadBackupToDrive delegates to the injected upload client and logs event', () async {
+  test(
+      'uploadBackupToDrive delegates to the injected upload client and logs event',
+      () async {
     final result = await service.uploadBackupToDrive(
       accessToken: 'access-token',
       customFileName: 'test_backup.json',
@@ -37,7 +39,8 @@ void main() {
     expect(logs.first.status, equals('Success'));
   });
 
-  test('signInWithGoogle stores the account returned by the authorizer', () async {
+  test('signInWithGoogle stores the account returned by the authorizer',
+      () async {
     final user = await service.signInWithGoogle();
     expect(user, isNotNull);
     expect(user?.email, equals('owner@example.com'));
@@ -45,6 +48,25 @@ void main() {
 
     await service.signOut();
     expect(service.currentUser, isNull);
+  });
+
+  test('selects desktop OAuth instead of google_sign_in on Windows', () {
+    expect(
+      createGoogleAccountAuthorizer(isWindows: true),
+      isA<DesktopGoogleAccountAuthorizer>(),
+    );
+  });
+
+  test(
+      'desktop OAuth reports missing build configuration without a plugin error',
+      () async {
+    await expectLater(
+      const DesktopGoogleAccountAuthorizer(
+        clientId: '',
+        clientSecret: '',
+      ).signIn(),
+      throwsA(isA<GoogleDriveConfigurationException>()),
+    );
   });
 }
 
@@ -54,7 +76,8 @@ class _SuccessfulDriveUploadClient implements DriveUploadClient {
     required String accessToken,
     required String fileName,
     required List<int> bytes,
-  }) async => 'drive-file-id';
+  }) async =>
+      'drive-file-id';
 }
 
 class _AccountAuthorizer implements GoogleAccountAuthorizer {

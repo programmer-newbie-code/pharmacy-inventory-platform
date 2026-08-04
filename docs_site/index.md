@@ -77,9 +77,16 @@ When launching the application for the first time on Windows or Android:
 
 ### 7. Google Cloud OAuth & Google Drive Setup
 1. Enable **Google Drive API** in Google Cloud Console.
-2. Configure **OAuth Consent Screen** with scope `https://www.googleapis.com/auth/drive.appdata`.
+2. Configure **OAuth Consent Screen** with scope `https://www.googleapis.com/auth/drive.file`.
 3. Set up **Android OAuth Client ID** with package name `com.programmernewbiecode.pharmacy_inventory_platform` and SHA-1 signing certificate fingerprint.
-4. Set up **Desktop OAuth Client ID** with authorized redirect URI `http://localhost:8080`.
+4. Set up a **Desktop OAuth Client** for Windows. Do not commit its credentials.
+5. Build the Windows app with the desktop credentials supplied only at build time:
+
+```bash
+flutter build windows --release \
+  --dart-define=GOOGLE_DRIVE_DESKTOP_CLIENT_ID=your-client-id \
+  --dart-define=GOOGLE_DRIVE_DESKTOP_CLIENT_SECRET=your-client-secret
+```
 
 ---
 
