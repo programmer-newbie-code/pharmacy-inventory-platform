@@ -162,6 +162,8 @@ class _PosScreenState extends ConsumerState<PosScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final supportsCameraScanner =
+        Theme.of(context).platform != TargetPlatform.windows;
     final currentUser = ref.watch(authSessionProvider);
     final permChecker = ref.watch(permissionCheckerProvider);
     final canCheckout = currentUser == null || permChecker.canPerformCheckout(currentUser.role);
@@ -185,6 +187,7 @@ class _PosScreenState extends ConsumerState<PosScreen> {
                         child: TextField(
                           key: const Key('posSearchInput'),
                           controller: _searchController,
+                          autofocus: true,
                           decoration: InputDecoration(
                             labelText: l10n.scanBarcode,
                             prefixIcon: const Icon(Icons.search),
@@ -194,20 +197,22 @@ class _PosScreenState extends ConsumerState<PosScreen> {
                           },
                         ),
                       ),
-                      const SizedBox(width: 8),
-                      IconButton.filledTonal(
-                        key: const Key('cameraScanBtn'),
-                        icon: const Icon(Icons.qr_code_scanner),
-                        tooltip: l10n.scanCamera,
-                        onPressed: () async {
-                          final scanned =
-                              await CameraScannerDialog.scanBarcode(context);
-                          if (scanned != null) {
-                            _searchController.text = scanned;
-                            setState(() {});
-                          }
-                        },
-                      ),
+                      if (supportsCameraScanner) ...[
+                        const SizedBox(width: 8),
+                        IconButton.filledTonal(
+                          key: const Key('cameraScanBtn'),
+                          icon: const Icon(Icons.qr_code_scanner),
+                          tooltip: l10n.scanCamera,
+                          onPressed: () async {
+                            final scanned =
+                                await CameraScannerDialog.scanBarcode(context);
+                            if (scanned != null) {
+                              _searchController.text = scanned;
+                              setState(() {});
+                            }
+                          },
+                        ),
+                      ],
                     ],
                   ),
                 ),
