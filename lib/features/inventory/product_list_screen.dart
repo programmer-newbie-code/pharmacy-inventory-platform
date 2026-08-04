@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -21,8 +23,10 @@ class ProductListScreen extends ConsumerStatefulWidget {
 
 class _ProductListScreenState extends ConsumerState<ProductListScreen> {
   final _searchController = TextEditingController();
+  Timer? _searchDebounce;
   List<ProductStockSummary> _products = [];
   bool _isLoading = false;
+  int _requestId = 0;
 
   @override
   void initState() {
@@ -32,21 +36,34 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen> {
 
   @override
   void dispose() {
+    _searchDebounce?.cancel();
     _searchController.dispose();
     super.dispose();
   }
 
   Future<void> _fetchProducts() async {
+    final requestId = ++_requestId;
     setState(() => _isLoading = true);
     final repo = ref.read(productRepositoryProvider);
     final list = await repo.listProductsWithStock(
       searchQuery: _searchController.text.trim(),
     );
 
+    if (!mounted || requestId != _requestId) return;
     setState(() {
       _products = list;
       _isLoading = false;
     });
+  }
+
+  void _scheduleSearch(String _) {
+    _searchDebounce?.cancel();
+    _searchDebounce = Timer(const Duration(milliseconds: 300), _fetchProducts);
+  }
+
+  void _clearSearch() {
+    _searchController.clear();
+    _fetchProducts();
   }
 
   Future<void> _openAddProduct() async {
@@ -128,12 +145,11 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen> {
                 prefixIcon: const Icon(Icons.search),
                 suffixIcon: IconButton(
                   icon: const Icon(Icons.clear),
-                  onPressed: () {
-                    _searchController.clear();
-                    _fetchProducts();
-                  },
+                  tooltip: l10n.clearSearchButton,
+                  onPressed: _clearSearch,
                 ),
               ),
+              onChanged: _scheduleSearch,
               onSubmitted: (_) => _fetchProducts(),
             ),
           ),
@@ -152,12 +168,25 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen> {
                         ),
                         const SizedBox(height: 12),
                         Text(
-                          l10n.noProductsFound,
+                          _searchController.text.trim().isEmpty
+                              ? l10n.noProductsFound
+                              : l10n.noProductsFoundForQuery(
+                                  _searchController.text.trim(),
+                                ),
                           style: TextStyle(
                             color: Colors.grey.shade600,
                             fontSize: 16,
                           ),
                         ),
+                        if (_searchController.text.trim().isNotEmpty) ...[
+                          const SizedBox(height: 12),
+                          OutlinedButton.icon(
+                            key: const Key('clearSearchEmptyStateBtn'),
+                            onPressed: _clearSearch,
+                            icon: const Icon(Icons.clear),
+                            label: Text(l10n.clearSearchButton),
+                          ),
+                        ],
                       ],
                     ),
                   )
