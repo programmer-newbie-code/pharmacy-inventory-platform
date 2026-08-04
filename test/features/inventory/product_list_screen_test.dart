@@ -9,7 +9,9 @@ import 'package:pharmacy_inventory_platform/features/inventory/product_list_scre
 import 'package:pharmacy_inventory_platform/l10n/app_localizations.dart';
 
 void main() {
-  testWidgets('renders product list screen and opens add product dialog', (tester) async {
+  testWidgets('renders product list screen and opens add product dialog', (
+    tester,
+  ) async {
     final db = AppDatabase(NativeDatabase.memory());
     addTearDown(db.close);
 
@@ -56,5 +58,57 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Tambah Produk Baru'), findsOneWidget);
+  });
+
+  testWidgets('debounces search and offers recovery from no results', (
+    tester,
+  ) async {
+    final db = AppDatabase(NativeDatabase.memory());
+    addTearDown(db.close);
+    final productRepo = ProductRepository(db);
+    await productRepo.createProduct(
+      barcode: '8990000000001',
+      internalCode: 'PCT-100',
+      name: 'Paracetamol Syrup',
+      activeIngredient: 'Paracetamol',
+      ingredientPct: 100.0,
+      baseUnit: 'botol',
+      purchaseUnit: 'dus',
+      unitsPerPurchaseUnit: 24,
+      costPricePerBaseUnit: 12000.0,
+      marginPct: 15.0,
+      reorderThreshold: 10,
+      category: 'Obat Bebas',
+      createdBy: 'admin',
+    );
+    final container = ProviderContainer(
+      overrides: [databaseProvider.overrideWithValue(db)],
+    );
+    addTearDown(container.dispose);
+
+    await tester.pumpWidget(
+      UncontrolledProviderScope(
+        container: container,
+        child: const MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          locale: Locale('id'),
+          home: ProductListScreen(),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.enterText(find.byKey(const Key('productSearchInput')), 'xyz');
+    await tester.pump(const Duration(milliseconds: 250));
+    expect(find.text('Paracetamol Syrup'), findsOneWidget);
+    await tester.pump(const Duration(milliseconds: 100));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Tidak ada produk untuk "xyz".'), findsOneWidget);
+    expect(find.byKey(const Key('clearSearchEmptyStateBtn')), findsOneWidget);
+    await tester.tap(find.byKey(const Key('clearSearchEmptyStateBtn')));
+    await tester.pumpAndSettle();
+    expect(find.text('Paracetamol Syrup'), findsOneWidget);
   });
 }
