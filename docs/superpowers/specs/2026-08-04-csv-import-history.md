@@ -16,7 +16,8 @@ skipped. This makes troubleshooting and audit review difficult.
 - Keep product writes and the history row in one transaction so a failed import
   cannot claim success.
 - Expose a repository query for newest-first history; a follow-up UI increment
-  will render it in the inventory workflow.
+  renders it from the inventory workflow with the selected filename and
+  initiating username.
 
 ## Non-goals
 
@@ -33,6 +34,8 @@ skipped. This makes troubleshooting and audit review difficult.
 - History queries are newest-first and covered by data tests.
 - Backup/restore includes history rows before the workstream is considered
   complete.
+- The inventory screen exposes a localized history action that shows source,
+  actor, timestamp, row counts, and bounded failure details.
 
 ## Manual verification
 

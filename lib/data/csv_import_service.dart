@@ -83,8 +83,9 @@ class CsvImportService {
     int indexOf(String header) => headerRow.indexOf(header.toLowerCase());
 
     const requiredHeaders = ['barcode', 'internalcode', 'productname'];
-    final missingHeaders =
-        requiredHeaders.where((header) => indexOf(header) < 0).toList();
+    final missingHeaders = requiredHeaders
+        .where((header) => indexOf(header) < 0)
+        .toList();
     if (missingHeaders.isNotEmpty) {
       return CsvImportPreview(
         rows: const [],
@@ -107,8 +108,8 @@ class CsvImportService {
 
     String valueAt(List<dynamic> row, int index, [String fallback = '']) =>
         index >= 0 && index < row.length
-            ? row[index].toString().trim()
-            : fallback;
+        ? row[index].toString().trim()
+        : fallback;
 
     int? positiveIntAt(List<dynamic> row, int index, int fallback) {
       if (index < 0) return fallback;
@@ -167,8 +168,11 @@ class CsvImportService {
         errors.add('Internal code already exists in inventory.');
       }
 
-      final unitsPerPurchaseUnit =
-          positiveIntAt(row, unitsPerPurchaseUnitIdx, 100);
+      final unitsPerPurchaseUnit = positiveIntAt(
+        row,
+        unitsPerPurchaseUnitIdx,
+        100,
+      );
       final costPrice = positiveDoubleAt(row, costPriceIdx, 100);
       final marginPct = nonNegativeDoubleAt(row, marginPctIdx, 20);
       final reorderThreshold = nonNegativeIntAt(row, reorderThresholdIdx, 50);
@@ -185,29 +189,34 @@ class CsvImportService {
         errors.add('Reorder threshold must be zero or greater.');
       }
 
-      previewRows.add(CsvProductImportRow(
-        rowNumber: rowIndex + 1,
-        barcode: barcode,
-        internalCode: internalCode,
-        name: name,
-        activeIngredient: valueAt(row, activeIngredientIdx),
-        baseUnit: valueAt(row, baseUnitIdx, 'tablet').isEmpty
-            ? 'tablet'
-            : valueAt(row, baseUnitIdx),
-        purchaseUnit: valueAt(row, purchaseUnitIdx, 'box').isEmpty
-            ? 'box'
-            : valueAt(row, purchaseUnitIdx),
-        unitsPerPurchaseUnit: unitsPerPurchaseUnit ?? 0,
-        costPrice: costPrice ?? 0,
-        marginPct: marginPct ?? 0,
-        reorderThreshold: reorderThreshold ?? 0,
-        category: valueAt(row, categoryIdx, 'Obat Bebas').isEmpty
-            ? 'Obat Bebas'
-            : valueAt(row, categoryIdx),
-        isControlled: const ['true', '1', 'yes']
-            .contains(valueAt(row, isControlledIdx, 'false').toLowerCase()),
-        errors: errors,
-      ));
+      previewRows.add(
+        CsvProductImportRow(
+          rowNumber: rowIndex + 1,
+          barcode: barcode,
+          internalCode: internalCode,
+          name: name,
+          activeIngredient: valueAt(row, activeIngredientIdx),
+          baseUnit: valueAt(row, baseUnitIdx, 'tablet').isEmpty
+              ? 'tablet'
+              : valueAt(row, baseUnitIdx),
+          purchaseUnit: valueAt(row, purchaseUnitIdx, 'box').isEmpty
+              ? 'box'
+              : valueAt(row, purchaseUnitIdx),
+          unitsPerPurchaseUnit: unitsPerPurchaseUnit ?? 0,
+          costPrice: costPrice ?? 0,
+          marginPct: marginPct ?? 0,
+          reorderThreshold: reorderThreshold ?? 0,
+          category: valueAt(row, categoryIdx, 'Obat Bebas').isEmpty
+              ? 'Obat Bebas'
+              : valueAt(row, categoryIdx),
+          isControlled: const [
+            'true',
+            '1',
+            'yes',
+          ].contains(valueAt(row, isControlledIdx, 'false').toLowerCase()),
+          errors: errors,
+        ),
+      );
     }
 
     return CsvImportPreview(rows: previewRows, errors: const []);
@@ -245,7 +254,7 @@ class CsvImportService {
             reorderThreshold: row.reorderThreshold,
             isControlled: row.isControlled,
             category: row.category,
-            createdBy: 'admin',
+            createdBy: createdBy,
           );
         }
         await _productRepository.recordCsvImportLog(

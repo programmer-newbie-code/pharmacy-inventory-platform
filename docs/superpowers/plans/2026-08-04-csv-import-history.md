@@ -12,8 +12,9 @@
 
 1. Include import history in validated backup JSON and atomic restore while
    accepting older backups that omit the optional collection.
-2. Render newest import outcomes in the inventory import dialog with localized
-   labels and bounded error details.
+2. Preserve the selected filename and initiating username, render newest import
+   outcomes in a dedicated inventory history dialog with localized labels and
+   bounded error details.
 3. Add widget coverage and verify local Windows build plus CI Android build.
 
 Each increment is a separate signed PR from green `origin/main`.

@@ -155,6 +155,18 @@
   "csvResultSummary": "{success} products imported, {failed} skipped.",
   "@csvResultSummary": {"placeholders": {"success": {"type": "int"}, "failed": {"type": "int"}}},
   "csvReadFailed": "The CSV file could not be read. Choose another file and try again.",
-  "csvUnnamedProduct": "(unnamed product)"
+  "csvUnnamedProduct": "(unnamed product)",
+  "csvImportHistoryButton": "Import history",
+  "csvImportHistoryTitle": "CSV import history",
+  "csvImportHistoryEmpty": "No imports recorded yet.",
+  "csvImportHistorySuccess": "Success: {imported} imported, {rejected} skipped",
+  "csvImportHistoryFailed": "Failed: no products were saved",
+  "csvImportHistoryActor": "By {user} • {date}",
+  "csvImportHistoryError": "Details: {error}",
+  "csvImportHistoryCounts": "{total} total rows",
+  "@csvImportHistorySuccess": {"placeholders": {"imported": {"type": "int"}, "rejected": {"type": "int"}}},
+  "@csvImportHistoryActor": {"placeholders": {"user": {}, "date": {}}},
+  "@csvImportHistoryError": {"placeholders": {"error": {}}},
+  "@csvImportHistoryCounts": {"placeholders": {"total": {"type": "int"}}}
 }
 

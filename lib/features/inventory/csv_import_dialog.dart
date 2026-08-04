@@ -7,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/providers.dart';
 import '../../data/csv_import_service.dart';
 import '../../l10n/app_localizations.dart';
+import '../auth/auth_session.dart';
 
 class CsvImportDialog extends ConsumerStatefulWidget {
   const CsvImportDialog({super.key, this.pickCsvText});
@@ -21,6 +22,7 @@ class _CsvImportDialogState extends ConsumerState<CsvImportDialog> {
   CsvImportPreview? _preview;
   CsvImportResult? _result;
   bool _isLoading = false;
+  String _sourceName = 'unknown.csv';
 
   Future<String?> _pickCsvText() async {
     if (widget.pickCsvText != null) return widget.pickCsvText!();
@@ -30,6 +32,7 @@ class _CsvImportDialogState extends ConsumerState<CsvImportDialog> {
       withData: true,
     );
     final files = result?.files;
+    if (files != null && files.isNotEmpty) _sourceName = files.first.name;
     final bytes = files == null || files.isEmpty ? null : files.first.bytes;
     return bytes == null ? null : utf8.decode(bytes, allowMalformed: true);
   }
@@ -39,8 +42,9 @@ class _CsvImportDialogState extends ConsumerState<CsvImportDialog> {
     try {
       final csv = await _pickCsvText();
       if (csv == null) return;
-      final preview =
-          await ref.read(csvImportServiceProvider).previewProductsFromCsv(csv);
+      final preview = await ref
+          .read(csvImportServiceProvider)
+          .previewProductsFromCsv(csv);
       if (mounted) setState(() => _preview = preview);
     } on FormatException {
       if (mounted) {
@@ -57,8 +61,14 @@ class _CsvImportDialogState extends ConsumerState<CsvImportDialog> {
     final preview = _preview;
     if (preview == null) return;
     setState(() => _isLoading = true);
-    final result =
-        await ref.read(csvImportServiceProvider).importPreview(preview);
+    final currentUser = ref.read(authSessionProvider);
+    final result = await ref
+        .read(csvImportServiceProvider)
+        .importPreview(
+          preview,
+          sourceName: _sourceName,
+          createdBy: currentUser?.username ?? 'admin',
+        );
     if (mounted) setState(() => _result = result);
     if (mounted) setState(() => _isLoading = false);
   }
@@ -78,10 +88,10 @@ class _CsvImportDialogState extends ConsumerState<CsvImportDialog> {
                 child: Center(child: CircularProgressIndicator()),
               )
             : result != null
-                ? _ResultView(result: result)
-                : preview != null
-                    ? _PreviewView(preview: preview)
-                    : const _ChooseFileView(),
+            ? _ResultView(result: result)
+            : preview != null
+            ? _PreviewView(preview: preview)
+            : const _ChooseFileView(),
       ),
       actions: [
         TextButton(
@@ -137,14 +147,17 @@ class _PreviewView extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(l10n.csvPreviewSummary(
-          preview.validRows.length,
-          preview.invalidRowCount,
-        )),
+        Text(
+          l10n.csvPreviewSummary(
+            preview.validRows.length,
+            preview.invalidRowCount,
+          ),
+        ),
         if (preview.errors.isNotEmpty) ...[
           const SizedBox(height: 8),
-          ...preview.errors.map((error) =>
-              Text(error, style: const TextStyle(color: Colors.red))),
+          ...preview.errors.map(
+            (error) => Text(error, style: const TextStyle(color: Colors.red)),
+          ),
         ],
         const SizedBox(height: 12),
         SizedBox(
@@ -156,15 +169,17 @@ class _PreviewView extends StatelessWidget {
               return ListTile(
                 dense: true,
                 leading: Icon(
-                    row.errors.isEmpty
-                        ? Icons.check_circle_outline
-                        : Icons.error_outline,
-                    color: row.errors.isEmpty ? Colors.green : Colors.red),
+                  row.errors.isEmpty
+                      ? Icons.check_circle_outline
+                      : Icons.error_outline,
+                  color: row.errors.isEmpty ? Colors.green : Colors.red,
+                ),
                 title: Text(
                   '${row.rowNumber}. ${row.name.isEmpty ? l10n.csvUnnamedProduct : row.name}',
                 ),
                 subtitle: Text(
-                    row.errors.isEmpty ? row.barcode : row.errors.join(' ')),
+                  row.errors.isEmpty ? row.barcode : row.errors.join(' '),
+                ),
               );
             },
           ),
