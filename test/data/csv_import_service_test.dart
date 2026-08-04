@@ -37,6 +37,13 @@ void main() {
     expect(products.first.isControlled, isTrue);
     expect(products.last.name, equals('Paracetamol 500mg'));
     expect(products.last.isControlled, isFalse);
+
+    final logs = await productRepo.listCsvImportLogs();
+    expect(logs, hasLength(1));
+    expect(logs.single.sourceName, equals('unknown.csv'));
+    expect(logs.single.importedRows, equals(2));
+    expect(logs.single.rejectedRows, equals(0));
+    expect(logs.single.status, equals('success'));
   });
 
   test('importProductsFromCsv handles empty CSV gracefully', () async {
@@ -187,6 +194,31 @@ void main() {
     expect(result.successCount, 0);
     expect(result.failedCount, 2);
     expect(await productRepo.listProducts(), isEmpty);
+    final logs = await productRepo.listCsvImportLogs();
+    expect(logs, hasLength(1));
+    expect(logs.single.status, equals('failed'));
+    expect(logs.single.importedRows, equals(0));
+    expect(logs.single.rejectedRows, equals(2));
+  });
+
+  test('import history is newest first', () async {
+    final preview = await service.previewProductsFromCsv(
+      'Barcode,InternalCode,ProductName\n899123456701,P001,Paracetamol',
+    );
+    await service.importPreview(
+      preview,
+      sourceName: 'older.csv',
+      createdBy: 'inventory',
+    );
+    await Future<void>.delayed(const Duration(milliseconds: 2));
+    final secondPreview = await service.previewProductsFromCsv(
+      'Barcode,InternalCode,ProductName\n899123456702,P002,Ibuprofen',
+    );
+    await service.importPreview(secondPreview, sourceName: 'newer.csv');
+
+    final logs = await productRepo.listCsvImportLogs();
+    expect(logs.map((log) => log.sourceName), ['newer.csv', 'older.csv']);
+    expect(logs.last.createdBy, equals('inventory'));
   });
 
   test('rejects CSV missing required columns without importing products',

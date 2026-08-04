@@ -214,7 +214,11 @@ class CsvImportService {
   }
 
   /// Writes only rows that passed [previewProductsFromCsv] validation.
-  Future<CsvImportResult> importPreview(CsvImportPreview preview) async {
+  Future<CsvImportResult> importPreview(
+    CsvImportPreview preview, {
+    String sourceName = 'unknown.csv',
+    String createdBy = 'admin',
+  }) async {
     final validRows = preview.validRows;
     var failedCount = preview.invalidRowCount;
     final errors = [...preview.errors];
@@ -244,11 +248,29 @@ class CsvImportService {
             createdBy: 'admin',
           );
         }
+        await _productRepository.recordCsvImportLog(
+          sourceName: sourceName,
+          createdBy: createdBy,
+          totalRows: preview.rows.length,
+          importedRows: validRows.length,
+          rejectedRows: failedCount,
+          status: 'success',
+          errorSummary: errors.isEmpty ? null : _summary(errors),
+        );
       });
     } catch (_) {
       failedCount += validRows.length;
       errors.add(
         'Import was not completed. No valid products were saved; review product codes and try again.',
+      );
+      await _productRepository.recordCsvImportLog(
+        sourceName: sourceName,
+        createdBy: createdBy,
+        totalRows: preview.rows.length,
+        importedRows: 0,
+        rejectedRows: failedCount,
+        status: 'failed',
+        errorSummary: _summary(errors),
       );
       return CsvImportResult(
         successCount: 0,
@@ -268,5 +290,10 @@ class CsvImportService {
   Future<CsvImportResult> importProductsFromCsv(String csvContent) async {
     final preview = await previewProductsFromCsv(csvContent);
     return importPreview(preview);
+  }
+
+  String _summary(List<String> errors) {
+    final summary = errors.join(' ');
+    return summary.length > 1000 ? summary.substring(0, 1000) : summary;
   }
 }

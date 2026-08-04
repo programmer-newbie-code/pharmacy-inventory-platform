@@ -21,6 +21,37 @@ class ProductRepository {
   Future<T> transaction<T>(Future<T> Function() action) =>
       _db.transaction(action);
 
+  Future<void> recordCsvImportLog({
+    required String sourceName,
+    required String createdBy,
+    required int totalRows,
+    required int importedRows,
+    required int rejectedRows,
+    required String status,
+    String? errorSummary,
+  }) async {
+    await _db.into(_db.csvImportLogs).insert(
+          CsvImportLogsCompanion.insert(
+            sourceName: sourceName,
+            createdBy: createdBy,
+            totalRows: totalRows,
+            importedRows: importedRows,
+            rejectedRows: rejectedRows,
+            status: status,
+            errorSummary: Value(errorSummary),
+          ),
+        );
+  }
+
+  Future<List<CsvImportLog>> listCsvImportLogs() {
+    return (_db.select(_db.csvImportLogs)
+          ..orderBy([
+            (table) => OrderingTerm.desc(table.importedAt),
+            (table) => OrderingTerm.desc(table.id),
+          ]))
+        .get();
+  }
+
   Future<int> createStorageLocation({
     required String code,
     required String name,
