@@ -142,6 +142,7 @@
   "passwordTooCommon": "Kata sandi terlalu umum. Pilih yang lebih unik.",
   "dailySummarySection": "Ringkasan Hari Ini",
   "platformModulesSection": "Modul Aplikasi",
+  "windowsScannerGuidance": "Gunakan scanner USB/Bluetooth; kamera tidak tersedia di Windows.",
   "chooseCsvFile": "Pilih file CSV",
   "csvChooseDescription": "Pilih file .csv untuk ditinjau sebelum data produk disimpan.",
   "csvRequiredColumns": "Kolom wajib: Barcode, InternalCode, ProductName.",

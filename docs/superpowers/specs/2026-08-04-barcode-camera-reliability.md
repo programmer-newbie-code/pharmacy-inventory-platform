@@ -12,11 +12,13 @@ view exposes only a technical error code and no recovery action.
 - Declare Android camera permission.
 - Keep the scanner camera lifecycle aligned with application lifecycle.
 - Show localized, actionable permission/camera failure states with retry.
+- On Windows, hide the unsupported camera action and explain the supported
+  USB/Bluetooth keyboard-wedge workflow.
 
 ## Non-goals
 
-- Windows camera scanning; `mobile_scanner` does not support Windows. Keyboard
-  wedge scanning remains the supported desktop path.
+- A true Windows webcam scanner backend; `mobile_scanner` does not support
+  Windows and keyboard-wedge scanning remains the supported desktop path.
 - Replacing the barcode recognition engine.
 
 ## Acceptance criteria
