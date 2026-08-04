@@ -1,5 +1,9 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
+
+import '../../l10n/app_localizations.dart';
 
 class CameraScannerDialog extends StatefulWidget {
   const CameraScannerDialog({super.key, this.scannerView});
@@ -7,7 +11,8 @@ class CameraScannerDialog extends StatefulWidget {
   final Widget? scannerView;
 
   /// Helper static method to open the scanner modal and return the scanned barcode string.
-  static Future<String?> scanBarcode(BuildContext context, {Widget? scannerView}) {
+  static Future<String?> scanBarcode(BuildContext context,
+      {Widget? scannerView}) {
     return showDialog<String>(
       context: context,
       builder: (_) => CameraScannerDialog(scannerView: scannerView),
@@ -18,25 +23,60 @@ class CameraScannerDialog extends StatefulWidget {
   State<CameraScannerDialog> createState() => _CameraScannerDialogState();
 }
 
-class _CameraScannerDialogState extends State<CameraScannerDialog> {
+class _CameraScannerDialogState extends State<CameraScannerDialog>
+    with WidgetsBindingObserver {
   MobileScannerController? _controller;
   bool _isDisposed = false;
+  int _scannerGeneration = 0;
 
   @override
   void initState() {
     super.initState();
     if (widget.scannerView == null) {
       _controller = MobileScannerController();
+      WidgetsBinding.instance.addObserver(this);
     }
   }
 
   @override
   void dispose() {
     _isDisposed = true;
+    WidgetsBinding.instance.removeObserver(this);
     try {
       _controller?.dispose();
     } catch (_) {}
     super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    final controller = _controller;
+    if (controller == null || !controller.value.isInitialized) return;
+
+    switch (state) {
+      case AppLifecycleState.detached:
+      case AppLifecycleState.hidden:
+      case AppLifecycleState.paused:
+        return;
+      case AppLifecycleState.resumed:
+        unawaited(controller.start());
+      case AppLifecycleState.inactive:
+        unawaited(controller.stop());
+    }
+  }
+
+  Future<void> _retryScanner() async {
+    final controller = _controller;
+    if (controller == null) return;
+
+    await controller.dispose();
+    if (!mounted) return;
+
+    final replacement = MobileScannerController();
+    setState(() {
+      _controller = replacement;
+      _scannerGeneration++;
+    });
   }
 
   void _onDetect(BarcodeCapture capture) {
@@ -70,10 +110,10 @@ class _CameraScannerDialogState extends State<CameraScannerDialog> {
                 children: [
                   const Icon(Icons.qr_code_scanner, color: Colors.white),
                   const SizedBox(width: 8),
-                  const Expanded(
+                  Expanded(
                     child: Text(
-                      'Pindai Barcode Produk',
-                      style: TextStyle(
+                      AppLocalizations.of(context)!.cameraScannerTitle,
+                      style: const TextStyle(
                         color: Colors.white,
                         fontWeight: FontWeight.bold,
                         fontSize: 16,
@@ -106,18 +146,13 @@ class _CameraScannerDialogState extends State<CameraScannerDialog> {
                 children: [
                   widget.scannerView ??
                       MobileScanner(
+                        key: ValueKey(_scannerGeneration),
                         controller: _controller!,
                         onDetect: _onDetect,
                         errorBuilder: (context, error, child) {
-                          return Center(
-                            child: Padding(
-                              padding: const EdgeInsets.all(16.0),
-                              child: Text(
-                                'Kamera tidak tersedia: ${error.errorCode}',
-                                textAlign: TextAlign.center,
-                                style: const TextStyle(color: Colors.red),
-                              ),
-                            ),
+                          return CameraScannerErrorView(
+                            errorCode: error.errorCode,
+                            onRetry: _retryScanner,
                           );
                         },
                       ),
@@ -135,9 +170,59 @@ class _CameraScannerDialogState extends State<CameraScannerDialog> {
             Padding(
               padding: const EdgeInsets.all(12.0),
               child: Text(
-                'Arahkan kamera ke barcode produk',
+                AppLocalizations.of(context)!.cameraScannerInstruction,
                 style: TextStyle(color: Colors.grey[700], fontSize: 13),
               ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class CameraScannerErrorView extends StatelessWidget {
+  const CameraScannerErrorView({
+    super.key,
+    required this.errorCode,
+    required this.onRetry,
+  });
+
+  final MobileScannerErrorCode errorCode;
+  final VoidCallback onRetry;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final permissionDenied =
+        errorCode == MobileScannerErrorCode.permissionDenied;
+
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              permissionDenied
+                  ? Icons.camera_alt_outlined
+                  : Icons.videocam_off_outlined,
+              color: Theme.of(context).colorScheme.error,
+              size: 40,
+            ),
+            const SizedBox(height: 12),
+            Text(
+              permissionDenied
+                  ? l10n.cameraPermissionRequired
+                  : l10n.cameraUnavailable,
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 12),
+            TextButton.icon(
+              key: const Key('retryCameraScannerBtn'),
+              onPressed: onRetry,
+              icon: const Icon(Icons.refresh),
+              label: Text(l10n.retryButton),
             ),
           ],
         ),
