@@ -1,9 +1,12 @@
+import 'dart:io' show Platform;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/providers.dart';
 import '../../data/database.dart';
 import '../../data/drug_lookup_service.dart';
+import '../../l10n/app_localizations.dart';
 import 'camera_scanner_dialog.dart';
 
 class AddProductDialog extends ConsumerStatefulWidget {
@@ -44,7 +47,8 @@ class _AddProductDialogState extends ConsumerState<AddProductDialog> {
   }
 
   Future<void> _loadLocations() async {
-    final locs = await ref.read(productRepositoryProvider).listStorageLocations();
+    final locs =
+        await ref.read(productRepositoryProvider).listStorageLocations();
     setState(() {
       _locations = locs;
     });
@@ -129,7 +133,8 @@ class _AddProductDialogState extends ConsumerState<AddProductDialog> {
       ingredientPct: 100.0,
       baseUnit: _baseUnitController.text.trim(),
       purchaseUnit: _purchaseUnitController.text.trim(),
-      unitsPerPurchaseUnit: int.parse(_unitsPerPurchaseUnitController.text.trim()),
+      unitsPerPurchaseUnit:
+          int.parse(_unitsPerPurchaseUnitController.text.trim()),
       costPricePerBaseUnit: double.parse(_costPriceController.text.trim()),
       marginPct: double.parse(_marginPctController.text.trim()),
       reorderThreshold: int.parse(_reorderThresholdController.text.trim()),
@@ -145,6 +150,8 @@ class _AddProductDialogState extends ConsumerState<AddProductDialog> {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context)!;
+    final isWindows = Platform.isWindows;
 
     return AlertDialog(
       title: const Text('Tambah Produk Baru'),
@@ -164,7 +171,8 @@ class _AddProductDialogState extends ConsumerState<AddProductDialog> {
                   isSearching: _isSearching,
                   results: _searchResults,
                   isOpen: _searchPanelOpen,
-                  onToggle: () => setState(() => _searchPanelOpen = !_searchPanelOpen),
+                  onToggle: () =>
+                      setState(() => _searchPanelOpen = !_searchPanelOpen),
                   onQueryChanged: _runDrugSearch,
                   onResultSelected: _applyDrugResult,
                 ),
@@ -180,7 +188,8 @@ class _AddProductDialogState extends ConsumerState<AddProductDialog> {
                     labelText: 'Nama Produk *',
                     prefixIcon: Icon(Icons.medication),
                   ),
-                  validator: (v) => (v == null || v.isEmpty) ? 'Wajib diisi' : null,
+                  validator: (v) =>
+                      (v == null || v.isEmpty) ? 'Wajib diisi' : null,
                 ),
                 const SizedBox(height: 8),
 
@@ -191,20 +200,33 @@ class _AddProductDialogState extends ConsumerState<AddProductDialog> {
                   decoration: InputDecoration(
                     labelText: 'Barcode *',
                     prefixIcon: const Icon(Icons.barcode_reader),
-                    suffixIcon: IconButton(
-                      key: const Key('cameraScanBarcodeBtn'),
-                      icon: const Icon(Icons.qr_code_scanner),
-                      tooltip: 'Scan barcode dengan kamera',
-                      onPressed: () async {
-                        final scanned = await CameraScannerDialog.scanBarcode(context);
-                        if (scanned != null) {
-                          _barcodeController.text = scanned;
-                        }
-                      },
+                    suffixIcon: isWindows
+                        ? null
+                        : IconButton(
+                            key: const Key('cameraScanBarcodeBtn'),
+                            icon: const Icon(Icons.qr_code_scanner),
+                            tooltip: 'Scan barcode dengan kamera',
+                            onPressed: () async {
+                              final scanned =
+                                  await CameraScannerDialog.scanBarcode(
+                                      context);
+                              if (scanned != null) {
+                                _barcodeController.text = scanned;
+                              }
+                            },
+                          ),
+                  ),
+                  validator: (v) =>
+                      (v == null || v.isEmpty) ? 'Wajib diisi' : null,
+                ),
+                if (isWindows)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 4),
+                    child: Text(
+                      l10n.windowsScannerGuidance,
+                      style: TextStyle(color: cs.outline, fontSize: 12),
                     ),
                   ),
-                  validator: (v) => (v == null || v.isEmpty) ? 'Wajib diisi' : null,
-                ),
                 const SizedBox(height: 8),
 
                 // ── Internal Code ───────────────────────────────────────────
@@ -215,7 +237,8 @@ class _AddProductDialogState extends ConsumerState<AddProductDialog> {
                     labelText: 'Kode Internal *',
                     prefixIcon: Icon(Icons.tag),
                   ),
-                  validator: (v) => (v == null || v.isEmpty) ? 'Wajib diisi' : null,
+                  validator: (v) =>
+                      (v == null || v.isEmpty) ? 'Wajib diisi' : null,
                 ),
                 const SizedBox(height: 8),
 
@@ -232,25 +255,36 @@ class _AddProductDialogState extends ConsumerState<AddProductDialog> {
 
                 // ── Category ────────────────────────────────────────────────
                 DropdownButtonFormField<String>(
-                  initialValue: _categoryController.text.isEmpty ? 'Obat Bebas' : _categoryController.text,
+                  initialValue: _categoryController.text.isEmpty
+                      ? 'Obat Bebas'
+                      : _categoryController.text,
                   isExpanded: true,
                   decoration: const InputDecoration(
                     labelText: 'Golongan Obat',
                     prefixIcon: Icon(Icons.category),
                   ),
                   items: const [
-                    DropdownMenuItem(value: 'Obat Bebas', child: Text('Obat Bebas (Hijau)')),
-                    DropdownMenuItem(value: 'Obat Bebas Terbatas', child: Text('Obat Bebas Terbatas (Biru)')),
-                    DropdownMenuItem(value: 'Obat Keras', child: Text('Obat Keras (Merah)')),
-                    DropdownMenuItem(value: 'Psikotropika', child: Text('Psikotropika')),
-                    DropdownMenuItem(value: 'Narkotika', child: Text('Narkotika')),
-                    DropdownMenuItem(value: 'Herbal / Jamu', child: Text('Herbal / Jamu')),
+                    DropdownMenuItem(
+                        value: 'Obat Bebas', child: Text('Obat Bebas (Hijau)')),
+                    DropdownMenuItem(
+                        value: 'Obat Bebas Terbatas',
+                        child: Text('Obat Bebas Terbatas (Biru)')),
+                    DropdownMenuItem(
+                        value: 'Obat Keras', child: Text('Obat Keras (Merah)')),
+                    DropdownMenuItem(
+                        value: 'Psikotropika', child: Text('Psikotropika')),
+                    DropdownMenuItem(
+                        value: 'Narkotika', child: Text('Narkotika')),
+                    DropdownMenuItem(
+                        value: 'Herbal / Jamu', child: Text('Herbal / Jamu')),
                   ],
                   onChanged: (val) {
                     if (val != null) {
                       _categoryController.text = val;
                       setState(() {
-                        _isControlled = val == 'Obat Keras' || val == 'Psikotropika' || val == 'Narkotika';
+                        _isControlled = val == 'Obat Keras' ||
+                            val == 'Psikotropika' ||
+                            val == 'Narkotika';
                       });
                     }
                   },
@@ -263,16 +297,20 @@ class _AddProductDialogState extends ConsumerState<AddProductDialog> {
                     Expanded(
                       child: TextFormField(
                         controller: _baseUnitController,
-                        decoration: const InputDecoration(labelText: 'Satuan Dasar'),
-                        validator: (v) => (v == null || v.isEmpty) ? 'Wajib' : null,
+                        decoration:
+                            const InputDecoration(labelText: 'Satuan Dasar'),
+                        validator: (v) =>
+                            (v == null || v.isEmpty) ? 'Wajib' : null,
                       ),
                     ),
                     const SizedBox(width: 8),
                     Expanded(
                       child: TextFormField(
                         controller: _purchaseUnitController,
-                        decoration: const InputDecoration(labelText: 'Satuan Beli'),
-                        validator: (v) => (v == null || v.isEmpty) ? 'Wajib' : null,
+                        decoration:
+                            const InputDecoration(labelText: 'Satuan Beli'),
+                        validator: (v) =>
+                            (v == null || v.isEmpty) ? 'Wajib' : null,
                       ),
                     ),
                   ],
@@ -280,9 +318,12 @@ class _AddProductDialogState extends ConsumerState<AddProductDialog> {
                 const SizedBox(height: 8),
                 TextFormField(
                   controller: _unitsPerPurchaseUnitController,
-                  decoration: const InputDecoration(labelText: 'Isi per Satuan Beli'),
+                  decoration:
+                      const InputDecoration(labelText: 'Isi per Satuan Beli'),
                   keyboardType: TextInputType.number,
-                  validator: (v) => (v == null || int.tryParse(v) == null) ? 'Angka tidak valid' : null,
+                  validator: (v) => (v == null || int.tryParse(v) == null)
+                      ? 'Angka tidak valid'
+                      : null,
                 ),
                 const SizedBox(height: 8),
 
@@ -338,7 +379,8 @@ class _AddProductDialogState extends ConsumerState<AddProductDialog> {
                               child: Text('${loc.code} - ${loc.name}'),
                             ))
                         .toList(),
-                    onChanged: (val) => setState(() => _selectedStorageLocationId = val),
+                    onChanged: (val) =>
+                        setState(() => _selectedStorageLocationId = val),
                   ),
                   const SizedBox(height: 8),
                 ],
@@ -361,10 +403,10 @@ class _AddProductDialogState extends ConsumerState<AddProductDialog> {
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  onChanged: (val) => setState(() => _isControlled = val ?? false),
+                  onChanged: (val) =>
+                      setState(() => _isControlled = val ?? false),
                 ),
                 const SizedBox(height: 8),
-
               ],
             ),
           ),
@@ -452,7 +494,8 @@ class _DrugLookupPanel extends StatelessWidget {
         // Expandable search area
         AnimatedCrossFade(
           duration: const Duration(milliseconds: 200),
-          crossFadeState: isOpen ? CrossFadeState.showSecond : CrossFadeState.showFirst,
+          crossFadeState:
+              isOpen ? CrossFadeState.showSecond : CrossFadeState.showFirst,
           firstChild: const SizedBox.shrink(),
           secondChild: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -461,7 +504,8 @@ class _DrugLookupPanel extends StatelessWidget {
               TextField(
                 controller: controller,
                 decoration: InputDecoration(
-                  hintText: 'Ketik nama obat (contoh: paracetamol, amoksisilin)...',
+                  hintText:
+                      'Ketik nama obat (contoh: paracetamol, amoksisilin)...',
                   prefixIcon: isSearching
                       ? const Padding(
                           padding: EdgeInsets.all(12),
@@ -596,7 +640,8 @@ class _DrugResultTile extends StatelessWidget {
                 children: [
                   Text(
                     drug.name,
-                    style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
+                    style: const TextStyle(
+                        fontWeight: FontWeight.w600, fontSize: 13),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -618,7 +663,8 @@ class _DrugResultTile extends StatelessWidget {
                         ),
                       ),
                       if (drug.manufacturer.isNotEmpty) ...[
-                        Text('  ·  ', style: TextStyle(color: cs.outline, fontSize: 11)),
+                        Text('  ·  ',
+                            style: TextStyle(color: cs.outline, fontSize: 11)),
                         Text(
                           drug.manufacturer,
                           style: TextStyle(color: cs.outline, fontSize: 11),

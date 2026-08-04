@@ -5,6 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:pharmacy_inventory_platform/core/providers.dart';
 import 'package:pharmacy_inventory_platform/data/database.dart';
 import 'package:pharmacy_inventory_platform/features/inventory/add_product_dialog.dart';
+import 'package:pharmacy_inventory_platform/l10n/app_localizations.dart';
 
 void main() {
   testWidgets('renders and submits AddProductDialog form', (tester) async {
@@ -20,9 +21,10 @@ void main() {
       UncontrolledProviderScope(
         container: container,
         child: const MaterialApp(
-          home: Scaffold(
-            body: AddProductDialog(),
-          ),
+          locale: Locale('id'),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: Scaffold(body: AddProductDialog()),
         ),
       ),
     );
@@ -30,11 +32,20 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Tambah Produk Baru'), findsOneWidget);
+    expect(find.byKey(const Key('cameraScanBarcodeBtn')), findsNothing);
+    expect(
+        find.text(
+            'Gunakan scanner USB/Bluetooth; kamera tidak tersedia di Windows.'),
+        findsOneWidget);
 
-    await tester.enterText(find.byKey(const Key('productNameInput')), 'Ibuprofen 400mg');
-    await tester.enterText(find.byKey(const Key('productBarcodeInput')), '8998888777666');
-    await tester.enterText(find.byKey(const Key('productInternalCodeInput')), 'IBU-400');
-    await tester.enterText(find.byKey(const Key('activeIngredientInput')), 'Ibuprofen');
+    await tester.enterText(
+        find.byKey(const Key('productNameInput')), 'Ibuprofen 400mg');
+    await tester.enterText(
+        find.byKey(const Key('productBarcodeInput')), '8998888777666');
+    await tester.enterText(
+        find.byKey(const Key('productInternalCodeInput')), 'IBU-400');
+    await tester.enterText(
+        find.byKey(const Key('activeIngredientInput')), 'Ibuprofen');
     await tester.ensureVisible(find.byKey(const Key('isControlledCheckbox')));
     await tester.tap(find.byKey(const Key('isControlledCheckbox')));
 
