@@ -8,7 +8,8 @@ void main() {
     final file = File('assets/data/indonesian_drugs.csv');
     expect(file.existsSync(), isTrue);
 
-    final rows = const CsvToListConverter().convert(await file.readAsString());
+    final csvContent = (await file.readAsString()).replaceAll('\r\n', '\n');
+    final rows = const CsvToListConverter().convert(csvContent, eol: '\n');
     expect(rows, isNotEmpty);
     expect(rows.first, <Object?>[
       'name',
