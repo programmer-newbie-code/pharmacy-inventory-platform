@@ -10,7 +10,8 @@
 
 ## Increment 2: backup and UI
 
-1. Include import history in validated backup JSON and atomic restore.
+1. Include import history in validated backup JSON and atomic restore while
+   accepting older backups that omit the optional collection.
 2. Render newest import outcomes in the inventory import dialog with localized
    labels and bounded error details.
 3. Add widget coverage and verify local Windows build plus CI Android build.

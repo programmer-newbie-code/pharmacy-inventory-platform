@@ -103,6 +103,16 @@ void main() {
 
   test('exports and restores every persisted business table', () async {
     await _seedEveryTable(db);
+    await db.into(db.csvImportLogs).insert(
+          CsvImportLogsCompanion.insert(
+            sourceName: 'catalog.csv',
+            createdBy: 'admin',
+            totalRows: 2,
+            importedRows: 2,
+            rejectedRows: 0,
+            status: 'success',
+          ),
+        );
 
     final source = await backupService.exportDatabaseToJson();
     final decoded = jsonDecode(source) as Map<String, dynamic>;
@@ -130,9 +140,11 @@ void main() {
     expect(await db.select(db.purchaseOrders).get(), hasLength(1));
     expect(await db.select(db.purchaseOrderItems).get(), hasLength(1));
     expect(await db.select(db.backupLogs).get(), hasLength(2));
+    expect(await db.select(db.csvImportLogs).get(), hasLength(1));
   });
 
-  test('keeps existing data when a restore violates a database constraint', () async {
+  test('keeps existing data when a restore violates a database constraint',
+      () async {
     await _seedEveryTable(db);
     final backup = jsonDecode(await backupService.exportDatabaseToJson())
         as Map<String, dynamic>;

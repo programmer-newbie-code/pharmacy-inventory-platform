@@ -32,7 +32,8 @@ String backup({
   return jsonEncode({
     'schemaVersion': version,
     'createdAt': '2026-07-29T12:00:00.000Z',
-    'counts': counts ?? {for (final entry in data.entries) entry.key: entry.value.length},
+    'counts': counts ??
+        {for (final entry in data.entries) entry.key: entry.value.length},
     'data': data,
   });
 }
@@ -44,6 +45,29 @@ void main() {
     expect(document.schemaVersion, 2);
     expect(document.createdAt, DateTime.utc(2026, 7, 29, 12));
     expect(document.data.keys, containsAll(_collections));
+    expect(document.data['csvImportLogs'], isEmpty);
+  });
+
+  test('accepts optional CSV import history rows', () {
+    final document = BackupDocument.parseAndValidate(
+      backup(changes: {
+        'csvImportLogs': [
+          {
+            'id': 1,
+            'importedAt': '2026-08-04T12:00:00.000Z',
+            'sourceName': 'catalog.csv',
+            'createdBy': 'admin',
+            'totalRows': 2,
+            'importedRows': 2,
+            'rejectedRows': 0,
+            'status': 'success',
+            'errorSummary': null,
+          },
+        ],
+      }),
+    );
+
+    expect(document.data['csvImportLogs'], hasLength(1));
   });
 
   test('normalizes a legacy version 1 document', () {
@@ -73,7 +97,9 @@ void main() {
   test('rejects invalid counts and broken references', () {
     expect(
       () => BackupDocument.parseAndValidate(
-        backup(counts: {for (final name in _collections) name: name == 'users' ? 2 : 0}),
+        backup(counts: {
+          for (final name in _collections) name: name == 'users' ? 2 : 0
+        }),
       ),
       throwsA(isA<BackupValidationException>()),
     );
