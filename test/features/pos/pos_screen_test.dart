@@ -11,6 +11,36 @@ import 'package:pharmacy_inventory_platform/features/pos/pos_screen.dart';
 import 'package:pharmacy_inventory_platform/l10n/app_localizations.dart';
 
 void main() {
+  testWidgets('uses the focused barcode field instead of camera scanning on Windows',
+      (tester) async {
+    final db = AppDatabase(NativeDatabase.memory());
+    addTearDown(db.close);
+    final container = ProviderContainer(
+      overrides: [databaseProvider.overrideWithValue(db)],
+    );
+    addTearDown(container.dispose);
+
+    await tester.pumpWidget(
+      UncontrolledProviderScope(
+        container: container,
+        child: MaterialApp(
+          theme: ThemeData(platform: TargetPlatform.windows),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          locale: const Locale('id'),
+          home: const PosScreen(),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const Key('cameraScanBtn')), findsNothing);
+    expect(
+      tester.widget<TextField>(find.byKey(const Key('posSearchInput'))).autofocus,
+      isTrue,
+    );
+  });
+
   testWidgets('renders PosScreen, adds product to cart, and completes checkout', (tester) async {
     final db = AppDatabase(NativeDatabase.memory());
     addTearDown(db.close);
