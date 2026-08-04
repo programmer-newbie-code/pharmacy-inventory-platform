@@ -555,10 +555,16 @@
 <h3 id="7-google-cloud-oauth--google-drive-setup">7. Google Cloud OAuth &amp; Google Drive Setup</h3>
 <ol>
   <li>Enable <strong>Google Drive API</strong> in Google Cloud Console.</li>
-  <li>Configure <strong>OAuth Consent Screen</strong> with scope <code class="language-plaintext highlighter-rouge">https://www.googleapis.com/auth/drive.appdata</code>.</li>
+  <li>Configure <strong>OAuth Consent Screen</strong> with scope <code class="language-plaintext highlighter-rouge">https://www.googleapis.com/auth/drive.file</code>.</li>
   <li>Set up <strong>Android OAuth Client ID</strong> with package name <code class="language-plaintext highlighter-rouge">com.programmernewbiecode.pharmacy_inventory_platform</code> and SHA-1 signing certificate fingerprint.</li>
-  <li>Set up <strong>Desktop OAuth Client ID</strong> with authorized redirect URI <code class="language-plaintext highlighter-rouge">http://localhost:8080</code>.</li>
+  <li>Set up a <strong>Desktop OAuth Client</strong> for Windows. Do not commit its credentials.</li>
+  <li>Build the Windows app with the desktop credentials supplied only at build time:</li>
 </ol>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>flutter build windows <span class="nt">--release</span> <span class="se">\</span>
+  <span class="nt">--dart-define</span><span class="o">=</span><span class="nv">GOOGLE_DRIVE_DESKTOP_CLIENT_ID</span><span class="o">=</span>your-client-id <span class="se">\</span>
+  <span class="nt">--dart-define</span><span class="o">=</span><span class="nv">GOOGLE_DRIVE_DESKTOP_CLIENT_SECRET</span><span class="o">=</span>your-client-secret
+</code></pre></div></div>
 
 <hr />
 
