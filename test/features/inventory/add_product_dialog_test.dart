@@ -1,3 +1,5 @@
+import 'dart:io' show Platform;
+
 import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -32,11 +34,23 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Tambah Produk Baru'), findsOneWidget);
-    expect(find.byKey(const Key('cameraScanBarcodeBtn')), findsNothing);
-    expect(
+    if (Platform.isWindows) {
+      expect(find.byKey(const Key('cameraScanBarcodeBtn')), findsNothing);
+      expect(
         find.text(
-            'Gunakan scanner USB/Bluetooth; kamera tidak tersedia di Windows.'),
-        findsOneWidget);
+          'Gunakan scanner USB/Bluetooth; kamera tidak tersedia di Windows.',
+        ),
+        findsOneWidget,
+      );
+    } else {
+      expect(find.byKey(const Key('cameraScanBarcodeBtn')), findsOneWidget);
+      expect(
+        find.text(
+          'Gunakan scanner USB/Bluetooth; kamera tidak tersedia di Windows.',
+        ),
+        findsNothing,
+      );
+    }
 
     await tester.enterText(
         find.byKey(const Key('productNameInput')), 'Ibuprofen 400mg');
