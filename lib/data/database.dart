@@ -36,8 +36,7 @@ class Products extends Table {
   RealColumn get costPricePerBaseUnit => real()();
   RealColumn get marginPct => real()();
   IntColumn get reorderThreshold => integer()();
-  BoolColumn get isControlled =>
-      boolean().withDefault(const Constant(false))();
+  BoolColumn get isControlled => boolean().withDefault(const Constant(false))();
   TextColumn get nationalDrugCode => text().nullable()();
   IntColumn get storageLocationId =>
       integer().nullable().references(StorageLocations, #id)();
@@ -127,14 +126,27 @@ class BackupLogs extends Table {
   IntColumn get fileSize => integer().nullable()();
 }
 
+@DataClassName('CsvImportLog')
+class CsvImportLogs extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  DateTimeColumn get importedAt => dateTime().withDefault(currentDateAndTime)();
+  TextColumn get sourceName => text()();
+  TextColumn get createdBy => text()();
+  IntColumn get totalRows => integer()();
+  IntColumn get importedRows => integer()();
+  IntColumn get rejectedRows => integer()();
+  TextColumn get status => text()(); // success|failed
+  TextColumn get errorSummary => text().nullable()();
+}
+
 @DataClassName('CashierShift')
 class CashierShifts extends Table {
   IntColumn get id => integer().autoIncrement()();
   IntColumn get cashierId => integer().references(Users, #id)();
   RealColumn get openingBalance => real()();
   RealColumn get expectedCash => real().nullable()(); // calculated on close
-  RealColumn get actualCash => real().nullable()();   // entered by cashier
-  RealColumn get discrepancy => real().nullable()();  // actual - expected
+  RealColumn get actualCash => real().nullable()(); // entered by cashier
+  RealColumn get discrepancy => real().nullable()(); // actual - expected
   TextColumn get discrepancyReason => text().nullable()();
   TextColumn get status => text()(); // open|closed
   DateTimeColumn get openedAt => dateTime().withDefault(currentDateAndTime)();
@@ -206,6 +218,7 @@ class PurchaseOrderItems extends Table {
   SaleItems,
   AuditLogs,
   BackupLogs,
+  CsvImportLogs,
   CashierShifts,
   ReturnTransactions,
   ReturnItems,
@@ -219,7 +232,7 @@ class AppDatabase extends _$AppDatabase {
   factory AppDatabase.defaultConnection() => AppDatabase(openConnection());
 
   @override
-  int get schemaVersion => 3;
+  int get schemaVersion => 4;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -230,6 +243,9 @@ class AppDatabase extends _$AppDatabase {
           }
           if (from < 3) {
             await m.addColumn(cashierShifts, cashierShifts.discrepancyReason);
+          }
+          if (from < 4) {
+            await m.createTable(csvImportLogs);
           }
         },
       );
