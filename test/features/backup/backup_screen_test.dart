@@ -10,7 +10,8 @@ import 'package:pharmacy_inventory_platform/features/backup/backup_screen.dart';
 import 'package:pharmacy_inventory_platform/l10n/app_localizations.dart';
 
 void main() {
-  testWidgets('renders BackupScreen with localized title and buttons', (tester) async {
+  testWidgets('renders BackupScreen with localized title and buttons',
+      (tester) async {
     final db = AppDatabase(NativeDatabase.memory());
     addTearDown(db.close);
     final driveService = GoogleDriveBackupService(
@@ -47,7 +48,8 @@ void main() {
     await tester.tap(find.byKey(const Key('googleDriveBackupBtn')));
     await tester.pumpAndSettle();
 
-    expect(find.textContaining('Backup uploaded to Google Drive'), findsOneWidget);
+    expect(find.textContaining('Cadangan berhasil diunggah ke Google Drive'),
+        findsOneWidget);
   });
 }
 
@@ -69,5 +71,6 @@ class _DriveUploadClient implements DriveUploadClient {
     required String accessToken,
     required String fileName,
     required List<int> bytes,
-  }) async => 'drive-file-id';
+  }) async =>
+      'drive-file-id';
 }

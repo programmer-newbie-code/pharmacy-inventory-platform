@@ -9,10 +9,12 @@ import '../../core/app_theme.dart';
 import '../../core/providers.dart';
 import '../../data/backup_service.dart';
 import '../../data/database.dart';
+import '../../data/google_drive_backup_service.dart';
 import '../../l10n/app_localizations.dart';
 import '../auth/auth_session.dart';
 
-final backupLogsFutureProvider = FutureProvider.autoDispose<List<BackupLog>>((ref) {
+final backupLogsFutureProvider =
+    FutureProvider.autoDispose<List<BackupLog>>((ref) {
   final service = ref.watch(backupServiceProvider);
   return service.listBackupLogs();
 });
@@ -41,7 +43,7 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
       final service = ref.read(backupServiceProvider);
       final docsDir = await getApplicationDocumentsDirectory();
       final backupPath = await service.createBackupJson(docsDir.path);
-      
+
       setState(() {
         _statusMessage = 'Backup created: ${File(backupPath).path}';
       });
@@ -115,12 +117,16 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
       _preview = null;
     });
     try {
-      final preview = await ref.read(backupServiceProvider).previewBackupJson(path);
+      final preview =
+          await ref.read(backupServiceProvider).previewBackupJson(path);
       if (!mounted) return;
       setState(() => _preview = preview);
       await _handleRestoreBackup(path);
     } on BackupPreviewException catch (_) {
-      if (mounted) setState(() => _statusMessage = AppLocalizations.of(context)!.invalidBackupFile);
+      if (mounted) {
+        setState(() =>
+            _statusMessage = AppLocalizations.of(context)!.invalidBackupFile);
+      }
     } catch (error) {
       if (mounted) setState(() => _statusMessage = 'Restore error: $error');
     } finally {
@@ -137,6 +143,7 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
   }
 
   Future<void> _handleGoogleDriveBackup() async {
+    final l10n = AppLocalizations.of(context)!;
     setState(() {
       _isLoading = true;
       _statusMessage = null;
@@ -144,10 +151,11 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
 
     try {
       final driveService = ref.read(googleDriveBackupServiceProvider);
-      final user = driveService.currentUser ?? await driveService.signInWithGoogle();
+      final user =
+          driveService.currentUser ?? await driveService.signInWithGoogle();
       if (user == null) {
         setState(() {
-          _statusMessage = 'Google sign-in was cancelled.';
+          _statusMessage = l10n.driveSignInCancelled;
         });
         return;
       }
@@ -156,14 +164,17 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
         accessToken: user.accessToken,
       );
       setState(() {
-        _statusMessage = result.success
-            ? 'Backup uploaded to Google Drive (${user.email}): ${result.fileName} (${(result.fileSize / 1024).toStringAsFixed(1)} KB)'
-            : 'Cloud Backup failed: ${result.errorMessage}';
+        _statusMessage =
+            result.success ? l10n.driveBackupUploaded : l10n.driveBackupFailed;
       });
       ref.invalidate(backupLogsFutureProvider);
-    } catch (e) {
+    } on GoogleDriveConfigurationException {
       setState(() {
-        _statusMessage = 'Google Drive error: $e';
+        _statusMessage = l10n.driveDesktopConfiguration;
+      });
+    } catch (_) {
+      setState(() {
+        _statusMessage = l10n.driveBackupFailed;
       });
     } finally {
       setState(() {
@@ -177,7 +188,8 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
     final l10n = AppLocalizations.of(context)!;
     final currentUser = ref.watch(authSessionProvider);
     final permChecker = ref.watch(permissionCheckerProvider);
-    final isAllowed = currentUser == null || permChecker.canManageBackup(currentUser.role);
+    final isAllowed =
+        currentUser == null || permChecker.canManageBackup(currentUser.role);
 
     if (!isAllowed) {
       return Scaffold(
@@ -186,7 +198,8 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.lock_outline, size: 64, color: AppTheme.dangerColor.withAlpha(150)),
+              Icon(Icons.lock_outline,
+                  size: 64, color: AppTheme.dangerColor.withAlpha(150)),
               const SizedBox(height: 16),
               Text(
                 l10n.backupAccessDenied,
@@ -232,10 +245,13 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
                         ),
                         ElevatedButton.icon(
                           key: const Key('googleDriveBackupBtn'),
-                          style: ElevatedButton.styleFrom(backgroundColor: Colors.indigo, foregroundColor: Colors.white),
+                          style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.indigo,
+                              foregroundColor: Colors.white),
                           icon: const Icon(Icons.cloud_upload),
                           label: Text(l10n.googleDriveBackup),
-                          onPressed: _isLoading ? null : _handleGoogleDriveBackup,
+                          onPressed:
+                              _isLoading ? null : _handleGoogleDriveBackup,
                         ),
                         OutlinedButton.icon(
                           key: const Key('restoreBackupBtn'),
@@ -305,7 +321,8 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
                   );
                 },
                 loading: () => const Center(child: CircularProgressIndicator()),
-                error: (err, stack) => Center(child: Text('${l10n.backupLogError}: $err')),
+                error: (err, stack) =>
+                    Center(child: Text('${l10n.backupLogError}: $err')),
               ),
             ),
           ],

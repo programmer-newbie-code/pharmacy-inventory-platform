@@ -1,6 +1,10 @@
+import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 import 'package:drift/drift.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:googleapis_auth/auth_io.dart';
+import 'package:http/http.dart' as http;
 import 'backup_service.dart';
 import 'database.dart';
 import 'drive_upload_client.dart';
@@ -38,12 +42,24 @@ abstract interface class GoogleAccountAuthorizer {
   Future<void> signOut();
 }
 
+class GoogleDriveConfigurationException implements Exception {
+  const GoogleDriveConfigurationException();
+}
+
+GoogleAccountAuthorizer createGoogleAccountAuthorizer({
+  bool? isWindows,
+}) =>
+    (isWindows ?? Platform.isWindows)
+        ? const DesktopGoogleAccountAuthorizer()
+        : GoogleSignInAuthorizer();
+
 class GoogleSignInAuthorizer implements GoogleAccountAuthorizer {
   GoogleSignInAuthorizer({GoogleSignIn? googleSignIn})
-      : _googleSignIn = googleSignIn ?? GoogleSignIn(scopes: const [
-          'email',
-          'https://www.googleapis.com/auth/drive.file',
-        ]);
+      : _googleSignIn = googleSignIn ??
+            GoogleSignIn(scopes: const [
+              'email',
+              'https://www.googleapis.com/auth/drive.file',
+            ]);
 
   final GoogleSignIn _googleSignIn;
 
@@ -66,13 +82,57 @@ class GoogleSignInAuthorizer implements GoogleAccountAuthorizer {
   Future<void> signOut() => _googleSignIn.signOut();
 }
 
+class DesktopGoogleAccountAuthorizer implements GoogleAccountAuthorizer {
+  const DesktopGoogleAccountAuthorizer({
+    this.clientId =
+        const String.fromEnvironment('GOOGLE_DRIVE_DESKTOP_CLIENT_ID'),
+    this.clientSecret =
+        const String.fromEnvironment('GOOGLE_DRIVE_DESKTOP_CLIENT_SECRET'),
+  });
+
+  final String clientId;
+  final String clientSecret;
+
+  @override
+  Future<GoogleAccountUser?> signIn() async {
+    if (clientId.isEmpty || clientSecret.isEmpty) {
+      throw const GoogleDriveConfigurationException();
+    }
+
+    final client = http.Client();
+    try {
+      final credentials = await obtainAccessCredentialsViaUserConsent(
+        ClientId(clientId, clientSecret),
+        const ['email', 'https://www.googleapis.com/auth/drive.file'],
+        client,
+        _openBrowser,
+      );
+      return GoogleAccountUser(
+        email: 'Google Drive desktop account',
+        displayName: 'Google Drive',
+        accessToken: credentials.accessToken.data,
+      );
+    } finally {
+      client.close();
+    }
+  }
+
+  static void _openBrowser(String uri) {
+    unawaited(Process.start('cmd', ['/c', 'start', '', uri]));
+  }
+
+  @override
+  Future<void> signOut() async {}
+}
+
 class GoogleDriveBackupService {
   GoogleDriveBackupService(
     this._db, {
     DriveUploadClient? driveUploadClient,
     GoogleAccountAuthorizer? accountAuthorizer,
   })  : _driveUploadClient = driveUploadClient ?? HttpDriveUploadClient(),
-        _accountAuthorizer = accountAuthorizer ?? GoogleSignInAuthorizer();
+        _accountAuthorizer =
+            accountAuthorizer ?? createGoogleAccountAuthorizer();
 
   final AppDatabase _db;
   final DriveUploadClient _driveUploadClient;
@@ -114,19 +174,19 @@ class GoogleDriveBackupService {
       );
 
       await _db.into(_db.backupLogs).insert(
-              BackupLogsCompanion.insert(
-                timestamp: Value(DateTime.now()),
-                destination: 'drive',
-                status: 'Success',
-                fileSize: Value(bytes.length),
-              ),
-            );
+            BackupLogsCompanion.insert(
+              timestamp: Value(DateTime.now()),
+              destination: 'drive',
+              status: 'Success',
+              fileSize: Value(bytes.length),
+            ),
+          );
 
       return GoogleDriveBackupResult(
-          success: true,
-          fileId: fileId,
-          fileName: fileName,
-          fileSize: bytes.length,
+        success: true,
+        fileId: fileId,
+        fileName: fileName,
+        fileSize: bytes.length,
       );
     } catch (e) {
       await _db.into(_db.backupLogs).insert(
