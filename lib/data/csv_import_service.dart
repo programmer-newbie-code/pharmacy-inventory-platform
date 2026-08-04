@@ -175,8 +175,9 @@ class CsvImportService {
       if (unitsPerPurchaseUnit == null) {
         errors.add('Units per purchase unit must be a positive integer.');
       }
-      if (costPrice == null)
+      if (costPrice == null) {
         errors.add('Cost price must be a positive number.');
+      }
       if (marginPct == null) {
         errors.add('Margin percentage must be a valid number.');
       }
