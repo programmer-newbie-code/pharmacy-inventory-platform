@@ -19,7 +19,8 @@ void main() {
     await database.close();
   });
 
-  testWidgets('renders ReportsScreen and exports Excel report on button tap', (tester) async {
+  testWidgets('renders ReportsScreen and exports Excel report on button tap',
+      (tester) async {
     final container = ProviderContainer(
       overrides: [
         databaseProvider.overrideWithValue(database),
@@ -51,6 +52,9 @@ void main() {
     expect(find.byKey(const Key('exportExcelBtn')), findsOneWidget);
 
     await tester.tap(find.byKey(const Key('exportExcelBtn')));
-    await tester.pump(const Duration(milliseconds: 500));
+    await tester.pump();
+
+    expect(find.text('Mengekspor laporan...'), findsOneWidget);
+    expect(find.textContaining('Export error:'), findsNothing);
   });
 }

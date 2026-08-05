@@ -8,7 +8,8 @@ import '../../data/report_repository.dart';
 import '../../l10n/app_localizations.dart';
 import 'sales_analytics_screen.dart';
 
-final salesReportFutureProvider = FutureProvider.autoDispose<SalesSummary>((ref) {
+final salesReportFutureProvider =
+    FutureProvider.autoDispose<SalesSummary>((ref) {
   final now = DateTime.now();
   final startDate = DateTime(now.year, now.month, 1);
   final endDate = DateTime(now.year, now.month + 1, 0, 23, 59, 59);
@@ -27,13 +28,15 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
   bool _isExporting = false;
 
   Future<void> _exportExcel(SalesSummary summary) async {
+    final l10n = AppLocalizations.of(context)!;
     setState(() => _isExporting = true);
     try {
       final now = DateTime.now();
       final startDate = DateTime(now.year, now.month, 1);
       final endDate = DateTime(now.year, now.month + 1, 0, 23, 59, 59);
       final repo = ref.read(reportRepositoryProvider);
-      final rows = await repo.getDetailedSalesRows(startDate: startDate, endDate: endDate);
+      final rows = await repo.getDetailedSalesRows(
+          startDate: startDate, endDate: endDate);
       final service = ref.read(excelReportServiceProvider);
       final file = await service.exportAndSaveReport(
         summary: summary,
@@ -45,7 +48,7 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Excel report saved to: ${file.path}'),
+            content: Text(l10n.exportReportSaved(file.path)),
             backgroundColor: AppTheme.successColor,
             duration: const Duration(seconds: 4),
           ),
@@ -55,7 +58,7 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Export error: $err'),
+            content: Text(l10n.exportReportFailed),
             backgroundColor: AppTheme.dangerColor,
           ),
         );
@@ -96,15 +99,26 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
                           style: Theme.of(context).textTheme.headlineSmall,
                         ),
                         const SizedBox(height: 20),
-                        _buildKpiRow(l10n.totalTransactions, '${summary.totalTransactions}', AppTheme.infoColor),
+                        _buildKpiRow(l10n.totalTransactions,
+                            '${summary.totalTransactions}', AppTheme.infoColor),
                         const Divider(height: 24),
-                        _buildKpiRow(l10n.totalRevenue, formatIdr(summary.totalRevenue), AppTheme.successColor),
+                        _buildKpiRow(
+                            l10n.totalRevenue,
+                            formatIdr(summary.totalRevenue),
+                            AppTheme.successColor),
                         const Divider(height: 24),
-                        _buildKpiRow(l10n.cogs, formatIdr(summary.totalCostOfGoods), AppTheme.warningColor),
+                        _buildKpiRow(
+                            l10n.cogs,
+                            formatIdr(summary.totalCostOfGoods),
+                            AppTheme.warningColor),
                         const Divider(height: 24),
-                        _buildKpiRow(l10n.grossProfit, formatIdr(summary.grossProfit), Colors.purple),
+                        _buildKpiRow(l10n.grossProfit,
+                            formatIdr(summary.grossProfit), Colors.purple),
                         const Divider(height: 24),
-                        _buildKpiRow(l10n.grossMargin, '${marginPct.toStringAsFixed(1)}%', AppTheme.primaryColor),
+                        _buildKpiRow(
+                            l10n.grossMargin,
+                            '${marginPct.toStringAsFixed(1)}%',
+                            AppTheme.primaryColor),
                       ],
                     ),
                   ),
@@ -121,7 +135,8 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
                   label: Text(l10n.salesAnalytics),
                   onPressed: () {
                     Navigator.of(context).push(
-                      MaterialPageRoute(builder: (_) => const SalesAnalyticsScreen()),
+                      MaterialPageRoute(
+                          builder: (_) => const SalesAnalyticsScreen()),
                     );
                   },
                 ),
@@ -137,10 +152,13 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
                       ? const SizedBox(
                           width: 20,
                           height: 20,
-                          child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                          child: CircularProgressIndicator(
+                              color: Colors.white, strokeWidth: 2),
                         )
                       : const Icon(Icons.table_chart),
-                  label: Text(_isExporting ? 'Exporting...' : l10n.exportExcelButton),
+                  label: Text(_isExporting
+                      ? l10n.exportingReport
+                      : l10n.exportExcelButton),
                   onPressed: _isExporting ? null : () => _exportExcel(summary),
                 ),
               ],
@@ -148,7 +166,7 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (err, stack) => Center(child: Text('Error: $err')),
+        error: (err, stack) => Center(child: Text(l10n.reportsLoadError)),
       ),
     );
   }
@@ -157,10 +175,12 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(title, style: const TextStyle(fontSize: 14, color: Color(0xFF333333))),
+        Text(title,
+            style: const TextStyle(fontSize: 14, color: Color(0xFF333333))),
         Text(
           value,
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: color),
+          style: TextStyle(
+              fontSize: 16, fontWeight: FontWeight.bold, color: color),
         ),
       ],
     );
