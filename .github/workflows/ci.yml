@@ -80,12 +80,7 @@ jobs:
           if ("${{ github.ref }}" -like "refs/tags/v*") {
             $ver = "${{ github.ref_name }}".TrimStart('v')
           } else {
-            $ver = (git describe --tags --abbrev=0 2>$null)
-            if ($ver) {
-              $ver = $ver.TrimStart('v')
-            } else {
-              $ver = ((Get-Content pubspec.yaml | Select-String '^version:').Line -split '\s+')[1] -split '\+' | Select-Object -First 1
-            }
+            $ver = ((Get-Content pubspec.yaml | Select-String '^version:').Line -split '\s+')[1] -split '\+' | Select-Object -First 1
           }
           Write-Host "Injecting dynamic version: $ver+$env:GITHUB_RUN_NUMBER"
           (Get-Content pubspec.yaml) -replace '^version: .*', "version: $ver+$env:GITHUB_RUN_NUMBER" | Set-Content pubspec.yaml
@@ -117,10 +112,7 @@ jobs:
           if [[ "${{ github.ref }}" == refs/tags/v* ]]; then
             VER="${GITHUB_REF_NAME#v}"
           else
-            VER=$(git describe --tags --abbrev=0 2>/dev/null | sed 's/^v//')
-            if [ -z "$VER" ]; then
-              VER=$(grep '^version:' pubspec.yaml | awk '{print $2}' | cut -d'+' -f1)
-            fi
+            VER=$(grep '^version:' pubspec.yaml | awk '{print $2}' | cut -d'+' -f1)
           fi
           echo "Injecting dynamic version: ${VER}+${{ github.run_number }}"
           sed -i "s/^version: .*/version: ${VER}+${{ github.run_number }}/" pubspec.yaml
