@@ -12,7 +12,8 @@ import '../../data/database.dart';
 import '../../l10n/app_localizations.dart';
 import '../auth/auth_session.dart';
 
-final backupLogsFutureProvider = FutureProvider.autoDispose<List<BackupLog>>((ref) {
+final backupLogsFutureProvider =
+    FutureProvider.autoDispose<List<BackupLog>>((ref) {
   final service = ref.watch(backupServiceProvider);
   return service.listBackupLogs();
 });
@@ -32,6 +33,7 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
   BackupPreview? _preview;
 
   Future<void> _handleCreateBackup() async {
+    final l10n = AppLocalizations.of(context)!;
     setState(() {
       _isLoading = true;
       _statusMessage = null;
@@ -41,14 +43,14 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
       final service = ref.read(backupServiceProvider);
       final docsDir = await getApplicationDocumentsDirectory();
       final backupPath = await service.createBackupJson(docsDir.path);
-      
+
       setState(() {
-        _statusMessage = 'Backup created: ${File(backupPath).path}';
+        _statusMessage = l10n.backupCreated(File(backupPath).path);
       });
       ref.invalidate(backupLogsFutureProvider);
     } catch (e) {
       setState(() {
-        _statusMessage = 'Backup failed: $e';
+        _statusMessage = l10n.backupCreateFailed;
       });
     } finally {
       setState(() {
@@ -90,14 +92,13 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
       final service = ref.read(backupServiceProvider);
       final success = await service.restoreFromBackupJson(filePath);
       setState(() {
-        _statusMessage = success
-            ? 'Database successfully restored.'
-            : 'Failed to restore: File not found.';
+        _statusMessage =
+            success ? l10n.restoreSuccess : l10n.restoreFileMissing;
       });
       ref.invalidate(backupLogsFutureProvider);
     } catch (e) {
       setState(() {
-        _statusMessage = 'Restore error: $e';
+        _statusMessage = l10n.restoreError;
       });
     } finally {
       setState(() {
@@ -107,6 +108,7 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
   }
 
   Future<void> _selectRestoreBackup() async {
+    final l10n = AppLocalizations.of(context)!;
     final path = await (widget.selectBackupFile?.call() ?? _pickBackupFile());
     if (path == null) return;
     setState(() {
@@ -115,14 +117,17 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
       _preview = null;
     });
     try {
-      final preview = await ref.read(backupServiceProvider).previewBackupJson(path);
+      final preview =
+          await ref.read(backupServiceProvider).previewBackupJson(path);
       if (!mounted) return;
       setState(() => _preview = preview);
       await _handleRestoreBackup(path);
     } on BackupPreviewException catch (_) {
-      if (mounted) setState(() => _statusMessage = AppLocalizations.of(context)!.invalidBackupFile);
+      if (mounted) {
+        setState(() => _statusMessage = l10n.invalidBackupFile);
+      }
     } catch (error) {
-      if (mounted) setState(() => _statusMessage = 'Restore error: $error');
+      if (mounted) setState(() => _statusMessage = l10n.restoreError);
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -137,6 +142,7 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
   }
 
   Future<void> _handleGoogleDriveBackup() async {
+    final l10n = AppLocalizations.of(context)!;
     setState(() {
       _isLoading = true;
       _statusMessage = null;
@@ -144,10 +150,11 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
 
     try {
       final driveService = ref.read(googleDriveBackupServiceProvider);
-      final user = driveService.currentUser ?? await driveService.signInWithGoogle();
+      final user =
+          driveService.currentUser ?? await driveService.signInWithGoogle();
       if (user == null) {
         setState(() {
-          _statusMessage = 'Google sign-in was cancelled.';
+          _statusMessage = l10n.driveSignInCancelled;
         });
         return;
       }
@@ -157,13 +164,17 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
       );
       setState(() {
         _statusMessage = result.success
-            ? 'Backup uploaded to Google Drive (${user.email}): ${result.fileName} (${(result.fileSize / 1024).toStringAsFixed(1)} KB)'
-            : 'Cloud Backup failed: ${result.errorMessage}';
+            ? l10n.driveBackupUploadedWithDetails(
+                user.email,
+                result.fileName,
+                (result.fileSize / 1024).toStringAsFixed(1),
+              )
+            : _mapDriveError(result.errorMessage, l10n);
       });
       ref.invalidate(backupLogsFutureProvider);
     } catch (e) {
       setState(() {
-        _statusMessage = 'Google Drive error: $e';
+        _statusMessage = _mapDriveError(e, l10n);
       });
     } finally {
       setState(() {
@@ -172,12 +183,28 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
     }
   }
 
+  String _mapDriveError(Object? error, AppLocalizations l10n) {
+    final message = error?.toString().toLowerCase() ?? '';
+    if (message.contains('missingplugin') ||
+        message.contains('not configured') ||
+        message.contains('client id')) {
+      return l10n.driveDesktopConfiguration;
+    }
+    if (message.contains('permission') ||
+        message.contains('forbidden') ||
+        message.contains('unauthorized')) {
+      return l10n.drivePermissionDenied;
+    }
+    return l10n.driveError;
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final currentUser = ref.watch(authSessionProvider);
     final permChecker = ref.watch(permissionCheckerProvider);
-    final isAllowed = currentUser == null || permChecker.canManageBackup(currentUser.role);
+    final isAllowed =
+        currentUser == null || permChecker.canManageBackup(currentUser.role);
 
     if (!isAllowed) {
       return Scaffold(
@@ -186,7 +213,8 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.lock_outline, size: 64, color: AppTheme.dangerColor.withAlpha(150)),
+              Icon(Icons.lock_outline,
+                  size: 64, color: AppTheme.dangerColor.withAlpha(150)),
               const SizedBox(height: 16),
               Text(
                 l10n.backupAccessDenied,
@@ -232,10 +260,13 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
                         ),
                         ElevatedButton.icon(
                           key: const Key('googleDriveBackupBtn'),
-                          style: ElevatedButton.styleFrom(backgroundColor: Colors.indigo, foregroundColor: Colors.white),
+                          style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.indigo,
+                              foregroundColor: Colors.white),
                           icon: const Icon(Icons.cloud_upload),
                           label: Text(l10n.googleDriveBackup),
-                          onPressed: _isLoading ? null : _handleGoogleDriveBackup,
+                          onPressed:
+                              _isLoading ? null : _handleGoogleDriveBackup,
                         ),
                         OutlinedButton.icon(
                           key: const Key('restoreBackupBtn'),
@@ -255,11 +286,14 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
                     ],
                     if (_preview != null) ...[
                       const SizedBox(height: 12),
-                      Text('Backup: ${_preview!.createdAt.toLocal()}'),
+                      Text(l10n.backupPreviewLabel(
+                          _preview!.createdAt.toLocal().toString())),
                       Text(
-                        'Products: ${_preview!.counts['products']} • '
-                        'Batches: ${_preview!.counts['stockBatches']} • '
-                        'Sales: ${_preview!.counts['saleTransactions']}',
+                        l10n.backupPreviewCounts(
+                          _preview!.counts['products'] ?? 0,
+                          _preview!.counts['stockBatches'] ?? 0,
+                          _preview!.counts['saleTransactions'] ?? 0,
+                        ),
                       ),
                     ],
                   ],
@@ -305,7 +339,7 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
                   );
                 },
                 loading: () => const Center(child: CircularProgressIndicator()),
-                error: (err, stack) => Center(child: Text('${l10n.backupLogError}: $err')),
+                error: (err, stack) => Center(child: Text(l10n.backupLogError)),
               ),
             ),
           ],
