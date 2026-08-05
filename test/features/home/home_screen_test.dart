@@ -107,6 +107,9 @@ void main() {
     expect(find.byKey(const Key('desktopNavInventory')), findsOneWidget);
     expect(find.text('Pharmacy workspace'), findsOneWidget);
     expect(find.byKey(const Key('mobileHomeNavigation')), findsNothing);
+    final inventorySemantics =
+        tester.getSemantics(find.byKey(const Key('desktopNavInventory')));
+    expect(inventorySemantics.label, 'Inventory Catalog');
   });
 
   testWidgets('uses bottom navigation on phone layouts', (tester) async {

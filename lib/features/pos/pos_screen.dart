@@ -249,6 +249,7 @@ class _PosScreenState extends ConsumerState<PosScreen> {
                             key: Key('addToCart_${p.id}'),
                             icon: const Icon(Icons.add_shopping_cart,
                                 color: AppTheme.primaryColor),
+                            tooltip: l10n.addProductToCart(p.name),
                             onPressed: () => _addToCart(p),
                           ),
                         ),
