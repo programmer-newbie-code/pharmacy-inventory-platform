@@ -129,6 +129,7 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen> {
           IconButton(
             key: const Key('refreshButton'),
             icon: const Icon(Icons.refresh),
+            tooltip: l10n.refreshProducts,
             onPressed: _fetchProducts,
           ),
         ],
