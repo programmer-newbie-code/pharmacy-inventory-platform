@@ -97,7 +97,7 @@ void main() {
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
           locale: Locale('en'),
-          home: HomeScreen(),
+          home: PharmacyShell(),
         ),
       ),
     );
@@ -105,11 +105,14 @@ void main() {
 
     expect(find.byKey(const Key('desktopSidebar')), findsOneWidget);
     expect(find.byKey(const Key('desktopNavInventory')), findsOneWidget);
-    expect(find.text('Pharmacy workspace'), findsOneWidget);
     expect(find.byKey(const Key('mobileHomeNavigation')), findsNothing);
     final inventorySemantics =
         tester.getSemantics(find.byKey(const Key('desktopNavInventory')));
     expect(inventorySemantics.label, 'Inventory Catalog');
+    await tester.tap(find.byKey(const Key('desktopNavInventory')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('desktopSidebar')), findsOneWidget);
+    expect(find.byKey(const Key('desktopNavInventory')), findsOneWidget);
   });
 
   testWidgets('uses bottom navigation on phone layouts', (tester) async {
@@ -133,13 +136,16 @@ void main() {
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
           locale: Locale('id'),
-          home: HomeScreen(),
+          home: PharmacyShell(),
         ),
       ),
     );
     await tester.pumpAndSettle();
 
-    expect(find.byKey(const Key('mobileHomeNavigation')), findsOneWidget);
+    expect(find.byKey(const Key('mobileShellNavigation')), findsOneWidget);
     expect(find.byKey(const Key('desktopSidebar')), findsNothing);
+    await tester.tap(find.byIcon(Icons.point_of_sale_outlined));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('mobileShellNavigation')), findsOneWidget);
   });
 }

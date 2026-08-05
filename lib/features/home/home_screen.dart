@@ -64,8 +64,93 @@ class _TodayStats {
   });
 }
 
+class PharmacyShell extends ConsumerStatefulWidget {
+  const PharmacyShell({super.key});
+
+  @override
+  ConsumerState<PharmacyShell> createState() => _PharmacyShellState();
+}
+
+class _PharmacyShellState extends ConsumerState<PharmacyShell> {
+  Widget _workspace = const HomeScreen(embedded: true);
+  String _selected = 'dashboard';
+
+  void _select(String id, Widget screen) {
+    setState(() {
+      _selected = id;
+      _workspace = screen;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final permission = ref.watch(permissionCheckerProvider);
+    final role = ref.watch(authSessionProvider)?.role;
+    final desktop = AppBreakpointWidth.fromWidth(MediaQuery.sizeOf(context).width) == AppBreakpoint.desktop;
+    final destinations = <(String, Widget)>[
+      ('dashboard', const HomeScreen(embedded: true)),
+      ('pos', const PosScreen()),
+      ('inventory', const ProductListScreen()),
+      ('alerts', const AlertsScreen()),
+    ];
+    if (desktop) {
+      return Scaffold(
+        body: Row(children: [
+          _DesktopSidebar(
+            l10n: l10n,
+            canManageUsers: permission.canManageUsers(role),
+            canManageBackup: permission.canManageBackup(role),
+            canManageSuppliers: permission.canManageSuppliers(role),
+            canManageShifts: permission.canManageShifts(role),
+            canManageReturns: permission.canManageReturns(role),
+            selectedId: _selected,
+            onNavigate: (screen) => _select(_idFor(screen), screen),
+          ),
+          Expanded(child: _workspace),
+        ]),
+      );
+    }
+    return Scaffold(
+      body: _workspace,
+      bottomNavigationBar: NavigationBar(
+        key: const Key('mobileShellNavigation'),
+        selectedIndex: _selected == 'pos' ? 1 : _selected == 'inventory' ? 2 : 0,
+        onDestinationSelected: (index) {
+          if (index == 3) {
+            showModalBottomSheet<void>(
+              context: context,
+              builder: (context) => ListView(shrinkWrap: true, children: [
+                ListTile(title: Text(l10n.alertsTitle), onTap: () { Navigator.pop(context); _select('alerts', const AlertsScreen()); }),
+                ListTile(title: Text(l10n.reportsTitle), onTap: () { Navigator.pop(context); _select('reports', const ReportsScreen()); }),
+              ]),
+            );
+            return;
+          }
+          final destination = destinations[index];
+          _select(destination.$1, destination.$2);
+        },
+        destinations: [
+          NavigationDestination(icon: const Icon(Icons.dashboard_outlined), selectedIcon: const Icon(Icons.dashboard), label: l10n.dashboardNav),
+          NavigationDestination(icon: const Icon(Icons.point_of_sale_outlined), selectedIcon: const Icon(Icons.point_of_sale), label: l10n.posTitle),
+          NavigationDestination(icon: const Icon(Icons.inventory_2_outlined), selectedIcon: const Icon(Icons.inventory_2), label: l10n.inventoryTitle),
+          NavigationDestination(icon: const Icon(Icons.more_horiz), label: l10n.moreNav),
+        ],
+      ),
+    );
+  }
+
+  String _idFor(Widget screen) => switch (screen) {
+    PosScreen() => 'pos', ProductListScreen() => 'inventory', AlertsScreen() => 'alerts',
+    ShiftManagementScreen() => 'shifts', ReturnScreen() => 'returns', PurchaseOrderScreen() => 'suppliers',
+    ReportsScreen() => 'reports', BackupScreen() => 'backup', UserManagementScreen() => 'users', _ => 'dashboard',
+  };
+}
+
 class HomeScreen extends ConsumerWidget {
-  const HomeScreen({super.key});
+  const HomeScreen({super.key, this.embedded = false});
+
+  final bool embedded;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -84,12 +169,12 @@ class HomeScreen extends ConsumerWidget {
     final canManageShifts = permChecker.canManageShifts(roleStr);
     final canManageReturns = permChecker.canManageReturns(roleStr);
 
-    final isDesktop =
+    final isDesktop = !embedded &&
         AppBreakpointWidth.fromWidth(MediaQuery.sizeOf(context).width) ==
             AppBreakpoint.desktop;
 
     return Scaffold(
-      appBar: AppBar(
+      appBar: embedded ? null : AppBar(
         title: Text(l10n.appTitle),
         elevation: 0,
         actions: [
@@ -492,6 +577,7 @@ class HomeScreen extends ConsumerWidget {
                 canManageSuppliers: canManageSuppliers,
                 canManageShifts: canManageShifts,
                 canManageReturns: canManageReturns,
+                selectedId: 'dashboard',
                 onNavigate: (screen) => _navigate(context, screen),
               ),
               Expanded(child: content),
@@ -499,7 +585,7 @@ class HomeScreen extends ConsumerWidget {
           );
         },
       ),
-      bottomNavigationBar: isDesktop
+      bottomNavigationBar: embedded || isDesktop
           ? null
           : NavigationBar(
               key: const Key('mobileHomeNavigation'),
@@ -584,6 +670,7 @@ class _DesktopSidebar extends StatelessWidget {
     required this.canManageSuppliers,
     required this.canManageShifts,
     required this.canManageReturns,
+    required this.selectedId,
     required this.onNavigate,
   });
 
@@ -593,6 +680,7 @@ class _DesktopSidebar extends StatelessWidget {
   final bool canManageSuppliers;
   final bool canManageShifts;
   final bool canManageReturns;
+  final String selectedId;
   final ValueChanged<Widget> onNavigate;
 
   @override
@@ -660,7 +748,7 @@ class _DesktopSidebar extends StatelessWidget {
                 key: const Key('desktopNavDashboard'),
                 icon: Icons.dashboard_rounded,
                 label: l10n.dashboardTitle,
-                selected: true,
+                selected: selectedId == 'dashboard',
                 onTap: () {},
               ),
               const SizedBox(height: 14),
@@ -670,6 +758,7 @@ class _DesktopSidebar extends StatelessWidget {
                 key: const Key('desktopNavPos'),
                 icon: Icons.point_of_sale_rounded,
                 label: l10n.posTitle,
+                selected: selectedId == 'pos',
                 onTap: () => onNavigate(const PosScreen()),
               ),
               _item(
@@ -677,6 +766,7 @@ class _DesktopSidebar extends StatelessWidget {
                 key: const Key('desktopNavInventory'),
                 icon: Icons.inventory_2_rounded,
                 label: l10n.inventoryTitle,
+                selected: selectedId == 'inventory',
                 onTap: () => onNavigate(const ProductListScreen()),
               ),
               _item(
@@ -684,6 +774,7 @@ class _DesktopSidebar extends StatelessWidget {
                 key: const Key('desktopNavAlerts'),
                 icon: Icons.warning_amber_rounded,
                 label: l10n.alertsTitle,
+                selected: selectedId == 'alerts',
                 onTap: () => onNavigate(const AlertsScreen()),
               ),
               if (canManageShifts)
@@ -692,6 +783,7 @@ class _DesktopSidebar extends StatelessWidget {
                   key: const Key('desktopNavShifts'),
                   icon: Icons.account_balance_wallet_rounded,
                   label: l10n.shiftTitle,
+                  selected: selectedId == 'shifts',
                   onTap: () => onNavigate(const ShiftManagementScreen()),
                 ),
               if (canManageReturns)
@@ -700,6 +792,7 @@ class _DesktopSidebar extends StatelessWidget {
                   key: const Key('desktopNavReturns'),
                   icon: Icons.assignment_return_rounded,
                   label: l10n.returnsTitle,
+                  selected: selectedId == 'returns',
                   onTap: () => onNavigate(const ReturnScreen()),
                 ),
               const SizedBox(height: 14),
@@ -710,6 +803,7 @@ class _DesktopSidebar extends StatelessWidget {
                   key: const Key('desktopNavSuppliers'),
                   icon: Icons.local_shipping_rounded,
                   label: l10n.suppliersTitle,
+                  selected: selectedId == 'suppliers',
                   onTap: () => onNavigate(const PurchaseOrderScreen()),
                 ),
               _item(
@@ -717,6 +811,7 @@ class _DesktopSidebar extends StatelessWidget {
                 key: const Key('desktopNavReports'),
                 icon: Icons.bar_chart_rounded,
                 label: l10n.reportsTitle,
+                selected: selectedId == 'reports',
                 onTap: () => onNavigate(const ReportsScreen()),
               ),
               if (canManageBackup)
@@ -725,6 +820,7 @@ class _DesktopSidebar extends StatelessWidget {
                   key: const Key('desktopNavBackup'),
                   icon: Icons.backup_rounded,
                   label: l10n.backupTitle,
+                  selected: selectedId == 'backup',
                   onTap: () => onNavigate(const BackupScreen()),
                 ),
               if (canManageUsers)
@@ -733,6 +829,7 @@ class _DesktopSidebar extends StatelessWidget {
                   key: const Key('desktopNavUsers'),
                   icon: Icons.people_alt_rounded,
                   label: l10n.userManagementTitle,
+                  selected: selectedId == 'users',
                   onTap: () => onNavigate(const UserManagementScreen()),
                 ),
             ],
