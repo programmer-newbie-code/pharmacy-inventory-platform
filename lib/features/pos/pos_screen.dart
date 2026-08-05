@@ -451,8 +451,9 @@ class _PosScreenState extends ConsumerState<PosScreen> {
                   ),
                   child: Column(
                     children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      Wrap(
+                        alignment: WrapAlignment.spaceBetween,
+                        runSpacing: 8,
                         children: [
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 12),

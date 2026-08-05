@@ -42,7 +42,7 @@ class AuthGate extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final currentUser = ref.watch(authSessionProvider);
-    if (currentUser != null) return const HomeScreen();
+    if (currentUser != null) return const PharmacyShell();
 
     final userCount = ref.watch(_userCountProvider);
     return userCount.when(
