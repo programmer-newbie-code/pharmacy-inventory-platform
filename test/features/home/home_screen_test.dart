@@ -52,7 +52,9 @@ void main() {
           passwordHash: hash,
           role: 'kasir',
         );
-    await container.read(authSessionProvider.notifier).login('budi', 'secret123');
+    await container
+        .read(authSessionProvider.notifier)
+        .login('budi', 'secret123');
 
     await tester.pumpWidget(
       UncontrolledProviderScope(
@@ -71,5 +73,70 @@ void main() {
     await tester.pump();
 
     expect(container.read(authSessionProvider), isNull);
+  });
+
+  testWidgets('uses the desktop sidebar shell on wide windows layouts',
+      (tester) async {
+    tester.view.physicalSize = const Size(1600, 1000);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(() {
+      tester.view.resetPhysicalSize();
+      tester.view.resetDevicePixelRatio();
+    });
+    final db = AppDatabase(NativeDatabase.memory());
+    addTearDown(db.close);
+    final container = ProviderContainer(
+      overrides: [databaseProvider.overrideWithValue(db)],
+    );
+    addTearDown(container.dispose);
+
+    await tester.pumpWidget(
+      UncontrolledProviderScope(
+        container: container,
+        child: const MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          locale: Locale('en'),
+          home: HomeScreen(),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const Key('desktopSidebar')), findsOneWidget);
+    expect(find.byKey(const Key('desktopNavInventory')), findsOneWidget);
+    expect(find.text('Pharmacy workspace'), findsOneWidget);
+    expect(find.byKey(const Key('mobileHomeNavigation')), findsNothing);
+  });
+
+  testWidgets('uses bottom navigation on phone layouts', (tester) async {
+    tester.view.physicalSize = const Size(390, 844);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(() {
+      tester.view.resetPhysicalSize();
+      tester.view.resetDevicePixelRatio();
+    });
+    final db = AppDatabase(NativeDatabase.memory());
+    addTearDown(db.close);
+    final container = ProviderContainer(
+      overrides: [databaseProvider.overrideWithValue(db)],
+    );
+    addTearDown(container.dispose);
+
+    await tester.pumpWidget(
+      UncontrolledProviderScope(
+        container: container,
+        child: const MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          locale: Locale('id'),
+          home: HomeScreen(),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const Key('mobileHomeNavigation')), findsOneWidget);
+    expect(find.byKey(const Key('desktopSidebar')), findsNothing);
   });
 }
