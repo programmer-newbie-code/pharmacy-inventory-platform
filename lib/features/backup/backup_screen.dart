@@ -304,6 +304,8 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
               ),
             ),
             const SizedBox(height: 16),
+            _AutoBackupCard(isLoading: _isLoading),
+            const SizedBox(height: 16),
             Text(
               l10n.backupHistoryTitle,
               style: Theme.of(context).textTheme.titleLarge,
@@ -345,6 +347,126 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
                 error: (err, stack) => Center(child: Text(l10n.backupLogError)),
               ),
             ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _AutoBackupCard extends ConsumerStatefulWidget {
+  const _AutoBackupCard({required this.isLoading});
+
+  final bool isLoading;
+
+  @override
+  ConsumerState<_AutoBackupCard> createState() => _AutoBackupCardState();
+}
+
+class _AutoBackupCardState extends ConsumerState<_AutoBackupCard> {
+  bool _enabled = true;
+  bool _driveEnabled = false;
+  DateTime? _lastRun;
+  DateTime? _nextRun;
+  bool _loaded = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadState();
+  }
+
+  Future<void> _loadState() async {
+    final scheduler = ref.read(autoBackupSchedulerProvider);
+    final enabled = await scheduler.isEnabled();
+    final driveEnabled = await scheduler.isDriveEnabled();
+    final lastRun = await scheduler.getLastBackupTime();
+    final nextRun = await scheduler.getNextBackupTime();
+    if (!mounted) return;
+    setState(() {
+      _enabled = enabled;
+      _driveEnabled = driveEnabled;
+      _lastRun = lastRun;
+      _nextRun = nextRun;
+      _loaded = true;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    if (!_loaded) return const SizedBox.shrink();
+
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(
+                  _enabled ? Icons.schedule : Icons.schedule_outlined,
+                  color: _enabled ? Colors.green : Colors.grey,
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  l10n.autoBackupTitle,
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            SwitchListTile(
+              key: const Key('autoBackupToggle'),
+              title: Text(l10n.autoBackupEnabled),
+              subtitle: Text(l10n.autoBackupDescription),
+              value: _enabled,
+              onChanged: widget.isLoading
+                  ? null
+                  : (val) async {
+                      await ref
+                          .read(autoBackupSchedulerProvider)
+                          .setEnabled(val);
+                      await _loadState();
+                    },
+            ),
+            if (_enabled) ...[
+              SwitchListTile(
+                key: const Key('autoBackupDriveToggle'),
+                title: Text(l10n.autoBackupDriveUpload),
+                subtitle: Text(l10n.autoBackupDriveDescription),
+                value: _driveEnabled,
+                onChanged: widget.isLoading
+                    ? null
+                    : (val) async {
+                        await ref
+                            .read(autoBackupSchedulerProvider)
+                            .setDriveEnabled(val);
+                        await _loadState();
+                      },
+              ),
+              const SizedBox(height: 8),
+              if (_lastRun != null)
+                Text(
+                  l10n.autoBackupLastRun(
+                    _lastRun!.toLocal().toString().split('.').first,
+                  ),
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+              if (_nextRun != null)
+                Text(
+                  l10n.autoBackupNextRun(
+                    _nextRun!.toLocal().toString().split('.').first,
+                  ),
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+              if (_lastRun == null)
+                Text(
+                  l10n.autoBackupNeverRun,
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+            ],
           ],
         ),
       ),

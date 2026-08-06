@@ -10,7 +10,11 @@ import 'features/home/home_screen.dart';
 import 'l10n/app_localizations.dart';
 
 void main() {
-  runApp(const ProviderScope(child: PharmacyInventoryApp()));
+  WidgetsFlutterBinding.ensureInitialized();
+  final container = ProviderContainer();
+  // Start auto-backup scheduler in the background — never blocks app launch.
+  container.read(autoBackupSchedulerProvider).start();
+  runApp(UncontrolledProviderScope(container: container, child: const PharmacyInventoryApp()));
 }
 
 class PharmacyInventoryApp extends ConsumerWidget {

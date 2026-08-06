@@ -26,6 +26,7 @@ import '../data/purchase_order_repository.dart';
 import '../data/pharmacy_settings_service.dart';
 
 import '../data/audit_log_repository.dart';
+import '../data/auto_backup_scheduler.dart';
 import '../data/drug_lookup_service.dart';
 
 final databaseProvider = Provider<AppDatabase>((ref) {
@@ -127,9 +128,14 @@ final auditLogRepositoryProvider = Provider<AuditLogRepository>(
 
 final permissionCheckerProvider = Provider<PermissionChecker>((ref) => PermissionChecker());
 
-
-
-
+final autoBackupSchedulerProvider = Provider<AutoBackupScheduler>((ref) {
+  final scheduler = AutoBackupScheduler(
+    backupService: ref.watch(backupServiceProvider),
+    driveBackupService: ref.watch(googleDriveBackupServiceProvider),
+  );
+  ref.onDispose(scheduler.stop);
+  return scheduler;
+});
 
 
 
