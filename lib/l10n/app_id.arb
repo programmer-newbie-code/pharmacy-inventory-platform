@@ -224,6 +224,16 @@
   "@autoBackupLastRun": {"placeholders": {"time": {}}},
   "autoBackupNextRun": "Jadwal berikutnya: {time}",
   "@autoBackupNextRun": {"placeholders": {"time": {}}},
-  "autoBackupNeverRun": "Pencadangan otomatis belum pernah berjalan."
+  "autoBackupNeverRun": "Pencadangan otomatis belum pernah berjalan.",
+  "driveSetupButton": "Konfigurasi Google Drive",
+  "driveSetupTitle": "Pengaturan OAuth Google Drive",
+  "driveSetupInstruction": "Untuk mengaktifkan cadangan Google Drive di Windows Desktop, buat OAuth 2.0 Client ID Aplikasi Desktop di Google Cloud Console lalu masukkan kredensial Anda di bawah ini:",
+  "driveClientIdLabel": "OAuth Client ID",
+  "driveClientSecretLabel": "OAuth Client Secret",
+  "driveSetupEmptyError": "Client ID dan Client Secret wajib diisi.",
+  "driveSetupSavedSuccess": "Kredensial Google Drive berhasil disimpan.",
+  "driveSetupSaveError": "Gagal menyimpan kredensial. Coba lagi.",
+  "driveSetupClearedSuccess": "Kredensial Google Drive dihapus.",
+  "driveSetupClearButton": "Hapus Kredensial"
 }
 

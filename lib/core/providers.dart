@@ -27,6 +27,7 @@ import '../data/pharmacy_settings_service.dart';
 
 import '../data/audit_log_repository.dart';
 import '../data/auto_backup_scheduler.dart';
+import '../data/drive_credential_store.dart';
 import '../data/drug_lookup_service.dart';
 
 final databaseProvider = Provider<AppDatabase>((ref) {
@@ -76,8 +77,15 @@ final backupServiceProvider = Provider<BackupService>(
   (ref) => BackupService(ref.watch(databaseProvider)),
 );
 
+final driveCredentialStoreProvider = Provider<DriveCredentialStore>(
+  (ref) => DriveCredentialStore(),
+);
+
 final googleDriveBackupServiceProvider = Provider<GoogleDriveBackupService>(
-  (ref) => GoogleDriveBackupService(ref.watch(databaseProvider)),
+  (ref) => GoogleDriveBackupService(
+    ref.watch(databaseProvider),
+    credentialStore: ref.watch(driveCredentialStoreProvider),
+  ),
 );
 
 final excelReportServiceProvider = Provider<ExcelReportService>((ref) => ExcelReportService());

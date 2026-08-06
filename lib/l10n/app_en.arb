@@ -224,6 +224,16 @@
   "@autoBackupLastRun": {"placeholders": {"time": {}}},
   "autoBackupNextRun": "Next scheduled: {time}",
   "@autoBackupNextRun": {"placeholders": {"time": {}}},
-  "autoBackupNeverRun": "Auto-backup has not run yet."
+  "autoBackupNeverRun": "Auto-backup has not run yet.",
+  "driveSetupButton": "Configure Google Drive",
+  "driveSetupTitle": "Google Drive OAuth Setup",
+  "driveSetupInstruction": "To enable Google Drive backup on Windows Desktop, create a Desktop OAuth 2.0 Client ID in Google Cloud Console and enter your credentials below:",
+  "driveClientIdLabel": "OAuth Client ID",
+  "driveClientSecretLabel": "OAuth Client Secret",
+  "driveSetupEmptyError": "Both Client ID and Client Secret are required.",
+  "driveSetupSavedSuccess": "Google Drive credentials saved successfully.",
+  "driveSetupSaveError": "Could not save credentials. Try again.",
+  "driveSetupClearedSuccess": "Google Drive credentials cleared.",
+  "driveSetupClearButton": "Clear Credentials"
 }
 

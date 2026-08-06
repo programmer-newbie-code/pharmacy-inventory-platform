@@ -12,6 +12,7 @@ import '../../data/database.dart';
 import '../../data/google_drive_backup_service.dart';
 import '../../l10n/app_localizations.dart';
 import '../auth/auth_session.dart';
+import '../settings/drive_setup_dialog.dart';
 
 final backupLogsFutureProvider =
     FutureProvider.autoDispose<List<BackupLog>>((ref) {
@@ -270,6 +271,17 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
                           label: Text(l10n.googleDriveBackup),
                           onPressed:
                               _isLoading ? null : _handleGoogleDriveBackup,
+                        ),
+                        OutlinedButton.icon(
+                          key: const Key('configureDriveBtn'),
+                          icon: const Icon(Icons.settings),
+                          label: Text(l10n.driveSetupButton),
+                          onPressed: _isLoading
+                              ? null
+                              : () => showDialog(
+                                    context: context,
+                                    builder: (_) => const DriveSetupDialog(),
+                                  ),
                         ),
                         OutlinedButton.icon(
                           key: const Key('restoreBackupBtn'),
