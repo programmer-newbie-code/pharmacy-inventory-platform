@@ -36,10 +36,15 @@
 ---
 
 ## 🏷️ 5. Automated Release Tagging Procedure (SemVer `vX.Y.Z`)
+
+> [!IMPORTANT]
+> **Do NOT manually edit `pubspec.yaml` to bump versions!** Versioning is 100% automated. GitHub CI extracts the exact version directly from your git tag (`vX.Y.Z`) and auto-injects it into `pubspec.yaml` and binary metadata during the build step.
+
 - [ ] Ensure all feature PRs are merged to `main` with passing CI.
 - [ ] Determine the next version number following Semantic Versioning (`v<MAJOR>.<MINOR>.<PATCH>` e.g., `v1.3.1`, `v1.4.0`, `v2.0.0`).
 - [ ] Create annotated git tag on `main`: `git tag -a vX.Y.Z -m "Release vX.Y.Z"`.
 - [ ] Push tag to origin: `git push origin vX.Y.Z`.
 - [ ] GitHub Actions CI automatically extracts the version from the git tag, injects it into Windows and Android builds, and publishes the release binaries automatically!
+
 
 
