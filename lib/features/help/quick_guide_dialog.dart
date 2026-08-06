@@ -1,17 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
+import '../../l10n/app_localizations.dart';
+
 class QuickGuideDialog extends StatelessWidget {
   const QuickGuideDialog({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return AlertDialog(
-      title: const Row(
+      title: Row(
         children: [
-          Icon(Icons.help_outline, color: Colors.blue),
-          SizedBox(width: 8),
-          Text('Quick Start & User Guide'),
+          const Icon(Icons.help_outline, color: Colors.blue),
+          const SizedBox(width: 8),
+          Text(l10n.quickGuideTitle),
         ],
       ),
       content: SingleChildScrollView(
@@ -26,35 +29,35 @@ class QuickGuideDialog extends StatelessWidget {
                     ? ' v${snapshot.data!.version}'
                     : '';
                 return Text(
-                  'Welcome to Pharmacy Inventory Platform$versionStr!',
+                  l10n.quickGuideWelcome(versionStr),
                   style: const TextStyle(fontWeight: FontWeight.bold),
                 );
               },
             ),
             const SizedBox(height: 12),
-            const ListTile(
+            ListTile(
               contentPadding: EdgeInsets.zero,
-              leading: Icon(Icons.point_of_sale, color: Colors.green),
-              title: Text('POS Sales Counter'),
-              subtitle: Text('Scan barcodes, FEFO automatic stock deduction, prescription verification for controlled drugs, and receipts.'),
+              leading: const Icon(Icons.point_of_sale, color: Colors.green),
+              title: Text(l10n.quickGuidePosTitle),
+              subtitle: Text(l10n.quickGuidePosDescription),
             ),
-            const ListTile(
+            ListTile(
               contentPadding: EdgeInsets.zero,
-              leading: Icon(Icons.inventory, color: Colors.blue),
-              title: Text('Inventory Catalog'),
-              subtitle: Text('Manage products, unit conversions (box to tablet), cost margins, and incoming stock batch entry.'),
+              leading: const Icon(Icons.inventory, color: Colors.blue),
+              title: Text(l10n.quickGuideInventoryTitle),
+              subtitle: Text(l10n.quickGuideInventoryDescription),
             ),
-            const ListTile(
+            ListTile(
               contentPadding: EdgeInsets.zero,
-              leading: Icon(Icons.warning_amber, color: Colors.orange),
-              title: Text('Expiry & Low-Stock Alerts'),
-              subtitle: Text('Real-time alerts for batches expiring in 30/60/90 days and products below reorder thresholds.'),
+              leading: const Icon(Icons.warning_amber, color: Colors.orange),
+              title: Text(l10n.privacyTitle),
+              subtitle: Text(l10n.privacyDescription),
             ),
-            const ListTile(
+            ListTile(
               contentPadding: EdgeInsets.zero,
-              leading: Icon(Icons.security, color: Colors.purple),
-              title: Text('Compliance & Backup'),
-              subtitle: Text('Export BPOM prescription logs to CSV and create local database JSON backups.'),
+              leading: const Icon(Icons.security, color: Colors.purple),
+              title: Text(l10n.backupTitle),
+              subtitle: Text(l10n.privacyEraseDescription),
             ),
           ],
         ),
@@ -63,7 +66,7 @@ class QuickGuideDialog extends StatelessWidget {
         ElevatedButton(
           key: const Key('closeGuideButton'),
           onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Got it!'),
+          child: Text(l10n.guideCloseButton),
         ),
       ],
     );
