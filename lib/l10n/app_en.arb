@@ -214,6 +214,16 @@
   "@csvImportHistorySuccess": {"placeholders": {"imported": {"type": "int"}, "rejected": {"type": "int"}}},
   "@csvImportHistoryActor": {"placeholders": {"user": {}, "date": {}}},
   "@csvImportHistoryError": {"placeholders": {"error": {}}},
-  "@csvImportHistoryCounts": {"placeholders": {"total": {"type": "int"}}}
+  "@csvImportHistoryCounts": {"placeholders": {"total": {"type": "int"}}},
+  "autoBackupTitle": "Automatic Backup",
+  "autoBackupEnabled": "Enable daily auto-backup",
+  "autoBackupDescription": "Automatically saves a local backup every 24 hours while the app is running.",
+  "autoBackupDriveUpload": "Include Google Drive upload",
+  "autoBackupDriveDescription": "Also upload to Google Drive during auto-backup (requires sign-in).",
+  "autoBackupLastRun": "Last auto-backup: {time}",
+  "@autoBackupLastRun": {"placeholders": {"time": {}}},
+  "autoBackupNextRun": "Next scheduled: {time}",
+  "@autoBackupNextRun": {"placeholders": {"time": {}}},
+  "autoBackupNeverRun": "Auto-backup has not run yet."
 }
 
