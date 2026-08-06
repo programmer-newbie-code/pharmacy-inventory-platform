@@ -7,6 +7,7 @@ import 'package:googleapis_auth/auth_io.dart';
 import 'package:http/http.dart' as http;
 import 'backup_service.dart';
 import 'database.dart';
+import 'drive_credential_store.dart';
 import 'drive_upload_client.dart';
 
 class GoogleAccountUser {
@@ -48,9 +49,10 @@ class GoogleDriveConfigurationException implements Exception {
 
 GoogleAccountAuthorizer createGoogleAccountAuthorizer({
   bool? isWindows,
+  DriveCredentialStore? credentialStore,
 }) =>
     (isWindows ?? Platform.isWindows)
-        ? const DesktopGoogleAccountAuthorizer()
+        ? DesktopGoogleAccountAuthorizer(credentialStore: credentialStore)
         : GoogleSignInAuthorizer();
 
 class GoogleSignInAuthorizer implements GoogleAccountAuthorizer {
@@ -88,21 +90,35 @@ class DesktopGoogleAccountAuthorizer implements GoogleAccountAuthorizer {
         const String.fromEnvironment('GOOGLE_DRIVE_DESKTOP_CLIENT_ID'),
     this.clientSecret =
         const String.fromEnvironment('GOOGLE_DRIVE_DESKTOP_CLIENT_SECRET'),
+    this.credentialStore,
   });
 
   final String clientId;
   final String clientSecret;
+  final DriveCredentialStore? credentialStore;
 
   @override
   Future<GoogleAccountUser?> signIn() async {
-    if (clientId.isEmpty || clientSecret.isEmpty) {
+    String activeId = clientId;
+    String activeSecret = clientSecret;
+
+    if (credentialStore != null) {
+      final storedId = await credentialStore!.getClientId();
+      final storedSecret = await credentialStore!.getClientSecret();
+      if (storedId != null && storedSecret != null) {
+        activeId = storedId;
+        activeSecret = storedSecret;
+      }
+    }
+
+    if (activeId.isEmpty || activeSecret.isEmpty) {
       throw const GoogleDriveConfigurationException();
     }
 
     final client = http.Client();
     try {
       final credentials = await obtainAccessCredentialsViaUserConsent(
-        ClientId(clientId, clientSecret),
+        ClientId(activeId, activeSecret),
         const ['email', 'https://www.googleapis.com/auth/drive.file'],
         client,
         _openBrowser,
@@ -130,9 +146,10 @@ class GoogleDriveBackupService {
     this._db, {
     DriveUploadClient? driveUploadClient,
     GoogleAccountAuthorizer? accountAuthorizer,
+    DriveCredentialStore? credentialStore,
   })  : _driveUploadClient = driveUploadClient ?? HttpDriveUploadClient(),
-        _accountAuthorizer =
-            accountAuthorizer ?? createGoogleAccountAuthorizer();
+        _accountAuthorizer = accountAuthorizer ??
+            createGoogleAccountAuthorizer(credentialStore: credentialStore);
 
   final AppDatabase _db;
   final DriveUploadClient _driveUploadClient;
