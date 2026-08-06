@@ -22,6 +22,7 @@ import '../reports/reports_screen.dart';
 
 import '../settings/pharmacy_branding_dialog.dart';
 import '../help/quick_guide_dialog.dart';
+import 'update_banner.dart';
 
 /// Quick dashboard stats loaded asynchronously.
 final _todayStatsProvider = FutureProvider.autoDispose<_TodayStats>((
@@ -230,6 +231,7 @@ class HomeScreen extends ConsumerWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    const UpdateBanner(),
                     // ── Welcome Hero Banner ──
                     if (isDesktop) _DesktopBreadcrumb(l10n: l10n),
                     Container(
