@@ -50,3 +50,12 @@ All changes go through a PR. CI must be green (`flutter analyze`, tests at ≥80
 coverage, Windows build, Android build) before merge. This is enforced by convention,
 not branch protection — the repo is private on GitHub's free plan, which doesn't
 support the branch-protection API. See [`AGENT.md`](AGENT.md) for details.
+
+## License
+
+This software is licensed under the **[PolyForm Noncommercial License 1.0.0](LICENSE)**.
+
+- **For Individuals & Pharmacies**: Free to use, install, and run for your operational business needs (managing inventory, POS sales of drugs, etc.).
+- **Monetization & Commercial Restriction**: Third parties may **NOT** sell, resell, charge SaaS/subscription fees, package, or monetize this app or code in any way.
+- **Exclusive Rights**: Commercial monetization and licensing rights are exclusively reserved for the original creators.
+
