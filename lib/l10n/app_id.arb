@@ -234,6 +234,12 @@
   "driveSetupSavedSuccess": "Kredensial Google Drive berhasil disimpan.",
   "driveSetupSaveError": "Gagal menyimpan kredensial. Coba lagi.",
   "driveSetupClearedSuccess": "Kredensial Google Drive dihapus.",
-  "driveSetupClearButton": "Hapus Kredensial"
+  "driveSetupClearButton": "Hapus Kredensial",
+  "updateAvailableTitle": "Pembaruan Tersedia: v{version}",
+  "@updateAvailableTitle": {"placeholders": {"version": {}}},
+  "updateAvailableSubtitle": "Versi baru Platform Inventaris Apotek telah tersedia (saat ini: v{version}).",
+  "@updateAvailableSubtitle": {"placeholders": {"version": {}}},
+  "viewUpdateReleaseButton": "Lihat Rilis",
+  "dismissButton": "Tutup"
 }
 

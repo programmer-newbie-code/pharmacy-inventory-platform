@@ -25,6 +25,9 @@ import '../data/supplier_repository.dart';
 import '../data/purchase_order_repository.dart';
 import '../data/pharmacy_settings_service.dart';
 
+import 'package:package_info_plus/package_info_plus.dart';
+
+import '../data/app_update_service.dart';
 import '../data/audit_log_repository.dart';
 import '../data/auto_backup_scheduler.dart';
 import '../data/drive_credential_store.dart';
@@ -144,6 +147,13 @@ final autoBackupSchedulerProvider = Provider<AutoBackupScheduler>((ref) {
   ref.onDispose(scheduler.stop);
   return scheduler;
 });
+final appUpdateServiceProvider = Provider<AppUpdateService>(
+  (ref) => AppUpdateService(),
+);
 
-
-
+final appUpdateCheckFutureProvider = FutureProvider.autoDispose<AppUpdateInfo?>((ref) async {
+  final service = ref.watch(appUpdateServiceProvider);
+  final info = await PackageInfo.fromPlatform();
+  if (info.version.isEmpty) return null;
+  return service.checkForUpdates(currentVersion: info.version);
+});

@@ -234,6 +234,12 @@
   "driveSetupSavedSuccess": "Google Drive credentials saved successfully.",
   "driveSetupSaveError": "Could not save credentials. Try again.",
   "driveSetupClearedSuccess": "Google Drive credentials cleared.",
-  "driveSetupClearButton": "Clear Credentials"
+  "driveSetupClearButton": "Clear Credentials",
+  "updateAvailableTitle": "Update Available: v{version}",
+  "@updateAvailableTitle": {"placeholders": {"version": {}}},
+  "updateAvailableSubtitle": "A new version of Pharmacy Inventory Platform is available (current: v{version}).",
+  "@updateAvailableSubtitle": {"placeholders": {"version": {}}},
+  "viewUpdateReleaseButton": "View Release",
+  "dismissButton": "Dismiss"
 }
 
