@@ -45,6 +45,7 @@ flutter:
   uses-material-design: true
   assets:
     - assets/data/indonesian_drugs.csv
+    - assets/data/catalog_manifest.json
     - assets/branding/app_icon.png
 
 msix_config:

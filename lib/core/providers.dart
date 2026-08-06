@@ -31,6 +31,7 @@ import '../data/app_update_service.dart';
 import '../data/audit_log_repository.dart';
 import '../data/auto_backup_scheduler.dart';
 import '../data/drive_credential_store.dart';
+import '../data/drug_catalog_updater.dart';
 import '../data/drug_lookup_service.dart';
 
 final databaseProvider = Provider<AppDatabase>((ref) {
@@ -125,8 +126,14 @@ final pharmacySettingsServiceProvider = Provider<PharmacySettingsService>(
   (ref) => PharmacySettingsService(),
 );
 
+final drugCatalogUpdaterProvider = Provider<DrugCatalogUpdater>(
+  (ref) => DrugCatalogUpdater(),
+);
+
 final drugLookupServiceProvider = Provider<DrugLookupService>(
-  (ref) => DrugLookupService(),
+  (ref) => DrugLookupService(
+    catalogUpdater: ref.watch(drugCatalogUpdaterProvider),
+  ),
 );
 
 final passwordHasherProvider = Provider<PasswordHasher>((ref) => PasswordHasher());

@@ -3,6 +3,7 @@ import 'package:csv/csv.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'drug_catalog_updater.dart';
 
 /// A single drug record returned by any lookup source.
 class DrugLookupResult {
@@ -47,11 +48,27 @@ enum DrugSource { offline, bpom }
 ///   e.g. "parasetamol" vs "paracetamol", "amoxisilin" vs "amoxicillin".
 ///   Trigram (3-char n-gram) similarity handles these variants gracefully
 ///   without needing a full NLP library, making it ideal for on-device search.
+
+/// Indonesian drug lookup service.
+///
+/// Strategy (offline-first):
+///  1. Search downloaded catalog (or bundled CSV asset) with trigram similarity for instant, fuzzy results.
+///  2. Attempt live BPOM search as a secondary source.
 class DrugLookupService {
-  DrugLookupService({http.Client? client}) : _client = client ?? http.Client();
+  DrugLookupService({
+    http.Client? client,
+    DrugCatalogUpdater? catalogUpdater,
+  })  : _client = client ?? http.Client(),
+        _catalogUpdater = catalogUpdater ?? DrugCatalogUpdater();
 
   final http.Client _client;
+  final DrugCatalogUpdater _catalogUpdater;
   List<DrugLookupResult>? _offlineCache;
+
+  /// Clears the cached drug list so subsequent lookups re-read the file.
+  void clearCache() {
+    _offlineCache = null;
+  }
 
   // ─── Offline search (trigram) ─────────────────────────────────────────────
 
@@ -125,7 +142,19 @@ class DrugLookupService {
   Future<List<DrugLookupResult>> _loadOfflineDb() async {
     if (_offlineCache != null) return _offlineCache!;
 
-    final raw = await rootBundle.loadString('assets/data/indonesian_drugs.csv');
+    String raw = '';
+    final downloadedFile = await _catalogUpdater.getDownloadedCatalogFile();
+
+    if (downloadedFile != null) {
+      try {
+        raw = await downloadedFile.readAsString();
+      } catch (_) {}
+    }
+
+    if (raw.trim().isEmpty) {
+      raw = await rootBundle.loadString('assets/data/indonesian_drugs.csv');
+    }
+
     final rows = const CsvToListConverter(eol: '\n').convert(raw);
 
     // Skip header row
