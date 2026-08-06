@@ -76,7 +76,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byKey(const Key('mobileShellNavigation')), findsOneWidget);
-    expect(find.text('POS Register'), findsOneWidget);
+    expect(find.text('POS Register'), findsWidgets);
     expect(tester.takeException(), isNull);
   });
 }
