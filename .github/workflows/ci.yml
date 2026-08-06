@@ -94,6 +94,8 @@ jobs:
       - name: Generate drift code
         run: dart run build_runner build --delete-conflicting-outputs
       - run: flutter build windows --release --build-name=${{ env.BUILD_VER }} --build-number=${{ github.run_number }}
+      - name: Build Windows MSIX Installer Package
+        run: dart run msix:create --build-windows false --install-certificate false
       - name: Upload Windows Release Artifact
         uses: actions/upload-artifact@v4
         with:
@@ -152,15 +154,17 @@ jobs:
         with:
           name: android-apk-release
           path: android-release
-      - name: Package Windows Zip & Rename APK
+      - name: Package Windows Zip & Rename APK & Copy MSIX
         run: |
           cd windows-release && zip -r ../pharmacy-inventory-platform-windows-${{ github.ref_name }}.zip . && cd ..
+          cp windows-release/*.msix pharmacy-inventory-platform-windows-${{ github.ref_name }}.msix || true
           cp android-release/app-release.apk pharmacy-inventory-platform-android-${{ github.ref_name }}.apk
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           files: |
             pharmacy-inventory-platform-windows-${{ github.ref_name }}.zip
+            pharmacy-inventory-platform-windows-${{ github.ref_name }}.msix
             pharmacy-inventory-platform-android-${{ github.ref_name }}.apk
           generate_release_notes: true
 
