@@ -95,7 +95,7 @@ jobs:
         run: dart run build_runner build --delete-conflicting-outputs
       - run: flutter build windows --release --build-name=${{ env.BUILD_VER }} --build-number=${{ github.run_number }}
       - name: Build Windows MSIX Installer Package
-        run: dart run msix:create --build-windows false
+        run: dart run msix:create --build-windows false --install-certificate false
       - name: Upload Windows Release Artifact
         uses: actions/upload-artifact@v4
         with:
