@@ -240,6 +240,21 @@
   "updateAvailableSubtitle": "A new version of Pharmacy Inventory Platform is available (current: v{version}).",
   "@updateAvailableSubtitle": {"placeholders": {"version": {}}},
   "viewUpdateReleaseButton": "View Release",
-  "dismissButton": "Dismiss"
+  "dismissButton": "Dismiss",
+  "catalogUpdateTitle": "Drug Catalog Updates",
+  "catalogActiveVersion": "Current Version: {version}",
+  "@catalogActiveVersion": {"placeholders": {"version": {}}},
+  "catalogDrugCount": "Total Medicines: {count}",
+  "@catalogDrugCount": {"placeholders": {"count": {"type": "int"}}},
+  "catalogSourceBundled": "Source: Bundled app asset",
+  "catalogSourceDownloaded": "Source: Online updated catalog",
+  "catalogCheckButton": "Check for Updates",
+  "catalogDownloadButton": "Download Update",
+  "catalogUpToDate": "Drug catalog is up to date.",
+  "catalogUpdateAvailable": "New catalog available: {version}",
+  "@catalogUpdateAvailable": {"placeholders": {"version": {}}},
+  "catalogCheckFailed": "Could not check catalog update. Check your connection.",
+  "catalogUpdateSuccess": "Drug catalog updated successfully.",
+  "catalogUpdateFailed": "Failed to download catalog update. Try again."
 }
 

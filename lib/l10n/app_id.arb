@@ -240,6 +240,21 @@
   "updateAvailableSubtitle": "Versi baru Platform Inventaris Apotek telah tersedia (saat ini: v{version}).",
   "@updateAvailableSubtitle": {"placeholders": {"version": {}}},
   "viewUpdateReleaseButton": "Lihat Rilis",
-  "dismissButton": "Tutup"
+  "dismissButton": "Tutup",
+  "catalogUpdateTitle": "Pembaruan Katalog Obat",
+  "catalogActiveVersion": "Versi Saat Ini: {version}",
+  "@catalogActiveVersion": {"placeholders": {"version": {}}},
+  "catalogDrugCount": "Total Obat: {count}",
+  "@catalogDrugCount": {"placeholders": {"count": {"type": "int"}}},
+  "catalogSourceBundled": "Sumber: Bawaan aplikasi",
+  "catalogSourceDownloaded": "Sumber: Katalog terbaru diunduh",
+  "catalogCheckButton": "Cari Pembaruan",
+  "catalogDownloadButton": "Unduh Pembaruan",
+  "catalogUpToDate": "Katalog obat sudah versi terbaru.",
+  "catalogUpdateAvailable": "Katalog baru tersedia: {version}",
+  "@catalogUpdateAvailable": {"placeholders": {"version": {}}},
+  "catalogCheckFailed": "Gagal memeriksa pembaruan katalog. Periksa koneksi Anda.",
+  "catalogUpdateSuccess": "Katalog obat berhasil diperbarui.",
+  "catalogUpdateFailed": "Gagal mengunduh pembaruan katalog. Coba lagi."
 }
 
