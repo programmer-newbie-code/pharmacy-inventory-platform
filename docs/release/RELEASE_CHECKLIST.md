@@ -25,7 +25,7 @@
 
 ## 🛡️ 3. Dependency & License Audit
 - [ ] Run `flutter pub outdated` — review outdated packages and apply security patches.
-- [ ] Verify all pubspec dependencies use permissive open-source licenses (MIT, BSD, Apache 2.0).
+- [ ] Verify all pubspec dependencies use compatible open-source licenses (MIT, BSD, Apache 2.0) and project code adheres to PolyForm Noncommercial 1.0.0.
 - [ ] Audit `.github/workflows/ci.yml` — verify GitHub Actions use pinned SHAs or audited action versions.
 
 ---

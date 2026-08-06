@@ -1,21 +1,64 @@
-MIT License
+PolyForm Noncommercial License 1.0.0
 
-Copyright (c) 2026 Pharmacy Inventory Platform
+Copyright (c) 2026 Pharmacy Inventory Platform & Authors
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+================================================================================
+PREAMBLE & PERMITTED USE CLARIFICATION
+================================================================================
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+1. OPERATIONAL USE PERMITTED:
+   Any individual, pharmacy operator, or healthcare entity is fully permitted to
+   download, install, run, and use this software free of charge for their own
+   internal operational and business activities (including but not limited to
+   managing pharmacy inventory, point-of-sale sales of medicines, and dispensing
+   pharmaceuticals).
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+2. THIRD-PARTY MONETIZATION & COMMERCIAL PROHIBITION:
+   No person or entity other than the original Copyright Holder may sell, resell,
+   rent, lease, sub-license, distribute for a fee, charge subscription or
+   Software-as-a-Service (SaaS) fees for, or otherwise commercially monetize this
+   software, its source code, or any derivative works derived from it.
+
+3. EXCLUSIVE CREATOR MONETIZATION RIGHTS:
+   The original Copyright Holder reserves all exclusive rights to commercialize,
+   monetize, offer paid commercial licenses, or provide paid services based on
+   this software.
+
+================================================================================
+TERMS & CONDITIONS
+================================================================================
+
+1. License
+   The licensor grants you a non-exclusive, royalty-free, worldwide license to
+   copy, modify, display, perform, and distribute this software, subject to the
+   conditions and limitations below.
+
+2. Noncommercial Limitation
+   You may only use, modify, and distribute this software for noncommercial
+   purposes. Noncommercial purposes means purposes that are not primarily intended
+   for or directed towards commercial advantage or monetary compensation. Selling
+   the software, bundling it into paid products, offering it as a paid service, or
+   monetizing it in any manner is strictly prohibited without explicit written
+   commercial licensing from the Copyright Holder.
+
+3. Attribution & Notices
+   You must reproduce this license notice and any copyright notice in any copy or
+   substantial portion of the software you distribute, and retain all copyright
+   notices in the original source code.
+
+4. Share Alike
+   If you modify or build upon this software and distribute your modifications,
+   you must distribute them under these exact same license terms (PolyForm
+   Noncommercial License 1.0.0).
+
+5. No Patent License
+   This license does not grant any patent rights.
+
+6. No Warranty & Limitation of Liability
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+   SOFTWARE.
