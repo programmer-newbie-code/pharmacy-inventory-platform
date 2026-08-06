@@ -38,6 +38,7 @@ dev_dependencies:
   flutter_lints: ^4.0.0
   build_runner: ^2.4.11
   drift_dev: ^2.20.2
+  msix: ^3.16.7
 
 flutter:
   generate: true
@@ -45,3 +46,11 @@ flutter:
   assets:
     - assets/data/indonesian_drugs.csv
     - assets/branding/app_icon.png
+
+msix_config:
+  display_name: Pharmacy Inventory Platform
+  publisher_display_name: Programmer Newbie Code
+  identity_name: com.programmernewbiecode.pharmacyinventory
+  logo_path: assets/branding/app_icon.png
+  capabilities: internetClient
+
