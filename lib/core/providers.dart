@@ -27,6 +27,7 @@ import '../data/purchase_receiving_repository.dart';
 import '../data/patient_repository.dart';
 import '../data/prescription_repository.dart';
 import '../data/compounding_repository.dart';
+import '../data/sipnap_export_service.dart';
 import '../data/pharmacy_settings_service.dart';
 
 import 'package:package_info_plus/package_info_plus.dart';
@@ -143,6 +144,10 @@ final prescriptionRepositoryProvider = Provider<PrescriptionRepository>(
 
 final compoundingRepositoryProvider = Provider<CompoundingRepository>(
   (ref) => CompoundingRepository(ref.watch(databaseProvider)),
+);
+
+final sipnapExportServiceProvider = Provider<SipnapExportService>(
+  (ref) => SipnapExportService(ref.watch(databaseProvider)),
 );
 
 final pharmacySettingsServiceProvider = Provider<PharmacySettingsService>(
