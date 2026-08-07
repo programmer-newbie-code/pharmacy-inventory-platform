@@ -264,6 +264,55 @@ class Prescriptions extends Table {
   TextColumn get deviceId => text().nullable()();
 }
 
+@DataClassName('CompoundingFormula')
+class CompoundingFormulas extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get name => text()(); // e.g. "Puyer Batuk Anak"
+  TextColumn get description => text().nullable()();
+  TextColumn get dosageForm => text()(); // "puyer"|"kapsul"|"salep"|"sirup"
+  IntColumn get yieldQuantity => integer()(); // e.g. 10
+  TextColumn get yieldUnit => text()(); // e.g. "bungkus", "kapsul"
+  TextColumn get preparationNotes => text().nullable()();
+  IntColumn get createdBy => integer().nullable().references(Users, #id)();
+  DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
+  DateTimeColumn get updatedAt => dateTime().nullable()();
+  TextColumn get deviceId => text().nullable()();
+}
+
+@DataClassName('CompoundingIngredient')
+class CompoundingIngredients extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  IntColumn get formulaId => integer().references(CompoundingFormulas, #id)();
+  IntColumn get productId => integer().references(Products, #id)();
+  RealColumn get qtyPerYield => real()(); // quantity in base_unit needed for yieldQuantity
+  BoolColumn get isActiveIngredient => boolean().withDefault(const Constant(true))();
+  TextColumn get notes => text().nullable()();
+}
+
+@DataClassName('CompoundingTransaction')
+class CompoundingTransactions extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  IntColumn get formulaId => integer().nullable().references(CompoundingFormulas, #id)();
+  IntColumn get transactionId => integer().references(SaleTransactions, #id)();
+  TextColumn get customName => text().nullable()(); // for ad-hoc compounding
+  RealColumn get totalComponentCost => real()();
+  RealColumn get sellPrice => real()();
+  IntColumn get qtyPrepared => integer()();
+  IntColumn get preparedBy => integer().nullable().references(Users, #id)();
+  DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
+  TextColumn get deviceId => text().nullable()();
+}
+
+@DataClassName('CompoundingTransactionItem')
+class CompoundingTransactionItems extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  IntColumn get compoundingTransactionId => integer().references(CompoundingTransactions, #id)();
+  IntColumn get productId => integer().references(Products, #id)();
+  IntColumn get batchId => integer().references(StockBatches, #id)();
+  RealColumn get qtyUsed => real()(); // base_unit used
+  RealColumn get unitCost => real()();
+}
+
 @DriftDatabase(tables: [
   Users,
   StorageLocations,
@@ -284,6 +333,10 @@ class Prescriptions extends Table {
   PurchaseReceivingItems,
   Patients,
   Prescriptions,
+  CompoundingFormulas,
+  CompoundingIngredients,
+  CompoundingTransactions,
+  CompoundingTransactionItems,
 ])
 class AppDatabase extends _$AppDatabase {
   AppDatabase(super.e);
@@ -291,7 +344,7 @@ class AppDatabase extends _$AppDatabase {
   factory AppDatabase.defaultConnection() => AppDatabase(openConnection());
 
   @override
-  int get schemaVersion => 6;
+  int get schemaVersion => 7;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -317,6 +370,12 @@ class AppDatabase extends _$AppDatabase {
             await m.createTable(patients);
             await m.createTable(prescriptions);
             await m.addColumn(saleTransactions, saleTransactions.patientId);
+          }
+          if (from < 7) {
+            await m.createTable(compoundingFormulas);
+            await m.createTable(compoundingIngredients);
+            await m.createTable(compoundingTransactions);
+            await m.createTable(compoundingTransactionItems);
           }
         },
       );

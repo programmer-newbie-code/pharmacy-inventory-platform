@@ -26,6 +26,7 @@ import '../data/purchase_order_repository.dart';
 import '../data/purchase_receiving_repository.dart';
 import '../data/patient_repository.dart';
 import '../data/prescription_repository.dart';
+import '../data/compounding_repository.dart';
 import '../data/pharmacy_settings_service.dart';
 
 import 'package:package_info_plus/package_info_plus.dart';
@@ -138,6 +139,10 @@ final patientRepositoryProvider = Provider<PatientRepository>(
 
 final prescriptionRepositoryProvider = Provider<PrescriptionRepository>(
   (ref) => PrescriptionRepository(ref.watch(databaseProvider)),
+);
+
+final compoundingRepositoryProvider = Provider<CompoundingRepository>(
+  (ref) => CompoundingRepository(ref.watch(databaseProvider)),
 );
 
 final pharmacySettingsServiceProvider = Provider<PharmacySettingsService>(
