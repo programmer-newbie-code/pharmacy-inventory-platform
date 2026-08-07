@@ -182,7 +182,11 @@ class Suppliers extends Table {
   TextColumn get phone => text().nullable()();
   TextColumn get email => text().nullable()();
   TextColumn get address => text().nullable()();
+  TextColumn get paymentTerms => text().nullable()(); // e.g. "Net 30", "COD"
+  IntColumn get leadTimeDays => integer().withDefault(const Constant(7))();
+  BoolColumn get isActive => boolean().withDefault(const Constant(true))();
   DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
+  DateTimeColumn get updatedAt => dateTime().nullable()();
 }
 
 @DataClassName('PurchaseOrder')
@@ -208,6 +212,23 @@ class PurchaseOrderItems extends Table {
   RealColumn get unitCost => real()();
 }
 
+@DataClassName('PurchaseReceivingItem')
+class PurchaseReceivingItems extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  IntColumn get purchaseOrderId => integer().references(PurchaseOrders, #id)();
+  IntColumn get productId => integer().references(Products, #id)();
+  IntColumn get qtyOrdered => integer()();
+  IntColumn get qtyReceived => integer()();
+  TextColumn get batchNo => text()();
+  DateTimeColumn get expiryDate => dateTime()();
+  RealColumn get costPricePerBaseUnit => real()();
+  TextColumn get discrepancyReason => text().nullable()();
+  IntColumn get receivedBy => integer().nullable().references(Users, #id)();
+  DateTimeColumn get receivedAt => dateTime()();
+  DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
+  TextColumn get deviceId => text().nullable()();
+}
+
 @DriftDatabase(tables: [
   Users,
   StorageLocations,
@@ -225,6 +246,7 @@ class PurchaseOrderItems extends Table {
   Suppliers,
   PurchaseOrders,
   PurchaseOrderItems,
+  PurchaseReceivingItems,
 ])
 class AppDatabase extends _$AppDatabase {
   AppDatabase(super.e);
@@ -232,7 +254,7 @@ class AppDatabase extends _$AppDatabase {
   factory AppDatabase.defaultConnection() => AppDatabase(openConnection());
 
   @override
-  int get schemaVersion => 4;
+  int get schemaVersion => 5;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -246,6 +268,13 @@ class AppDatabase extends _$AppDatabase {
           }
           if (from < 4) {
             await m.createTable(csvImportLogs);
+          }
+          if (from < 5) {
+            await m.addColumn(suppliers, suppliers.paymentTerms);
+            await m.addColumn(suppliers, suppliers.leadTimeDays);
+            await m.addColumn(suppliers, suppliers.isActive);
+            await m.addColumn(suppliers, suppliers.updatedAt);
+            await m.createTable(purchaseReceivingItems);
           }
         },
       );

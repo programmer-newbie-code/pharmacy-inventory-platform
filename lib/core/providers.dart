@@ -23,6 +23,7 @@ import '../data/cashier_shift_repository.dart';
 import '../data/return_repository.dart';
 import '../data/supplier_repository.dart';
 import '../data/purchase_order_repository.dart';
+import '../data/purchase_receiving_repository.dart';
 import '../data/pharmacy_settings_service.dart';
 
 import 'package:package_info_plus/package_info_plus.dart';
@@ -117,6 +118,13 @@ final supplierRepositoryProvider = Provider<SupplierRepository>(
 
 final purchaseOrderRepositoryProvider = Provider<PurchaseOrderRepository>(
   (ref) => PurchaseOrderRepository(
+    ref.watch(databaseProvider),
+    auditLogger: ref.watch(auditLoggerProvider),
+  ),
+);
+
+final purchaseReceivingRepositoryProvider = Provider<PurchaseReceivingRepository>(
+  (ref) => PurchaseReceivingRepository(
     ref.watch(databaseProvider),
     auditLogger: ref.watch(auditLoggerProvider),
   ),
