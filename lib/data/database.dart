@@ -37,6 +37,7 @@ class Products extends Table {
   RealColumn get marginPct => real()();
   IntColumn get reorderThreshold => integer()();
   BoolColumn get isControlled => boolean().withDefault(const Constant(false))();
+  TextColumn get controlledCategory => text().nullable()(); // Narkotika | Psikotropika | Prekursor | OOT
   TextColumn get nationalDrugCode => text().nullable()();
   IntColumn get storageLocationId =>
       integer().nullable().references(StorageLocations, #id)();
@@ -344,7 +345,7 @@ class AppDatabase extends _$AppDatabase {
   factory AppDatabase.defaultConnection() => AppDatabase(openConnection());
 
   @override
-  int get schemaVersion => 7;
+  int get schemaVersion => 8;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -376,6 +377,9 @@ class AppDatabase extends _$AppDatabase {
             await m.createTable(compoundingIngredients);
             await m.createTable(compoundingTransactions);
             await m.createTable(compoundingTransactionItems);
+          }
+          if (from < 8) {
+            await m.addColumn(products, products.controlledCategory);
           }
         },
       );
