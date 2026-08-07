@@ -81,6 +81,7 @@ class SaleTransactions extends Table {
   IntColumn get id => integer().autoIncrement()();
   TextColumn get txnNo => text().unique()();
   TextColumn get patientName => text().nullable()();
+  IntColumn get patientId => integer().nullable().references(Patients, #id)();
   IntColumn get cashierId => integer().references(Users, #id)();
   RealColumn get totalAmount => real()();
   TextColumn get paymentMethod => text()();
@@ -229,6 +230,40 @@ class PurchaseReceivingItems extends Table {
   TextColumn get deviceId => text().nullable()();
 }
 
+@DataClassName('Patient')
+class Patients extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get name => text()();
+  TextColumn get phone => text().nullable()();
+  DateTimeColumn get dateOfBirth => dateTime().nullable()();
+  TextColumn get address => text().nullable()();
+  TextColumn get allergies => text().nullable()(); // comma-separated or text
+  TextColumn get chronicConditions => text().nullable()(); // e.g. "Diabetes, Hipertensi"
+  TextColumn get notes => text().nullable()();
+  IntColumn get createdBy => integer().nullable().references(Users, #id)();
+  DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
+  DateTimeColumn get updatedAt => dateTime().nullable()();
+  TextColumn get deviceId => text().nullable()();
+}
+
+@DataClassName('Prescription')
+class Prescriptions extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  IntColumn get patientId => integer().references(Patients, #id)();
+  IntColumn get transactionId => integer().nullable().references(SaleTransactions, #id)();
+  TextColumn get doctorName => text()();
+  TextColumn get doctorSipNo => text().nullable()();
+  TextColumn get clinicName => text().nullable()();
+  DateTimeColumn get prescriptionDate => dateTime()();
+  TextColumn get photoPath => text().nullable()();
+  TextColumn get notes => text().nullable()();
+  BoolColumn get isChronic => boolean().withDefault(const Constant(false))();
+  IntColumn get refillIntervalDays => integer().nullable()();
+  DateTimeColumn get nextRefillDate => dateTime().nullable()();
+  DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
+  TextColumn get deviceId => text().nullable()();
+}
+
 @DriftDatabase(tables: [
   Users,
   StorageLocations,
@@ -247,6 +282,8 @@ class PurchaseReceivingItems extends Table {
   PurchaseOrders,
   PurchaseOrderItems,
   PurchaseReceivingItems,
+  Patients,
+  Prescriptions,
 ])
 class AppDatabase extends _$AppDatabase {
   AppDatabase(super.e);
@@ -254,7 +291,7 @@ class AppDatabase extends _$AppDatabase {
   factory AppDatabase.defaultConnection() => AppDatabase(openConnection());
 
   @override
-  int get schemaVersion => 5;
+  int get schemaVersion => 6;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -275,6 +312,11 @@ class AppDatabase extends _$AppDatabase {
             await m.addColumn(suppliers, suppliers.isActive);
             await m.addColumn(suppliers, suppliers.updatedAt);
             await m.createTable(purchaseReceivingItems);
+          }
+          if (from < 6) {
+            await m.createTable(patients);
+            await m.createTable(prescriptions);
+            await m.addColumn(saleTransactions, saleTransactions.patientId);
           }
         },
       );

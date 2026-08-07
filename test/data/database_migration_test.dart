@@ -3,22 +3,23 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:pharmacy_inventory_platform/data/database.dart';
 
 void main() {
-  test('schema version 5 includes stock adjustments, import history, and purchase receiving items',
+  test('schema version 6 includes patients, prescriptions, and purchase receiving items',
       () async {
     final database = AppDatabase(NativeDatabase.memory());
     addTearDown(database.close);
 
-    expect(database.schemaVersion, 5);
+    expect(database.schemaVersion, 6);
     final tables = await database
         .customSelect("SELECT name FROM sqlite_master WHERE type = 'table'")
         .get();
 
-    expect(tables.map((row) => row.read<String>('name')),
-        contains('stock_adjustments'));
-    expect(tables.map((row) => row.read<String>('name')),
-        contains('csv_import_logs'));
-    expect(tables.map((row) => row.read<String>('name')),
-        contains('purchase_receiving_items'));
+    final tableNames = tables.map((row) => row.read<String>('name')).toList();
+
+    expect(tableNames, contains('stock_adjustments'));
+    expect(tableNames, contains('csv_import_logs'));
+    expect(tableNames, contains('purchase_receiving_items'));
+    expect(tableNames, contains('patients'));
+    expect(tableNames, contains('prescriptions'));
 
     final cashierShiftColumns =
         await database.customSelect('PRAGMA table_info(cashier_shifts)').get();
@@ -33,5 +34,10 @@ void main() {
         contains('lead_time_days'));
     expect(supplierColumns.map((row) => row.read<String>('name')),
         contains('is_active'));
+
+    final txnColumns =
+        await database.customSelect('PRAGMA table_info(sale_transactions)').get();
+    expect(txnColumns.map((row) => row.read<String>('name')),
+        contains('patient_id'));
   });
 }
