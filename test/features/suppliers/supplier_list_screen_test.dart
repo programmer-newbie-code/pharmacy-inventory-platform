@@ -35,9 +35,59 @@ void main() {
 
     expect(find.text('Add New Supplier'), findsOneWidget);
     await tester.enterText(find.byKey(const Key('supplierNameInput')), 'PT Kimia Farma');
+    await tester.enterText(find.byKey(const Key('supplierPaymentTermsInput')), 'Net 30');
     await tester.tap(find.byKey(const Key('confirmAddSupplierBtn')));
     await tester.pumpAndSettle();
 
     expect(find.text('PT Kimia Farma'), findsOneWidget);
+    expect(find.textContaining('Net 30'), findsOneWidget);
+  });
+
+  testWidgets('search and filter active suppliers works correctly', (tester) async {
+    final db = AppDatabase(NativeDatabase.memory());
+    addTearDown(db.close);
+
+    final supplierRepo = containerRef(db).read(supplierRepositoryProvider);
+    await supplierRepo.createSupplier(name: 'PT Kalbe');
+    final s2 = await supplierRepo.createSupplier(name: 'PT Biofarma');
+    await supplierRepo.deactivateSupplier(s2.id);
+
+    final container = ProviderContainer(overrides: [
+      databaseProvider.overrideWithValue(db),
+    ]);
+    addTearDown(container.dispose);
+
+    await tester.pumpWidget(
+      UncontrolledProviderScope(
+        container: container,
+        child: const MaterialApp(
+          home: SupplierListScreen(),
+        ),
+      ),
+    );
+
+    await tester.pumpAndSettle();
+
+    // Active only by default -> PT Kalbe visible, PT Biofarma hidden
+    expect(find.text('PT Kalbe'), findsOneWidget);
+    expect(find.text('PT Biofarma'), findsNothing);
+
+    // Toggle active only filter off
+    await tester.tap(find.byKey(const Key('activeFilterChip')));
+    await tester.pumpAndSettle();
+
+    expect(find.text('PT Kalbe'), findsOneWidget);
+    expect(find.text('PT Biofarma'), findsOneWidget);
+
+    // Search filter
+    await tester.enterText(find.byKey(const Key('supplierSearchInput')), 'Bio');
+    await tester.pumpAndSettle();
+
+    expect(find.text('PT Kalbe'), findsNothing);
+    expect(find.text('PT Biofarma'), findsOneWidget);
   });
 }
+
+ProviderContainer containerRef(AppDatabase db) => ProviderContainer(overrides: [
+      databaseProvider.overrideWithValue(db),
+    ]);
