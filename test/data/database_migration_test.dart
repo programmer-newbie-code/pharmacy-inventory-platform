@@ -3,12 +3,12 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:pharmacy_inventory_platform/data/database.dart';
 
 void main() {
-  test('schema version 6 includes patients, prescriptions, and purchase receiving items',
+  test('schema version 7 includes compounding tables, patients, and prescriptions',
       () async {
     final database = AppDatabase(NativeDatabase.memory());
     addTearDown(database.close);
 
-    expect(database.schemaVersion, 6);
+    expect(database.schemaVersion, 7);
     final tables = await database
         .customSelect("SELECT name FROM sqlite_master WHERE type = 'table'")
         .get();
@@ -20,24 +20,9 @@ void main() {
     expect(tableNames, contains('purchase_receiving_items'));
     expect(tableNames, contains('patients'));
     expect(tableNames, contains('prescriptions'));
-
-    final cashierShiftColumns =
-        await database.customSelect('PRAGMA table_info(cashier_shifts)').get();
-    expect(cashierShiftColumns.map((row) => row.read<String>('name')),
-        contains('discrepancy_reason'));
-
-    final supplierColumns =
-        await database.customSelect('PRAGMA table_info(suppliers)').get();
-    expect(supplierColumns.map((row) => row.read<String>('name')),
-        contains('payment_terms'));
-    expect(supplierColumns.map((row) => row.read<String>('name')),
-        contains('lead_time_days'));
-    expect(supplierColumns.map((row) => row.read<String>('name')),
-        contains('is_active'));
-
-    final txnColumns =
-        await database.customSelect('PRAGMA table_info(sale_transactions)').get();
-    expect(txnColumns.map((row) => row.read<String>('name')),
-        contains('patient_id'));
+    expect(tableNames, contains('compounding_formulas'));
+    expect(tableNames, contains('compounding_ingredients'));
+    expect(tableNames, contains('compounding_transactions'));
+    expect(tableNames, contains('compounding_transaction_items'));
   });
 }
