@@ -10,6 +10,7 @@ import '../../l10n/app_localizations.dart';
 import '../auth/auth_session.dart';
 import '../inventory/camera_scanner_dialog.dart';
 import 'receipt_dialog.dart';
+import 'shift_management_screen.dart';
 
 class PosScreen extends ConsumerStatefulWidget {
   const PosScreen({super.key});
@@ -106,6 +107,23 @@ class _PosScreenState extends ConsumerState<PosScreen> {
 
   Future<void> _checkout() async {
     if (_cart.isEmpty) return;
+
+    final currentUser = ref.read(authSessionProvider);
+    final activeShift = await ref.read(cashierShiftRepositoryProvider).getActiveShift(currentUser?.id ?? 1);
+    if (activeShift == null) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('No active shift! Please open a cashier shift before completing a sale.'),
+            backgroundColor: AppTheme.warningColor,
+          ),
+        );
+        Navigator.of(context).push(
+          MaterialPageRoute(builder: (_) => const ShiftManagementScreen()),
+        );
+      }
+        return;
+    }
 
     setState(() => _isLoading = true);
 
