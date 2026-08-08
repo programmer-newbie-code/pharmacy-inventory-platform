@@ -558,6 +558,19 @@ class HomeScreen extends ConsumerWidget {
                                 const UserManagementScreen(),
                               ),
                             ),
+                            _NavCard(
+                              key: const Key('navBrandingBtn'),
+                              icon: Icons.storefront_rounded,
+                              color: Colors.teal,
+                              title: l10n.brandingTitle,
+                              subtitle: 'Identitas & Header Struk',
+                              isEnabled: canManageBranding,
+                              restrictionTooltip: l10n.adminOnlyRestriction,
+                              onTap: () => showDialog(
+                                context: context,
+                                builder: (_) => const PharmacyBrandingDialog(),
+                              ),
+                            ),
                           ],
                         );
                       },

@@ -113,12 +113,23 @@ class ReceiptPdfService {
               ),
               pw.SizedBox(height: 12),
 
-              // Footer
+              // Footer & Barcode
               pw.Center(
                 child: pw.Text(
                   '-- Terima Kasih --\nSemoga Lekas Sembuh!',
                   textAlign: pw.TextAlign.center,
                   style: const pw.TextStyle(fontSize: 8),
+                ),
+              ),
+              pw.SizedBox(height: 8),
+              pw.Center(
+                child: pw.BarcodeWidget(
+                  barcode: pw.Barcode.code128(),
+                  data: transaction.txnNo,
+                  width: 140,
+                  height: 35,
+                  drawText: true,
+                  textStyle: const pw.TextStyle(fontSize: 7),
                 ),
               ),
             ],
