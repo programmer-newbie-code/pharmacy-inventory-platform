@@ -3,6 +3,20 @@ import 'package:drift/drift.dart';
 import 'audit_logger.dart';
 import 'database.dart';
 
+class ProcurementSummary {
+  const ProcurementSummary({
+    required this.totalPurchaseSpend,
+    required this.totalOrdersCount,
+    required this.receivedBatchesCount,
+    required this.supplierSpendMap,
+  });
+
+  final double totalPurchaseSpend;
+  final int totalOrdersCount;
+  final int receivedBatchesCount;
+  final Map<String, double> supplierSpendMap;
+}
+
 class SalesSummary {
   const SalesSummary({
     required this.totalTransactions,
@@ -78,6 +92,45 @@ class ReportRepository {
       grossProfit: revenue - cogs,
       totalRefunds: totalRefunds,
       netRevenue: revenue - totalRefunds,
+    );
+  }
+
+  /// Generates procurement / purchasing summary report for a given date range.
+  Future<ProcurementSummary> getProcurementSummary({
+    required DateTime startDate,
+    required DateTime endDate,
+  }) async {
+    final poQuery = _db.select(_db.purchaseOrders)
+      ..where((tbl) =>
+          tbl.createdAt.isBiggerOrEqual(Variable(startDate)) &
+          tbl.createdAt.isSmallerOrEqual(Variable(endDate)));
+    final pos = await poQuery.get();
+
+    final supplierQuery = await _db.select(_db.suppliers).get();
+    final supplierMap = {for (var s in supplierQuery) s.id: s.name};
+
+    double totalSpend = 0.0;
+    final supplierSpend = <String, double>{};
+
+    for (final po in pos) {
+      if (po.status != 'cancelled') {
+        totalSpend += po.totalAmount;
+        final sName = supplierMap[po.supplierId] ?? 'Supplier #${po.supplierId}';
+        supplierSpend[sName] = (supplierSpend[sName] ?? 0.0) + po.totalAmount;
+      }
+    }
+
+    final batchesQuery = _db.select(_db.stockBatches)
+      ..where((tbl) =>
+          tbl.receivedDate.isBiggerOrEqual(Variable(startDate)) &
+          tbl.receivedDate.isSmallerOrEqual(Variable(endDate)));
+    final batches = await batchesQuery.get();
+
+    return ProcurementSummary(
+      totalPurchaseSpend: totalSpend,
+      totalOrdersCount: pos.where((p) => p.status != 'cancelled').length,
+      receivedBatchesCount: batches.length,
+      supplierSpendMap: supplierSpend,
     );
   }
 

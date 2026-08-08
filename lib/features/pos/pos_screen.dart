@@ -10,7 +10,6 @@ import '../../l10n/app_localizations.dart';
 import '../auth/auth_session.dart';
 import '../inventory/camera_scanner_dialog.dart';
 import 'receipt_dialog.dart';
-import 'shift_management_screen.dart';
 
 class PosScreen extends ConsumerStatefulWidget {
   const PosScreen({super.key});
@@ -105,24 +104,61 @@ class _PosScreenState extends ConsumerState<PosScreen> {
     return _cart.any((item) => item.product.isControlled);
   }
 
+  Future<bool> _promptOpenShiftModal() async {
+    final openingController = TextEditingController(text: '100000');
+    final result = await showDialog<String>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Input Modal Kasir (Opening Cash)'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text('Belum ada shift kasir yang aktif. Silakan masukkan modal awal kasir untuk membuka shift:'),
+            const SizedBox(height: 12),
+            TextField(
+              key: const Key('posOpeningBalanceInput'),
+              controller: openingController,
+              keyboardType: TextInputType.number,
+              decoration: const InputDecoration(
+                labelText: 'Modal Awal Kasir / Drawer (Rp)',
+                prefixText: 'Rp ',
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: const Text('Batal'),
+          ),
+          ElevatedButton(
+            key: const Key('confirmPosOpenShiftBtn'),
+            onPressed: () => Navigator.of(ctx).pop(openingController.text),
+            child: const Text('Buka Shift'),
+          ),
+        ],
+      ),
+    );
+
+    if (result != null && result.isNotEmpty) {
+      final amount = double.tryParse(result) ?? 0.0;
+      final shiftRepo = ref.read(cashierShiftRepositoryProvider);
+      final currentUser = ref.read(authSessionProvider);
+      await shiftRepo.openShift(cashierId: currentUser?.id ?? 1, openingBalance: amount);
+      return true;
+    }
+    return false;
+  }
+
   Future<void> _checkout() async {
     if (_cart.isEmpty) return;
 
     final currentUser = ref.read(authSessionProvider);
-    final activeShift = await ref.read(cashierShiftRepositoryProvider).getActiveShift(currentUser?.id ?? 1);
+    var activeShift = await ref.read(cashierShiftRepositoryProvider).getActiveShift(currentUser?.id ?? 1);
     if (activeShift == null) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('No active shift! Please open a cashier shift before completing a sale.'),
-            backgroundColor: AppTheme.warningColor,
-          ),
-        );
-        Navigator.of(context).push(
-          MaterialPageRoute(builder: (_) => const ShiftManagementScreen()),
-        );
-      }
-        return;
+      final opened = await _promptOpenShiftModal();
+      if (!opened) return;
     }
 
     setState(() => _isLoading = true);
