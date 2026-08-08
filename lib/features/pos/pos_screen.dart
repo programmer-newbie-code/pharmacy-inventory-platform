@@ -501,10 +501,14 @@ class _PosScreenState extends ConsumerState<PosScreen> {
                                     'Cash',
                                     'QRIS',
                                     'Card',
-                                    'Bank Transfer'
+                                    'Bank Transfer',
+                                    'Owner Use'
                                   ]
                                       .map((m) => DropdownMenuItem(
-                                          value: m, child: Text(m)))
+                                          value: m,
+                                          child: Text(m == 'Owner Use'
+                                              ? 'Owner Use (Rp 0)'
+                                              : m)))
                                       .toList(),
                                   onChanged: (val) => setState(
                                       () => _paymentMethod = val ?? 'Cash'),
@@ -512,11 +516,15 @@ class _PosScreenState extends ConsumerState<PosScreen> {
                               ),
                             ),
                             Text(
-                              formatIdr(_totalCartAmount),
-                              style: const TextStyle(
+                              _paymentMethod == 'Owner Use'
+                                  ? 'Rp 0 (Owner Use)'
+                                  : formatIdr(_totalCartAmount),
+                              style: TextStyle(
                                 fontSize: 22,
                                 fontWeight: FontWeight.bold,
-                                color: AppTheme.primaryColor,
+                                color: _paymentMethod == 'Owner Use'
+                                    ? Colors.orange.shade800
+                                    : AppTheme.primaryColor,
                               ),
                             ),
                           ],
