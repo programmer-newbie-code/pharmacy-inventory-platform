@@ -180,4 +180,34 @@ class PurchaseOrderRepository {
           ..where((tbl) => tbl.purchaseOrderId.equals(poId)))
         .get();
   }
+
+  /// Cancels a purchase order if it has not been received.
+  Future<PurchaseOrder> cancelPurchaseOrder(int poId, {String? cancelReason}) async {
+    final po = await (_db.select(_db.purchaseOrders)
+          ..where((tbl) => tbl.id.equals(poId)))
+        .getSingle();
+
+    if (po.status == 'received') {
+      throw StateError('Cannot cancel a purchase order that has already been received.');
+    }
+
+    final updated = po.copyWith(
+      status: 'cancelled',
+      notes: cancelReason != null ? Value('${po.notes ?? ''} [CANCELLED: $cancelReason]'.trim()) : Value(po.notes),
+    );
+
+    await _db.update(_db.purchaseOrders).replace(updated);
+
+    if (_auditLogger != null) {
+      await _auditLogger.log(
+        tableName: 'purchase_orders',
+        recordId: poId,
+        action: 'cancel',
+        newValue: jsonEncode({'status': 'cancelled', 'reason': cancelReason}),
+        userId: 1,
+      );
+    }
+
+    return updated;
+  }
 }
