@@ -1,6 +1,6 @@
-# Installation & Upgrade Guide
+# Installation & Troubleshooting Guide
 
-This document describes how to install, update, and uninstall the **Pharmacy Inventory Platform** on Windows Desktop and Android devices.
+This document describes how to install, update, and troubleshoot the **Pharmacy Inventory Platform** on Windows Desktop and Android devices.
 
 ---
 
@@ -14,23 +14,34 @@ This document describes how to install, update, and uninstall the **Pharmacy Inv
 4. Click **Install**.
 5. Once installed, launch the app directly from your **Start Menu** or **Desktop Shortcut**.
 
-#### Updating via MSIX
-When a new `.msix` release is downloaded, double-clicking it will automatically perform an in-place upgrade while preserving all local database records.
+---
 
-#### Uninstalling on Windows
-To uninstall the app:
-1. Open Windows **Settings** (`Win + I`).
-2. Go to **Apps** → **Installed Apps** (or **Apps & Features**).
-3. Search for **Pharmacy Inventory Platform**.
-4. Click `...` and select **Uninstall**.
+### 🚨 Fixing Windows MSIX Certificate Error `0x800B010A`
+
+If Windows displays the following error when opening the `.msix` package:
+> *"This app package’s publisher certificate could not be verified. Contact your system administrator or the app developer to obtain a new app package with verified certificates (0x800B010A)"*
+
+Follow these steps to trust the self-signed publisher certificate:
+
+1. **Right-click** the downloaded `.msix` file and select **Properties**.
+2. Click the **Digital Signatures** tab.
+3. Click on the listed signature (`ApotekMedikaDev` or `programmer-newbie-code`) and click **Details**.
+4. In the Digital Signature Details dialog, click **View Certificate**.
+5. Click **Install Certificate...**.
+6. Store Location: Select **Local Machine** (requires Administrator access) and click **Next**.
+7. Select **Place all certificates in the following store** and click **Browse...**.
+8. Select **Trusted People** (or **Trusted Root Certification Authorities**) and click **OK**.
+9. Click **Next** -> **Finish**. You will see a prompt saying *"The import was successful."*
+10. **Re-open** the `.msix` installer. The **Install** button will now be enabled!
 
 ---
 
-### Option B: Portable ZIP Package
+### Option B: Portable ZIP Package (No Certificate Required)
 
+If you prefer not to install certificates:
 1. Download `pharmacy-inventory-platform-windows-vX.Y.Z.zip` from GitHub Releases.
 2. Extract the ZIP archive to a local folder (e.g., `C:\Apps\PharmacyInventory`).
-3. Run `pharmacy_inventory_platform.exe`.
+3. Run `pharmacy_inventory_platform.exe` directly.
 
 ---
 

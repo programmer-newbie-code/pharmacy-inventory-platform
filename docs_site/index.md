@@ -20,6 +20,24 @@ title: Documentation & User Manual — Pharmacy Inventory Platform
   </figure>
 </div>
 
+## 📥 Installation & Setup Guide
+
+### Windows Installation
+1. **Standard MSIX Installer**: Download `.msix` from [Latest Releases](https://github.com/programmer-newbie-code/pharmacy-inventory-platform/releases/latest) and double-click to install.
+2. **Fixing Certificate Error `0x800B010A`**:
+   - If Windows blocks installation saying *"Publisher certificate could not be verified (0x800B010A)"*:
+   - Right-click `.msix` -> Properties -> **Digital Signatures** tab -> select signature -> Details -> **View Certificate**.
+   - Click **Install Certificate...** -> Store Location: **Local Machine** -> Place all certificates in **Trusted People** -> Finish.
+   - Re-open the `.msix` installer to complete installation!
+3. **Portable ZIP Package**: Alternatively, download `.zip`, extract to any folder, and run `pharmacy_inventory_platform.exe` directly.
+
+### Android Installation
+1. Download `.apk` from [Latest Releases](https://github.com/programmer-newbie-code/pharmacy-inventory-platform/releases/latest).
+2. Allow "Install Unknown Apps" if prompted by Android.
+3. Tap **Install**.
+
+---
+
 ## 📖 User Guide & Operating Manual
 
 ### 1. First-Time Administrator Setup

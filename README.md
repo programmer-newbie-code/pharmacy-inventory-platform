@@ -13,6 +13,11 @@ for the full product design.
 - `flutter_riverpod` — state management
 - ARB-based i18n — `id` (default) and `en`
 
+## Installation & Releases
+
+- **Windows (.msix / .zip)** & **Android (.apk)** downloads are available on [GitHub Releases](https://github.com/programmer-newbie-code/pharmacy-inventory-platform/releases/latest).
+- See **[`docs/INSTALLATION.md`](docs/INSTALLATION.md)** for detailed installation steps, including how to resolve Windows MSIX publisher certificate verification error `0x800B010A`.
+
 ## Getting started
 
 ```bash
