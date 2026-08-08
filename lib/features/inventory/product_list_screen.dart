@@ -11,6 +11,7 @@ import '../../l10n/app_localizations.dart';
 import '../auth/auth_session.dart';
 import 'add_product_dialog.dart';
 import 'add_stock_batch_dialog.dart';
+import 'edit_product_dialog.dart';
 import 'csv_import_dialog.dart';
 import 'csv_import_history_dialog.dart';
 
@@ -72,6 +73,16 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen> {
       builder: (ctx) => const AddProductDialog(),
     );
     if (added == true) {
+      _fetchProducts();
+    }
+  }
+
+  Future<void> _openEditProduct(Product product) async {
+    final updated = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => EditProductDialog(product: product),
+    );
+    if (updated == true) {
       _fetchProducts();
     }
   }
@@ -302,14 +313,25 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen> {
                             ),
                           ),
                           trailing: canCreate
-                              ? IconButton(
-                                  key: Key('addBatchBtn_${prod.id}'),
-                                  icon: const Icon(
-                                    Icons.add_shopping_cart,
-                                    color: AppTheme.primaryColor,
-                                  ),
-                                  tooltip: l10n.receiveStock,
-                                  onPressed: () => _openAddBatch(prod),
+                              ? Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    IconButton(
+                                      key: Key('editProdBtn_${prod.id}'),
+                                      icon: const Icon(Icons.edit_outlined),
+                                      tooltip: 'Edit Product',
+                                      onPressed: () => _openEditProduct(prod),
+                                    ),
+                                    IconButton(
+                                      key: Key('addBatchBtn_${prod.id}'),
+                                      icon: const Icon(
+                                        Icons.add_shopping_cart,
+                                        color: AppTheme.primaryColor,
+                                      ),
+                                      tooltip: l10n.receiveStock,
+                                      onPressed: () => _openAddBatch(prod),
+                                    ),
+                                  ],
                                 )
                               : null,
                         ),

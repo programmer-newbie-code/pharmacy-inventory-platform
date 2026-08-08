@@ -87,7 +87,9 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Sales Analytics & Insights'), findsOneWidget);
+    expect(find.text('NET REVENUE'), findsOneWidget);
     expect(find.text('GROSS REVENUE'), findsOneWidget);
+    expect(find.text('NET PROFIT'), findsOneWidget);
     expect(find.text('Amoxicillin 500mg'), findsOneWidget);
     expect(find.text('Sales by Product Category'), findsOneWidget);
     expect(find.text('Top 5 Best-Selling Products'), findsOneWidget);

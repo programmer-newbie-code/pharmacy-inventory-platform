@@ -62,14 +62,37 @@ final salesAnalyticsFutureProvider = FutureProvider.family.autoDispose<Map<Strin
   final categoryMap = <String, double>{};
   final topProducts = <TopProductData>[];
 
+  // Calculate returns per product
+  final prodRefundQty = <int, int>{};
+  final prodRefundAmount = <int, double>{};
+  for (final r in filteredReturns) {
+    final rItems = await returnRepo.getReturnItemsForReturn(r.id);
+    for (final ri in rItems) {
+      final saleItem = await (saleRepo.getSaleItemsForTransaction(r.originalTxnId));
+      final matchingSaleItem = saleItem.where((s) => s.id == ri.saleItemId).firstOrNull;
+      if (matchingSaleItem != null) {
+        final prodId = matchingSaleItem.productId;
+        prodRefundQty[prodId] = (prodRefundQty[prodId] ?? 0) + ri.qtyReturned;
+        prodRefundAmount[prodId] = (prodRefundAmount[prodId] ?? 0) + (ri.qtyReturned * matchingSaleItem.unitPrice);
+      }
+    }
+  }
+
   prodSalesMap.forEach((prodId, qty) {
     final prod = prodMap[prodId];
     final name = prod?.name ?? 'Product #$prodId';
-    final rev = prodRevMap[prodId] ?? 0;
+    final grossRev = prodRevMap[prodId] ?? 0;
+    final refundAmt = prodRefundAmount[prodId] ?? 0;
+    final refundQty = prodRefundQty[prodId] ?? 0;
+
+    final netRev = (grossRev - refundAmt).clamp(0.0, double.infinity);
+    final netQty = (qty - refundQty).clamp(0, 999999);
     final cat = prod?.category ?? 'General';
 
-    categoryMap[cat] = (categoryMap[cat] ?? 0) + rev;
-    topProducts.add(TopProductData(productName: name, unitsSold: qty, revenue: rev));
+    categoryMap[cat] = (categoryMap[cat] ?? 0) + netRev;
+    if (netQty > 0 || netRev > 0) {
+      topProducts.add(TopProductData(productName: name, unitsSold: netQty, revenue: netRev));
+    }
   });
 
   topProducts.sort((a, b) => b.revenue.compareTo(a.revenue));
@@ -161,7 +184,6 @@ class _SalesAnalyticsScreenState extends ConsumerState<SalesAnalyticsScreen> {
             child: analyticsAsync.when(
               data: (data) {
                 final summary = data['summary'] as SalesSummary;
-                final totalTxns = data['totalTxns'] as int;
                 final totalRefunds = data['totalRefunds'] as double;
                 final paymentCounts = data['paymentCounts'] as Map<String, int>;
                 final categoryMap = data['categoryMap'] as Map<String, double>;
@@ -181,8 +203,8 @@ class _SalesAnalyticsScreenState extends ConsumerState<SalesAnalyticsScreen> {
                         children: [
                           Expanded(
                             child: _MetricCard(
-                              title: 'GROSS REVENUE',
-                              value: formatIdr(summary.totalRevenue),
+                              title: 'NET REVENUE',
+                              value: formatIdr(summary.netRevenue),
                               icon: Icons.monetization_on,
                               color: Colors.green,
                             ),
@@ -190,8 +212,8 @@ class _SalesAnalyticsScreenState extends ConsumerState<SalesAnalyticsScreen> {
                           const SizedBox(width: 12),
                           Expanded(
                             child: _MetricCard(
-                              title: 'TRANSACTIONS',
-                              value: '$totalTxns Orders',
+                              title: 'GROSS REVENUE',
+                              value: formatIdr(summary.totalRevenue),
                               icon: Icons.receipt_long,
                               color: Colors.blue,
                             ),
@@ -203,8 +225,8 @@ class _SalesAnalyticsScreenState extends ConsumerState<SalesAnalyticsScreen> {
                         children: [
                           Expanded(
                             child: _MetricCard(
-                              title: 'GROSS PROFIT',
-                              value: '${formatIdr(summary.grossProfit)} (${marginPct.toStringAsFixed(1)}%)',
+                              title: 'NET PROFIT',
+                              value: '${formatIdr(summary.grossProfit - totalRefunds)} (${marginPct.toStringAsFixed(1)}%)',
                               icon: Icons.trending_up,
                               color: Colors.teal,
                             ),

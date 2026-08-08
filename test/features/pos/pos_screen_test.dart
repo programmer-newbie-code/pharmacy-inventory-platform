@@ -117,4 +117,78 @@ void main() {
     await tester.tap(find.byKey(const Key('closeReceiptButton')));
     await tester.pumpAndSettle();
   });
+
+  testWidgets('completes checkout with Owner Use payment option at 0 total', (tester) async {
+    final db = AppDatabase(NativeDatabase.memory());
+    addTearDown(db.close);
+
+    final productRepo = ProductRepository(db);
+    final batchRepo = StockBatchRepository(db);
+    await CashierShiftRepository(db).openShift(cashierId: 1, openingBalance: 0);
+
+    final prodId = await productRepo.createProduct(
+      barcode: '8990000111223',
+      internalCode: 'VIT-C2',
+      name: 'Vitamin C 1000mg',
+      activeIngredient: 'Ascorbic Acid',
+      ingredientPct: 100.0,
+      baseUnit: 'tablet',
+      purchaseUnit: 'botol',
+      unitsPerPurchaseUnit: 30,
+      costPricePerBaseUnit: 500.0,
+      marginPct: 20.0,
+      reorderThreshold: 10,
+      category: 'Vitamin',
+      createdBy: 'admin',
+    );
+
+    final product = (await productRepo.getProductById(prodId))!;
+
+    await batchRepo.createStockBatch(
+      productId: product.id,
+      batchNo: 'B-VIT-02',
+      receivedDate: DateTime(2026, 7, 1),
+      expiryDate: DateTime(2027, 1, 1),
+      qtyReceivedBaseUnit: 100,
+      costPricePerBaseUnit: 500.0,
+      supplier: 'Kimia Farma',
+      createdBy: 'admin',
+    );
+
+    final container = ProviderContainer(
+      overrides: [databaseProvider.overrideWithValue(db)],
+    );
+    addTearDown(container.dispose);
+
+    await tester.pumpWidget(
+      UncontrolledProviderScope(
+        container: container,
+        child: const MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          locale: Locale('id'),
+          home: PosScreen(),
+        ),
+      ),
+    );
+
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(Key('addToCart_${product.id}')));
+    await tester.pump();
+
+    // Select Owner Use payment option
+    await tester.tap(find.byType(DropdownButtonHideUnderline));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Owner Use (Rp 0)').last);
+    await tester.pumpAndSettle();
+
+    expect(find.text('Rp 0 (Owner Use)'), findsOneWidget);
+
+    await tester.tap(find.byKey(const Key('checkoutButton')));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Transaction Receipt'), findsOneWidget);
+  });
 }

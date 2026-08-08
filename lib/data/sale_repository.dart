@@ -89,8 +89,10 @@ class SaleRepository {
       throw ShiftRequiredException('An active cashier shift is required before checkout.');
     }
 
+    final isOwnerUse = paymentMethod == 'Owner Use';
+
     final belowCostItems = items
-        .where((item) => item.unitPrice < item.product.costPricePerBaseUnit)
+        .where((item) => !isOwnerUse && item.unitPrice < item.product.costPricePerBaseUnit)
         .toList();
     if (belowCostItems.isNotEmpty) {
       if (priceOverrideReason == null || priceOverrideReason.trim().isEmpty) {
@@ -125,6 +127,9 @@ class SaleRepository {
     double totalAmount = 0;
     for (final item in items) {
       totalAmount += item.subtotal;
+    }
+    if (isOwnerUse) {
+      totalAmount = 0.0;
     }
 
     return _db.transaction(() async {
