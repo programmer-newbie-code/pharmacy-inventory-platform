@@ -213,7 +213,7 @@ class _SalesAnalyticsScreenState extends ConsumerState<SalesAnalyticsScreen> {
                           const SizedBox(width: 12),
                           Expanded(
                             child: _MetricCard(
-                              title: 'GROSS REVENUE ($totalTxns Orders)',
+                              title: 'GROSS REVENUE',
                               value: formatIdr(summary.totalRevenue),
                               icon: Icons.receipt_long,
                               color: Colors.blue,
