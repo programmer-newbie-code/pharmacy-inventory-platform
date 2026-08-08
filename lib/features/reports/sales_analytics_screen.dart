@@ -184,7 +184,6 @@ class _SalesAnalyticsScreenState extends ConsumerState<SalesAnalyticsScreen> {
             child: analyticsAsync.when(
               data: (data) {
                 final summary = data['summary'] as SalesSummary;
-                final totalTxns = data['totalTxns'] as int;
                 final totalRefunds = data['totalRefunds'] as double;
                 final paymentCounts = data['paymentCounts'] as Map<String, int>;
                 final categoryMap = data['categoryMap'] as Map<String, double>;
