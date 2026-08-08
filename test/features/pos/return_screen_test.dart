@@ -107,4 +107,93 @@ void main() {
 
     expect(find.text('Return Processed'), findsOneWidget);
   });
+
+  testWidgets('browses recent sales transactions from directory', (tester) async {
+    final db = AppDatabase(NativeDatabase.memory());
+    addTearDown(db.close);
+
+    await db.into(db.users).insert(
+          UsersCompanion.insert(
+            id: const Value(1),
+            username: 'cashier1',
+            passwordHash: 'hash',
+            role: 'kasir',
+          ),
+        );
+    await db.into(db.cashierShifts).insert(
+          CashierShiftsCompanion.insert(
+            cashierId: 1,
+            openingBalance: 0,
+            status: 'open',
+          ),
+        );
+    await db.into(db.products).insert(
+          ProductsCompanion.insert(
+            id: const Value(10),
+            barcode: '899123456701',
+            internalCode: 'P001',
+            name: 'Paracetamol 500mg',
+            activeIngredient: 'Paracetamol',
+            ingredientPct: 100,
+            baseUnit: 'tablet',
+            purchaseUnit: 'strip',
+            unitsPerPurchaseUnit: 10,
+            costPricePerBaseUnit: 1000,
+            marginPct: 50,
+            reorderThreshold: 20,
+            category: 'Obat Bebas',
+            createdBy: 'admin',
+          ),
+        );
+    await db.into(db.stockBatches).insert(
+          StockBatchesCompanion.insert(
+            id: const Value(101),
+            productId: 10,
+            batchNo: 'B001',
+            receivedDate: DateTime.now(),
+            expiryDate: DateTime.now().add(const Duration(days: 365)),
+            qtyReceived: 100,
+            qtyRemaining: 100,
+            costPricePerBaseUnit: 1000,
+            supplier: 'PT Pharma',
+            createdBy: 'admin',
+          ),
+        );
+
+    final saleRepo = SaleRepository(db);
+    final prod = await (db.select(db.products)..where((p) => p.id.equals(10))).getSingle();
+    final txn = await saleRepo.createSaleTransaction(
+      cashierId: 1,
+      items: [CartItemInput(product: prod, qtyBaseUnit: 2, unitPrice: 1500)],
+      paymentMethod: 'Cash',
+    );
+
+    final container = ProviderContainer(overrides: [
+      databaseProvider.overrideWithValue(db),
+    ]);
+    addTearDown(container.dispose);
+
+    await tester.pumpWidget(
+      UncontrolledProviderScope(
+        container: container,
+        child: const MaterialApp(
+          home: ReturnScreen(),
+        ),
+      ),
+    );
+
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const Key('browseRecentTxnsBtn')), findsOneWidget);
+    await tester.tap(find.byKey(const Key('browseRecentTxnsBtn')));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Select Recent Sale Transaction'), findsOneWidget);
+    expect(find.byKey(Key('recentTxnTile_${txn.id}')), findsOneWidget);
+
+    await tester.tap(find.byKey(Key('recentTxnTile_${txn.id}')));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Txn: ${txn.txnNo}'), findsOneWidget);
+  });
 }

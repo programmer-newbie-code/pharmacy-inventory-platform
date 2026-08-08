@@ -30,6 +30,53 @@ class _ReturnScreenState extends ConsumerState<ReturnScreen> {
     super.dispose();
   }
 
+  Future<void> _showRecentTransactionsPicker() async {
+    final saleRepo = ref.read(saleRepositoryProvider);
+    final txns = await saleRepo.listTransactions();
+
+    if (!mounted) return;
+    await showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      builder: (ctx) => Container(
+        height: 400,
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Select Recent Sale Transaction',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 12),
+            Expanded(
+              child: txns.isEmpty
+                  ? const Center(child: Text('No transactions found.'))
+                  : ListView.builder(
+                      itemCount: txns.length,
+                      itemBuilder: (c, i) {
+                        final t = txns[i];
+                        return ListTile(
+                          key: Key('recentTxnTile_${t.id}'),
+                          title: Text(t.txnNo, style: const TextStyle(fontWeight: FontWeight.bold)),
+                          subtitle: Text(
+                              '${t.paymentMethod} • Total: Rp ${t.totalAmount.toStringAsFixed(0)} • ${t.createdAt.toIso8601String().split('T').first}'),
+                          trailing: const Icon(Icons.chevron_right),
+                          onTap: () {
+                            Navigator.pop(ctx);
+                            _searchController.text = t.txnNo;
+                            _searchTransaction();
+                          },
+                        );
+                      },
+                    ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Future<void> _searchTransaction() async {
     final query = _searchController.text.trim();
     if (query.isEmpty) return;
@@ -196,6 +243,13 @@ class _ReturnScreenState extends ConsumerState<ReturnScreen> {
                       : const Icon(Icons.search),
                   label: const Text('Search'),
                   onPressed: _isSearching ? null : _searchTransaction,
+                ),
+                const SizedBox(width: 8),
+                IconButton.filledTonal(
+                  key: const Key('browseRecentTxnsBtn'),
+                  icon: const Icon(Icons.history),
+                  tooltip: 'Browse Recent Sales',
+                  onPressed: _showRecentTransactionsPicker,
                 ),
               ],
             ),

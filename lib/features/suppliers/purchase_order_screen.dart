@@ -246,22 +246,70 @@ class PurchaseOrderScreen extends ConsumerWidget {
             itemBuilder: (ctx, idx) {
               final po = pos[idx];
               final isReceived = po.status == 'received';
+              final isCancelled = po.status == 'cancelled';
+
+              Widget trailingWidget;
+              if (isReceived) {
+                trailingWidget = const Chip(
+                  label: Text('RECEIVED'),
+                  backgroundColor: Colors.greenAccent,
+                );
+              } else if (isCancelled) {
+                trailingWidget = Chip(
+                  label: const Text('CANCELLED'),
+                  backgroundColor: Colors.red.shade100,
+                );
+              } else {
+                trailingWidget = Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    OutlinedButton.icon(
+                      key: Key('cancelPoBtn_${po.id}'),
+                      icon: const Icon(Icons.cancel_outlined, color: Colors.red, size: 18),
+                      label: const Text('Cancel', style: TextStyle(color: Colors.red)),
+                      onPressed: () async {
+                        final confirm = await showDialog<bool>(
+                          context: context,
+                          builder: (c) => AlertDialog(
+                            title: Text('Cancel PO ${po.poNumber}'),
+                            content: const Text('Are you sure you want to cancel this Purchase Order?'),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.pop(c, false),
+                                child: const Text('No'),
+                              ),
+                              ElevatedButton(
+                                key: Key('confirmCancelPoBtn_${po.id}'),
+                                style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                                onPressed: () => Navigator.pop(c, true),
+                                child: const Text('Cancel PO'),
+                              ),
+                            ],
+                          ),
+                        );
+                        if (confirm == true) {
+                          final poRepo = ref.read(purchaseOrderRepositoryProvider);
+                          await poRepo.cancelPurchaseOrder(po.id, cancelReason: 'Cancelled by user');
+                          ref.invalidate(poListFutureProvider);
+                        }
+                      },
+                    ),
+                    const SizedBox(width: 8),
+                    ElevatedButton.icon(
+                      key: Key('receivePoBtn_${po.id}'),
+                      icon: const Icon(Icons.inventory_2),
+                      label: const Text('Receive'),
+                      onPressed: () => _handleReceivePO(context, ref, po),
+                    ),
+                  ],
+                );
+              }
 
               return Card(
                 child: ListTile(
                   title: Text('${po.poNumber} (${po.status.toUpperCase()})'),
                   subtitle: Text('Total: Rp ${po.totalAmount.toStringAsFixed(0)} • Created: ${po.createdAt.toIso8601String().split('T').first}'),
-                  trailing: isReceived
-                      ? const Chip(
-                          label: Text('RECEIVED'),
-                          backgroundColor: Colors.greenAccent,
-                        )
-                      : ElevatedButton.icon(
-                          key: Key('receivePoBtn_${po.id}'),
-                          icon: const Icon(Icons.inventory_2),
-                          label: const Text('Receive'),
-                          onPressed: () => _handleReceivePO(context, ref, po),
-                        ),
+                  trailing: trailingWidget,
                 ),
               );
             },
