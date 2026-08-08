@@ -1,3 +1,4 @@
+import 'package:drift/drift.dart' hide Column, isNotNull, isNull;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/providers.dart';
@@ -76,9 +77,10 @@ class _EditProductDialogState extends ConsumerState<EditProductDialog> {
       isControlled: _isControlled,
       controlledCategory: Value(_isControlled ? _controlledCategory : null),
       category: _category,
+      updatedBy: const Value('admin'),
     );
 
-    await repo.updateProduct(updated);
+    await repo.updateProduct(updated, updatedBy: 'admin');
 
     if (!mounted) return;
     Navigator.of(context).pop(true);

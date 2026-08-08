@@ -66,10 +66,15 @@ final salesAnalyticsFutureProvider = FutureProvider.family.autoDispose<Map<Strin
   final prodRefundQty = <int, int>{};
   final prodRefundAmount = <int, double>{};
   for (final r in filteredReturns) {
-    final rItems = await returnRepo.getReturnItemsForTransaction(r.id);
+    final rItems = await returnRepo.getReturnItemsForReturn(r.id);
     for (final ri in rItems) {
-      prodRefundQty[ri.productId] = (prodRefundQty[ri.productId] ?? 0) + ri.qtyReturned;
-      prodRefundAmount[ri.productId] = (prodRefundAmount[ri.productId] ?? 0) + ri.refundSubtotal;
+      final saleItem = await (saleRepo.getSaleItemsForTransaction(r.originalTxnId));
+      final matchingSaleItem = saleItem.where((s) => s.id == ri.saleItemId).firstOrNull;
+      if (matchingSaleItem != null) {
+        final prodId = matchingSaleItem.productId;
+        prodRefundQty[prodId] = (prodRefundQty[prodId] ?? 0) + ri.qtyReturned;
+        prodRefundAmount[prodId] = (prodRefundAmount[prodId] ?? 0) + (ri.qtyReturned * matchingSaleItem.unitPrice);
+      }
     }
   }
 
@@ -208,7 +213,7 @@ class _SalesAnalyticsScreenState extends ConsumerState<SalesAnalyticsScreen> {
                           const SizedBox(width: 12),
                           Expanded(
                             child: _MetricCard(
-                              title: 'GROSS REVENUE',
+                              title: 'GROSS REVENUE ($totalTxns Orders)',
                               value: formatIdr(summary.totalRevenue),
                               icon: Icons.receipt_long,
                               color: Colors.blue,

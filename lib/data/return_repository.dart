@@ -147,4 +147,11 @@ class ReturnRepository {
           ..orderBy([(tbl) => OrderingTerm.desc(tbl.createdAt)]))
         .get();
   }
+
+  /// Lists return items for a specific return transaction.
+  Future<List<ReturnItem>> getReturnItemsForReturn(int returnTxnId) {
+    return (_db.select(_db.returnItems)
+          ..where((tbl) => tbl.returnTxnId.equals(returnTxnId)))
+        .get();
+  }
 }
