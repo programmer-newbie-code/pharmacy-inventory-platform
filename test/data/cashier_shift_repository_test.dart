@@ -128,4 +128,45 @@ void main() {
     );
     expect(closedOverage.discrepancy, equals(5000));
   });
+
+  test('recordCashMovement and closeShift with cash out owner draw', () async {
+    final shift = await shiftRepo.openShift(cashierId: 1, openingBalance: 100000);
+
+    // Record owner draw (cash out) of Rp 50,000
+    final movement = await shiftRepo.recordCashMovement(
+      shiftId: shift.id,
+      movementType: 'cash_out',
+      category: 'owner_draw',
+      amount: 50000,
+      notes: 'Tarik untung owner',
+      performedBy: 1,
+    );
+
+    expect(movement.amount, equals(50000));
+    expect(movement.category, equals('owner_draw'));
+
+    // Record topup (cash in) of Rp 20,000
+    await shiftRepo.recordCashMovement(
+      shiftId: shift.id,
+      movementType: 'cash_in',
+      category: 'topup',
+      amount: 20000,
+      notes: 'Tambah modal kas',
+      performedBy: 1,
+    );
+
+    final movements = await shiftRepo.getCashMovementsForShift(shift.id);
+    expect(movements.length, equals(2));
+
+    final inRange = await shiftRepo.getCashMovementsInRange(
+      startDate: DateTime.now().subtract(const Duration(days: 1)),
+      endDate: DateTime.now().add(const Duration(days: 1)),
+    );
+    expect(inRange.length, equals(2));
+
+    // Expected cash = 100,000 (opening) + 20,000 (in) - 50,000 (out) = 70,000
+    final closed = await shiftRepo.closeShift(shiftId: shift.id, actualCash: 70000);
+    expect(closed.expectedCash, equals(70000));
+    expect(closed.discrepancy, equals(0));
+  });
 }
