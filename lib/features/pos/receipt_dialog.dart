@@ -4,6 +4,8 @@ import 'package:printing/printing.dart';
 
 import '../../core/providers.dart';
 import '../../data/database.dart';
+import '../../data/receipt_storage_service.dart';
+import '../../l10n/app_localizations.dart';
 
 class ReceiptDialog extends ConsumerWidget {
   const ReceiptDialog({
@@ -19,6 +21,8 @@ class ReceiptDialog extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
+
     return AlertDialog(
       title: const Text('Transaction Receipt'),
       content: SingleChildScrollView(
@@ -82,6 +86,33 @@ class ReceiptDialog extends ConsumerWidget {
         ),
       ),
       actions: [
+        OutlinedButton.icon(
+          key: const Key('saveReceiptPdfBtn'),
+          icon: const Icon(Icons.picture_as_pdf),
+          label: Text(l10n.saveReceiptPdf),
+          onPressed: () async {
+            final pdfService = ref.read(receiptPdfServiceProvider);
+            final pdfBytes = await pdfService.generateReceiptPdf(
+              transaction: transaction,
+              items: items,
+              productsMap: productsMap,
+            );
+            final storageService = ref.read(receiptStorageServiceProvider);
+            final savedFile = await storageService.saveReceiptPdf(
+              txnNo: transaction.txnNo,
+              createdAt: transaction.createdAt,
+              pdfBytes: pdfBytes,
+            );
+            if (context.mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(l10n.receiptSavedSuccess(savedFile.path)),
+                  duration: const Duration(seconds: 4),
+                ),
+              );
+            }
+          },
+        ),
         OutlinedButton.icon(
           key: const Key('printReceiptBtn'),
           icon: const Icon(Icons.print),

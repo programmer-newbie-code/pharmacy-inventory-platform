@@ -286,6 +286,18 @@
   "pharmacySiaLabel": "No. SIA (Surat Izin Apotek)",
   "pharmacyApotekerLabel": "Apoteker Penanggung Jawab (APA)",
   "pharmacySipaLabel": "No. SIPA",
-  "saveBrandingButton": "Simpan Pengaturan Branding"
+  "saveBrandingButton": "Simpan Pengaturan Branding",
+  "filterToday": "Hari Ini",
+  "filterThisWeek": "Minggu Ini",
+  "filterThisMonth": "Bulan Ini",
+  "filterThisYear": "Tahun Ini",
+  "filterCustom": "Rentang Tanggal Custom",
+  "saveReceiptPdf": "Simpan PDF",
+  "receiptSavedSuccess": "Struk berhasil disimpan di: {path}",
+  "@receiptSavedSuccess": {
+    "placeholders": {
+      "path": {}
+    }
+  }
 }
 

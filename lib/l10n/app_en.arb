@@ -286,6 +286,18 @@
   "pharmacySiaLabel": "SIA License No.",
   "pharmacyApotekerLabel": "Pharmacist in Charge (APA)",
   "pharmacySipaLabel": "SIPA License No.",
-  "saveBrandingButton": "Save Branding Settings"
+  "saveBrandingButton": "Save Branding Settings",
+  "filterToday": "Today",
+  "filterThisWeek": "This Week",
+  "filterThisMonth": "This Month",
+  "filterThisYear": "This Year",
+  "filterCustom": "Custom Date Range",
+  "saveReceiptPdf": "Save PDF",
+  "receiptSavedSuccess": "Receipt saved to: {path}",
+  "@receiptSavedSuccess": {
+    "placeholders": {
+      "path": {}
+    }
+  }
 }
 
