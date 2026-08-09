@@ -7,6 +7,8 @@ import 'package:pharmacy_inventory_platform/data/database.dart';
 import 'package:pharmacy_inventory_platform/data/product_repository.dart';
 import 'package:pharmacy_inventory_platform/features/inventory/add_stock_batch_dialog.dart';
 
+import 'package:pharmacy_inventory_platform/l10n/app_localizations.dart';
+
 void main() {
   testWidgets('renders and submits AddStockBatchDialog form with unit conversion preview',
       (tester) async {
@@ -41,6 +43,9 @@ void main() {
       UncontrolledProviderScope(
         container: container,
         child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          locale: const Locale('id'),
           home: Scaffold(
             body: AddStockBatchDialog(product: product),
           ),

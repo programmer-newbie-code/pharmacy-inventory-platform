@@ -6,6 +6,8 @@ import 'package:pharmacy_inventory_platform/core/providers.dart';
 import 'package:pharmacy_inventory_platform/data/database.dart';
 import 'package:pharmacy_inventory_platform/features/pos/shift_management_screen.dart';
 
+import 'package:pharmacy_inventory_platform/l10n/app_localizations.dart';
+
 void main() {
   testWidgets('renders ShiftManagementScreen and opens shift', (tester) async {
     final db = AppDatabase(NativeDatabase.memory());
@@ -20,6 +22,9 @@ void main() {
       UncontrolledProviderScope(
         container: container,
         child: const MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          locale: Locale('id'),
           home: ShiftManagementScreen(),
         ),
       ),

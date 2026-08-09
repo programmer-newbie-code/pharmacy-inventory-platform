@@ -7,6 +7,8 @@ import 'package:pharmacy_inventory_platform/core/providers.dart';
 import 'package:pharmacy_inventory_platform/data/database.dart';
 import 'package:pharmacy_inventory_platform/features/inventory/edit_product_dialog.dart';
 
+import 'package:pharmacy_inventory_platform/l10n/app_localizations.dart';
+
 void main() {
   testWidgets('renders EditProductDialog and updates product details',
       (tester) async {
@@ -46,6 +48,9 @@ void main() {
       UncontrolledProviderScope(
         container: container,
         child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          locale: const Locale('id'),
           home: Scaffold(
             body: EditProductDialog(product: prod),
           ),
@@ -55,7 +60,7 @@ void main() {
 
     await tester.pumpAndSettle();
 
-    expect(find.text('Edit Product: Amoxicillin 500mg'), findsOneWidget);
+    expect(find.text('Edit Product Details'), findsOneWidget);
     expect(find.byKey(const Key('saveEditProductBtn')), findsOneWidget);
 
     // Edit product name
@@ -64,10 +69,20 @@ void main() {
     await tester.pumpAndSettle();
 
     // Toggle controlled substance switch
+    await tester.dragUntilVisible(
+      find.byType(SwitchListTile),
+      find.byType(SingleChildScrollView),
+      const Offset(0, -200),
+    );
     await tester.tap(find.byType(SwitchListTile));
     await tester.pumpAndSettle();
 
     // Tap Save
+    await tester.dragUntilVisible(
+      find.byKey(const Key('saveEditProductBtn')),
+      find.byType(SingleChildScrollView),
+      const Offset(0, -200),
+    );
     await tester.tap(find.byKey(const Key('saveEditProductBtn')));
     await tester.pumpAndSettle();
 

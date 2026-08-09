@@ -6,6 +6,8 @@ import 'package:pharmacy_inventory_platform/core/providers.dart';
 import 'package:pharmacy_inventory_platform/data/database.dart';
 import 'package:pharmacy_inventory_platform/features/reports/procurement_report_screen.dart';
 
+import 'package:pharmacy_inventory_platform/l10n/app_localizations.dart';
+
 void main() {
   testWidgets('renders ProcurementReportScreen with metric cards and supplier table',
       (tester) async {
@@ -21,6 +23,9 @@ void main() {
       UncontrolledProviderScope(
         container: container,
         child: const MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          locale: Locale('id'),
           home: ProcurementReportScreen(),
         ),
       ),
@@ -28,7 +33,7 @@ void main() {
 
     await tester.pumpAndSettle();
 
-    expect(find.text('Procurement & Purchasing Report'), findsOneWidget);
+    expect(find.text('Laporan Pembelian & Stok (Procurement)'), findsOneWidget);
     expect(find.text('TOTAL PURCHASES'), findsOneWidget);
     expect(find.text('PURCHASE ORDERS'), findsOneWidget);
     expect(find.text('BATCHES RECEIVED'), findsOneWidget);

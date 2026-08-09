@@ -6,6 +6,8 @@ import 'package:pharmacy_inventory_platform/core/providers.dart';
 import 'package:pharmacy_inventory_platform/data/database.dart';
 import 'package:pharmacy_inventory_platform/features/reports/cash_movement_report_screen.dart';
 
+import 'package:pharmacy_inventory_platform/l10n/app_localizations.dart';
+
 void main() {
   testWidgets('renders CashMovementReportScreen with metric cards and movements list',
       (tester) async {
@@ -21,6 +23,9 @@ void main() {
       UncontrolledProviderScope(
         container: container,
         child: const MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          locale: Locale('id'),
           home: CashMovementReportScreen(),
         ),
       ),

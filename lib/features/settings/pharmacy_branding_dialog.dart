@@ -110,19 +110,19 @@ class _PharmacyBrandingDialogState extends ConsumerState<PharmacyBrandingDialog>
                   TextField(
                     key: const Key('brandingNameInput'),
                     controller: _nameController,
-                    decoration: const InputDecoration(labelText: 'Pharmacy Name'),
+                    decoration: InputDecoration(labelText: l10n.pharmacyNameLabel),
                   ),
                   const SizedBox(height: 8),
                   TextField(
                     key: const Key('brandingAddressInput'),
                     controller: _addressController,
-                    decoration: const InputDecoration(labelText: 'Address'),
+                    decoration: InputDecoration(labelText: l10n.pharmacyAddressLabel),
                   ),
                   const SizedBox(height: 8),
                   TextField(
                     key: const Key('brandingPhoneInput'),
                     controller: _phoneController,
-                    decoration: const InputDecoration(labelText: 'Phone Number'),
+                    decoration: InputDecoration(labelText: l10n.pharmacyPhoneLabel),
                   ),
                 ],
               ),

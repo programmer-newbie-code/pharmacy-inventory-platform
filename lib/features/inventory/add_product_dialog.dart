@@ -3,7 +3,10 @@ import 'dart:io' show Platform;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../core/app_theme.dart';
+import '../../core/formatters.dart';
 import '../../core/providers.dart';
+import '../../core/unit_constants.dart';
 import '../../data/database.dart';
 import '../../data/drug_lookup_service.dart';
 import '../../l10n/app_localizations.dart';
@@ -26,6 +29,7 @@ class _AddProductDialogState extends ConsumerState<AddProductDialog> {
   final _purchaseUnitController = TextEditingController(text: 'box');
   final _unitsPerPurchaseUnitController = TextEditingController(text: '100');
   final _costPriceController = TextEditingController(text: '100.0');
+  final _purchaseUnitPriceController = TextEditingController(text: '10000.0');
   final _marginPctController = TextEditingController(text: '20.0');
   final _reorderThresholdController = TextEditingController(text: '50');
   final _categoryController = TextEditingController(text: 'Obat Bebas');
@@ -39,6 +43,38 @@ class _AddProductDialogState extends ConsumerState<AddProductDialog> {
   bool _isSearching = false;
   List<DrugLookupResult> _searchResults = [];
   bool _searchPanelOpen = false;
+
+  void _onPurchasePriceChanged(String val) {
+    final purchasePrice = double.tryParse(val) ?? 0.0;
+    final units = int.tryParse(_unitsPerPurchaseUnitController.text) ?? 1;
+    if (units > 0) {
+      final basePrice = purchasePrice / units;
+      _costPriceController.value = TextEditingValue(
+        text: basePrice == basePrice.roundToDouble()
+            ? basePrice.toStringAsFixed(0)
+            : basePrice.toStringAsFixed(2),
+      );
+      setState(() {});
+    }
+  }
+
+  void _onBasePriceChanged(String val) {
+    final basePrice = double.tryParse(val) ?? 0.0;
+    final units = int.tryParse(_unitsPerPurchaseUnitController.text) ?? 1;
+    if (units > 0) {
+      final purchasePrice = basePrice * units;
+      _purchaseUnitPriceController.value = TextEditingValue(
+        text: purchasePrice == purchasePrice.roundToDouble()
+            ? purchasePrice.toStringAsFixed(0)
+            : purchasePrice.toStringAsFixed(2),
+      );
+      setState(() {});
+    }
+  }
+
+  void _onUnitsChanged(String val) {
+    _onPurchasePriceChanged(_purchaseUnitPriceController.text);
+  }
 
   @override
   void initState() {
@@ -64,6 +100,7 @@ class _AddProductDialogState extends ConsumerState<AddProductDialog> {
     _purchaseUnitController.dispose();
     _unitsPerPurchaseUnitController.dispose();
     _costPriceController.dispose();
+    _purchaseUnitPriceController.dispose();
     _marginPctController.dispose();
     _reorderThresholdController.dispose();
     _categoryController.dispose();
@@ -92,6 +129,10 @@ class _AddProductDialogState extends ConsumerState<AddProductDialog> {
     _activeIngredientController.text = drug.activeIngredient;
     _categoryController.text = drug.category;
     _baseUnitController.text = drug.unit;
+    if (_purchaseUnitController.text.trim().isEmpty) {
+      _purchaseUnitController.text = 'box';
+    }
+    _onUnitsChanged(_unitsPerPurchaseUnitController.text);
     _isControlled = drug.requiresPrescription;
     _drugSearchController.clear();
     setState(() {
@@ -295,73 +336,158 @@ class _AddProductDialogState extends ConsumerState<AddProductDialog> {
                 Row(
                   children: [
                     Expanded(
-                      child: TextFormField(
+                      child: EditableUnitDropdown(
+                        widgetKey: const Key('baseUnitDropdown'),
                         controller: _baseUnitController,
-                        decoration:
-                            const InputDecoration(labelText: 'Satuan Dasar'),
+                        labelText: l10n.baseUnitLabel,
+                        defaultOptions: defaultBaseUnits,
                         validator: (v) =>
-                            (v == null || v.isEmpty) ? 'Wajib' : null,
+                            (v == null || v.trim().isEmpty) ? 'Wajib' : null,
+                        onChanged: (_) => setState(() {}),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: EditableUnitDropdown(
+                        widgetKey: const Key('purchaseUnitDropdown'),
+                        controller: _purchaseUnitController,
+                        labelText: l10n.purchaseUnitLabel,
+                        defaultOptions: defaultPurchaseUnits,
+                        validator: (v) =>
+                            (v == null || v.trim().isEmpty) ? 'Wajib' : null,
+                        onChanged: (_) => setState(() {}),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                TextFormField(
+                  controller: _unitsPerPurchaseUnitController,
+                  decoration: InputDecoration(
+                    labelText: l10n.unitsPerPurchaseUnitLabel,
+                    suffixText: _baseUnitController.text,
+                    border: const OutlineInputBorder(),
+                  ),
+                  keyboardType: TextInputType.number,
+                  onChanged: _onUnitsChanged,
+                  validator: (v) => (v == null || int.tryParse(v) == null)
+                      ? 'Angka tidak valid'
+                      : null,
+                ),
+                const SizedBox(height: 12),
+
+                // ── Price row (Dual Box vs Tablet Calculation) ───────────────
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextFormField(
+                        controller: _purchaseUnitPriceController,
+                        decoration: InputDecoration(
+                          labelText: l10n.pricePerPurchaseUnitLabel,
+                          prefixText: 'Rp ',
+                          border: const OutlineInputBorder(),
+                        ),
+                        keyboardType: TextInputType.number,
+                        onChanged: _onPurchasePriceChanged,
                       ),
                     ),
                     const SizedBox(width: 8),
                     Expanded(
                       child: TextFormField(
-                        controller: _purchaseUnitController,
-                        decoration:
-                            const InputDecoration(labelText: 'Satuan Beli'),
+                        controller: _costPriceController,
+                        decoration: InputDecoration(
+                          labelText: l10n.costPricePerBaseUnitLabel,
+                          prefixText: 'Rp ',
+                          border: const OutlineInputBorder(),
+                        ),
+                        keyboardType: TextInputType.number,
+                        onChanged: _onBasePriceChanged,
                         validator: (v) =>
-                            (v == null || v.isEmpty) ? 'Wajib' : null,
+                            (v == null || double.tryParse(v) == null)
+                                ? 'Wajib isi HPP'
+                                : null,
                       ),
                     ),
                   ],
                 ),
                 const SizedBox(height: 8),
-                TextFormField(
-                  controller: _unitsPerPurchaseUnitController,
-                  decoration:
-                      const InputDecoration(labelText: 'Isi per Satuan Beli'),
-                  keyboardType: TextInputType.number,
-                  validator: (v) => (v == null || int.tryParse(v) == null)
-                      ? 'Angka tidak valid'
-                      : null,
-                ),
-                const SizedBox(height: 8),
 
-                // ── Price row ────────────────────────────────────────────────
+                // ── Price Conversion Live Breakdown Card ──────────────────────
+                Builder(builder: (ctx) {
+                  final purchasePrice =
+                      double.tryParse(_purchaseUnitPriceController.text) ?? 0.0;
+                  final basePrice =
+                      double.tryParse(_costPriceController.text) ?? 0.0;
+                  final units =
+                      int.tryParse(_unitsPerPurchaseUnitController.text) ?? 1;
+                  final pUnit = _purchaseUnitController.text.trim().isEmpty
+                      ? 'box'
+                      : _purchaseUnitController.text.trim();
+                  final bUnit = _baseUnitController.text.trim().isEmpty
+                      ? 'tablet'
+                      : _baseUnitController.text.trim();
+
+                  return Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: AppTheme.primaryColor.withAlpha(15),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(
+                          color: AppTheme.primaryColor.withAlpha(40)),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.calculate,
+                            size: 18, color: AppTheme.primaryColor),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            l10n.conversionBreakdownHint(
+                              pUnit,
+                              units,
+                              bUnit,
+                              formatIdr(purchasePrice).replaceAll('Rp ', ''),
+                              formatIdr(basePrice).replaceAll('Rp ', ''),
+                            ),
+                            style: const TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                              color: AppTheme.primaryColor,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                }),
+                const SizedBox(height: 12),
+
                 Row(
                   children: [
-                    Expanded(
-                      child: TextFormField(
-                        controller: _costPriceController,
-                        decoration: const InputDecoration(
-                          labelText: 'HPP / Satuan (Rp)',
-                          prefixText: 'Rp ',
-                        ),
-                        keyboardType: TextInputType.number,
-                      ),
-                    ),
-                    const SizedBox(width: 8),
                     Expanded(
                       child: TextFormField(
                         controller: _marginPctController,
                         decoration: const InputDecoration(
                           labelText: 'Margin %',
                           suffixText: '%',
+                          border: OutlineInputBorder(),
+                        ),
+                        keyboardType: TextInputType.number,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: TextFormField(
+                        controller: _reorderThresholdController,
+                        decoration: const InputDecoration(
+                          labelText: 'Minimum Stok',
+                          border: OutlineInputBorder(),
                         ),
                         keyboardType: TextInputType.number,
                       ),
                     ),
                   ],
-                ),
-                const SizedBox(height: 8),
-
-                TextFormField(
-                  controller: _reorderThresholdController,
-                  decoration: const InputDecoration(
-                    labelText: 'Minimum Stok (Satuan Dasar)',
-                    prefixIcon: Icon(Icons.warning_amber),
-                  ),
-                  keyboardType: TextInputType.number,
                 ),
                 const SizedBox(height: 8),
 
