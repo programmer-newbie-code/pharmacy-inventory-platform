@@ -155,6 +155,18 @@ class CashierShifts extends Table {
   DateTimeColumn get closedAt => dateTime().nullable()();
 }
 
+@DataClassName('CashMovement')
+class CashMovements extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  IntColumn get shiftId => integer().references(CashierShifts, #id)();
+  TextColumn get movementType => text()(); // cash_in|cash_out
+  TextColumn get category => text()(); // owner_draw|operational_expense|bank_deposit|topup|other
+  RealColumn get amount => real()();
+  TextColumn get notes => text().nullable()();
+  IntColumn get performedBy => integer().references(Users, #id)();
+  DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
+}
+
 @DataClassName('ReturnTransaction')
 class ReturnTransactions extends Table {
   IntColumn get id => integer().autoIncrement()();
@@ -326,6 +338,7 @@ class CompoundingTransactionItems extends Table {
   BackupLogs,
   CsvImportLogs,
   CashierShifts,
+  CashMovements,
   ReturnTransactions,
   ReturnItems,
   Suppliers,
@@ -345,7 +358,7 @@ class AppDatabase extends _$AppDatabase {
   factory AppDatabase.defaultConnection() => AppDatabase(openConnection());
 
   @override
-  int get schemaVersion => 8;
+  int get schemaVersion => 9;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -380,6 +393,9 @@ class AppDatabase extends _$AppDatabase {
           }
           if (from < 8) {
             await m.addColumn(products, products.controlledCategory);
+          }
+          if (from < 9) {
+            await m.createTable(cashMovements);
           }
         },
       );

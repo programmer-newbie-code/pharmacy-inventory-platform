@@ -191,4 +191,34 @@ void main() {
 
     expect(find.text('Transaction Receipt'), findsOneWidget);
   });
+
+  testWidgets('opens CashMovementDialog via posCashMovementBtn', (tester) async {
+    final db = AppDatabase(NativeDatabase.memory());
+    addTearDown(db.close);
+    await CashierShiftRepository(db).openShift(cashierId: 1, openingBalance: 100000);
+
+    final container = ProviderContainer(
+      overrides: [databaseProvider.overrideWithValue(db)],
+    );
+    addTearDown(container.dispose);
+
+    await tester.pumpWidget(
+      UncontrolledProviderScope(
+        container: container,
+        child: const MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          locale: Locale('id'),
+          home: PosScreen(),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const Key('posCashMovementBtn')), findsOneWidget);
+    await tester.tap(find.byKey(const Key('posCashMovementBtn')));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Catat Arus Kas / Prive Owner'), findsOneWidget);
+  });
 }

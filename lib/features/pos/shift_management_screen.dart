@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/providers.dart';
 import '../../data/database.dart';
+import 'cash_movement_dialog.dart';
 
 final shiftListFutureProvider = FutureProvider.autoDispose<List<CashierShift>>((ref) {
   final repo = ref.watch(cashierShiftRepositoryProvider);
@@ -69,6 +70,17 @@ class _ShiftManagementScreenState extends ConsumerState<ShiftManagementScreen> {
       await repo.openShift(cashierId: 1, openingBalance: amount);
       _loadActiveShift();
       ref.invalidate(shiftListFutureProvider);
+    }
+  }
+
+  Future<void> _handleCashMovement() async {
+    if (_activeShift == null) return;
+    final updated = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => CashMovementDialog(shiftId: _activeShift!.id),
+    );
+    if (updated == true) {
+      setState(() {});
     }
   }
 
@@ -172,24 +184,20 @@ class _ShiftManagementScreenState extends ConsumerState<ShiftManagementScreen> {
                       padding: const EdgeInsets.all(16.0),
                       child: Column(
                         children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      _activeShift != null ? 'Shift Active (Open)' : 'No Active Shift',
-                                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                                    ),
-                                    if (_activeShift != null)
-                                      Text(
-                                        'Opened: ${_activeShift!.openedAt.toIso8601String().replaceAll('T', ' ').substring(0, 16)} • Rp ${_activeShift!.openingBalance.toStringAsFixed(0)}',
-                                      ),
-                                  ],
-                                ),
+                              Text(
+                                _activeShift != null ? 'Shift Active (Open)' : 'No Active Shift',
+                                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                               ),
+                              if (_activeShift != null) ...[
+                                const SizedBox(height: 4),
+                                Text(
+                                  'Opened: ${_activeShift!.openedAt.toIso8601String().replaceAll('T', ' ').substring(0, 16)} • Rp ${_activeShift!.openingBalance.toStringAsFixed(0)}',
+                                ),
+                              ],
+                              const SizedBox(height: 12),
                               _activeShift == null
                                   ? ElevatedButton.icon(
                                       key: const Key('openShiftBtn'),
@@ -197,12 +205,31 @@ class _ShiftManagementScreenState extends ConsumerState<ShiftManagementScreen> {
                                       label: const Text('Open Shift'),
                                       onPressed: _handleOpenShift,
                                     )
-                                  : ElevatedButton.icon(
-                                      key: const Key('closeShiftBtn'),
-                                      style: ElevatedButton.styleFrom(backgroundColor: Colors.red, foregroundColor: Colors.white),
-                                      icon: const Icon(Icons.stop),
-                                      label: const Text('Close & Reconcile'),
-                                      onPressed: _handleCloseShift,
+                                  : Wrap(
+                                      spacing: 8,
+                                      runSpacing: 8,
+                                      children: [
+                                        ElevatedButton.icon(
+                                          key: const Key('cashMovementBtn'),
+                                          style: ElevatedButton.styleFrom(
+                                            backgroundColor: Colors.orange,
+                                            foregroundColor: Colors.white,
+                                          ),
+                                          icon: const Icon(Icons.swap_horiz),
+                                          label: const Text('Tarik/Setor Kas (Prive)'),
+                                          onPressed: _handleCashMovement,
+                                        ),
+                                        ElevatedButton.icon(
+                                          key: const Key('closeShiftBtn'),
+                                          style: ElevatedButton.styleFrom(
+                                            backgroundColor: Colors.red,
+                                            foregroundColor: Colors.white,
+                                          ),
+                                          icon: const Icon(Icons.stop),
+                                          label: const Text('Close & Reconcile'),
+                                          onPressed: _handleCloseShift,
+                                        ),
+                                      ],
                                     ),
                             ],
                           ),

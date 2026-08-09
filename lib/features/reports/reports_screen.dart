@@ -6,6 +6,7 @@ import '../../core/formatters.dart';
 import '../../core/providers.dart';
 import '../../data/report_repository.dart';
 import '../../l10n/app_localizations.dart';
+import 'cash_movement_report_screen.dart';
 import 'procurement_report_screen.dart';
 import 'sales_analytics_screen.dart';
 
@@ -155,6 +156,23 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
                     Navigator.of(context).push(
                       MaterialPageRoute(
                           builder: (_) => const ProcurementReportScreen()),
+                    );
+                  },
+                ),
+                const SizedBox(height: 12),
+                ElevatedButton.icon(
+                  key: const Key('navCashMovementReportBtn'),
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    backgroundColor: Colors.orange.shade800,
+                    foregroundColor: Colors.white,
+                  ),
+                  icon: const Icon(Icons.swap_horiz),
+                  label: const Text('Laporan Arus Kas & Prive Owner'),
+                  onPressed: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                          builder: (_) => const CashMovementReportScreen()),
                     );
                   },
                 ),

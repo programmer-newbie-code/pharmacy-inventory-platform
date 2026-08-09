@@ -40,7 +40,14 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.textContaining('Shift Active (Open)'), findsOneWidget);
+    expect(find.byKey(const Key('cashMovementBtn')), findsOneWidget);
     expect(find.byKey(const Key('closeShiftBtn')), findsOneWidget);
+
+    await tester.tap(find.byKey(const Key('cashMovementBtn')));
+    await tester.pumpAndSettle();
+    expect(find.text('Catat Arus Kas / Prive Owner'), findsOneWidget);
+    await tester.tap(find.text('Batal'));
+    await tester.pumpAndSettle();
 
     await tester.tap(find.byKey(const Key('closeShiftBtn')));
     await tester.pumpAndSettle();
