@@ -134,7 +134,13 @@ class DesktopGoogleAccountAuthorizer implements GoogleAccountAuthorizer {
   }
 
   static void _openBrowser(String uri) {
-    unawaited(Process.start('cmd', ['/c', 'start', '', uri]));
+    if (Platform.isWindows) {
+      unawaited(Process.start('explorer.exe', [uri]));
+    } else if (Platform.isMacOS) {
+      unawaited(Process.start('open', [uri]));
+    } else {
+      unawaited(Process.start('xdg-open', [uri]));
+    }
   }
 
   @override
