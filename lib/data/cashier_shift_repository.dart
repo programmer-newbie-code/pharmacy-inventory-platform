@@ -53,7 +53,20 @@ class CashierShiftRepository {
         .get();
 
     final totalCashSales = cashTxns.fold<double>(0, (sum, t) => sum + t.totalAmount);
-    final expectedCash = shift.openingBalance + totalCashSales;
+
+    // Calculate cash in and cash out movements
+    final movements = await getCashMovementsForShift(shiftId);
+    double totalCashIn = 0.0;
+    double totalCashOut = 0.0;
+    for (final m in movements) {
+      if (m.movementType == 'cash_in') {
+        totalCashIn += m.amount;
+      } else if (m.movementType == 'cash_out') {
+        totalCashOut += m.amount;
+      }
+    }
+
+    final expectedCash = shift.openingBalance + totalCashSales + totalCashIn - totalCashOut;
     final discrepancy = actualCash - expectedCash;
     if (discrepancy != 0 && (discrepancyReason == null || discrepancyReason.trim().isEmpty)) {
       throw ArgumentError(_discrepancyReasonRequired);
@@ -70,6 +83,51 @@ class CashierShiftRepository {
 
     await _db.update(_db.cashierShifts).replace(updated);
     return updated;
+  }
+
+  /// Records a cash in or cash out movement (e.g. Owner profit withdrawal / Prive, operational expense, bank deposit, top-up).
+  Future<CashMovement> recordCashMovement({
+    required int shiftId,
+    required String movementType,
+    required String category,
+    required double amount,
+    String? notes,
+    required int performedBy,
+  }) async {
+    final id = await _db.into(_db.cashMovements).insert(
+          CashMovementsCompanion.insert(
+            shiftId: shiftId,
+            movementType: movementType,
+            category: category,
+            amount: amount,
+            notes: Value(notes),
+            performedBy: performedBy,
+            createdAt: Value(DateTime.now()),
+          ),
+        );
+    return (_db.select(_db.cashMovements)..where((tbl) => tbl.id.equals(id)))
+        .getSingle();
+  }
+
+  /// Returns all cash movements for a given shift.
+  Future<List<CashMovement>> getCashMovementsForShift(int shiftId) async {
+    return (_db.select(_db.cashMovements)
+          ..where((tbl) => tbl.shiftId.equals(shiftId))
+          ..orderBy([(tbl) => OrderingTerm.desc(tbl.createdAt)]))
+        .get();
+  }
+
+  /// Returns all cash movements within a date range.
+  Future<List<CashMovement>> getCashMovementsInRange({
+    required DateTime startDate,
+    required DateTime endDate,
+  }) async {
+    return (_db.select(_db.cashMovements)
+          ..where((tbl) =>
+              tbl.createdAt.isBiggerOrEqual(Variable(startDate)) &
+              tbl.createdAt.isSmallerOrEqual(Variable(endDate)))
+          ..orderBy([(tbl) => OrderingTerm.desc(tbl.createdAt)]))
+        .get();
   }
 
   /// Returns the currently active (open) shift for a cashier, or null if none.

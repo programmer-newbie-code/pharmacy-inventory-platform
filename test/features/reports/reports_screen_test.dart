@@ -51,6 +51,11 @@ void main() {
     expect(find.text('Ringkasan Bulan Ini'), findsOneWidget);
     expect(find.byKey(const Key('exportExcelBtn')), findsOneWidget);
 
+    await tester.dragUntilVisible(
+      find.byKey(const Key('exportExcelBtn')),
+      find.byType(SingleChildScrollView),
+      const Offset(0, -200),
+    );
     await tester.tap(find.byKey(const Key('exportExcelBtn')));
     await tester.pump();
 

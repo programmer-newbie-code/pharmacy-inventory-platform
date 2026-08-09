@@ -9,6 +9,7 @@ import '../../data/sale_repository.dart';
 import '../../l10n/app_localizations.dart';
 import '../auth/auth_session.dart';
 import '../inventory/camera_scanner_dialog.dart';
+import 'cash_movement_dialog.dart';
 import 'receipt_dialog.dart';
 
 class PosScreen extends ConsumerStatefulWidget {
@@ -151,6 +152,23 @@ class _PosScreenState extends ConsumerState<PosScreen> {
     return false;
   }
 
+  Future<void> _handlePosCashMovement() async {
+    final currentUser = ref.read(authSessionProvider);
+    var activeShift = await ref.read(cashierShiftRepositoryProvider).getActiveShift(currentUser?.id ?? 1);
+    if (activeShift == null) {
+      final opened = await _promptOpenShiftModal();
+      if (!opened) return;
+      activeShift = await ref.read(cashierShiftRepositoryProvider).getActiveShift(currentUser?.id ?? 1);
+    }
+    if (!mounted) return;
+    if (activeShift != null) {
+      showDialog(
+        context: context,
+        builder: (ctx) => CashMovementDialog(shiftId: activeShift!.id),
+      );
+    }
+  }
+
   Future<void> _checkout() async {
     if (_cart.isEmpty) return;
 
@@ -225,6 +243,14 @@ class _PosScreenState extends ConsumerState<PosScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(l10n.posTitle),
+        actions: [
+          IconButton(
+            key: const Key('posCashMovementBtn'),
+            icon: const Icon(Icons.swap_horiz),
+            tooltip: 'Tarik/Setor Kas (Prive Owner)',
+            onPressed: _handlePosCashMovement,
+          ),
+        ],
       ),
       body: LayoutBuilder(
         builder: (context, constraints) => Flex(
