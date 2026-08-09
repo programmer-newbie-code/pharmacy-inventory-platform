@@ -62,4 +62,43 @@ void main() {
     expect(find.text('Mengekspor laporan...'), findsOneWidget);
     expect(find.textContaining('Export error:'), findsNothing);
   });
+
+  testWidgets('switches date range filter chips on tap', (tester) async {
+    final container = ProviderContainer(
+      overrides: [
+        databaseProvider.overrideWithValue(database),
+      ],
+    );
+    addTearDown(container.dispose);
+
+    await tester.pumpWidget(
+      UncontrolledProviderScope(
+        container: container,
+        child: const MaterialApp(
+          localizationsDelegates: [
+            AppLocalizations.delegate,
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
+          supportedLocales: AppLocalizations.supportedLocales,
+          locale: Locale('id'),
+          home: ReportsScreen(),
+        ),
+      ),
+    );
+
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const Key('filterTodayChip')), findsOneWidget);
+    expect(find.byKey(const Key('filterWeekChip')), findsOneWidget);
+    expect(find.byKey(const Key('filterMonthChip')), findsOneWidget);
+    expect(find.byKey(const Key('filterYearChip')), findsOneWidget);
+
+    await tester.tap(find.byKey(const Key('filterTodayChip')));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const Key('filterYearChip')));
+    await tester.pumpAndSettle();
+  });
 }
