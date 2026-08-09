@@ -847,6 +847,17 @@ class _DesktopSidebar extends StatelessWidget {
                   selected: selectedId == 'users',
                   onTap: () => onNavigate(const UserManagementScreen()),
                 ),
+              const SizedBox(height: 24),
+              Center(
+                child: Text(
+                  'Powered by Programmer Newbie',
+                  style: TextStyle(
+                    color: Colors.white.withAlpha(120),
+                    fontSize: 10,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
             ],
           ),
         ),

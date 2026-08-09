@@ -121,7 +121,14 @@ class ReceiptPdfService {
                   style: const pw.TextStyle(fontSize: 8),
                 ),
               ),
-              pw.SizedBox(height: 8),
+              pw.SizedBox(height: 3),
+              pw.Center(
+                child: pw.Text(
+                  'Powered by Programmer Newbie',
+                  style: const pw.TextStyle(fontSize: 6, color: PdfColors.grey700),
+                ),
+              ),
+              pw.SizedBox(height: 6),
               pw.Center(
                 child: pw.BarcodeWidget(
                   barcode: pw.Barcode.code128(),

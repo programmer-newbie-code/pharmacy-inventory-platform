@@ -244,6 +244,15 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                     onPressed: () =>
                         ref.read(localeProvider.notifier).toggleLocale(),
                   ),
+                  const SizedBox(height: 12),
+                  Text(
+                    'Powered by Programmer Newbie',
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: Colors.grey.shade500,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
                 ],
               ),
             ),
