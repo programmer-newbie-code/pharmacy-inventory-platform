@@ -93,7 +93,7 @@ jobs:
       - run: flutter pub get
       - name: Generate drift code
         run: dart run build_runner build --delete-conflicting-outputs
-      - run: flutter build windows --release --build-name=${{ env.BUILD_VER }} --build-number=${{ github.run_number }}
+      - run: flutter build windows --release --build-name=${{ env.BUILD_VER }} --build-number=${{ github.run_number }} --dart-define=GOOGLE_DRIVE_DESKTOP_CLIENT_ID=${{ secrets.GOOGLE_DRIVE_DESKTOP_CLIENT_ID }} --dart-define=GOOGLE_DRIVE_DESKTOP_CLIENT_SECRET=${{ secrets.GOOGLE_DRIVE_DESKTOP_CLIENT_SECRET }}
       - name: Build Windows MSIX Installer Package
         run: dart run msix:create --build-windows false --install-certificate false
       - name: Upload Windows Release Artifact

@@ -9,7 +9,7 @@ class ReceiptPdfService {
     required SaleTransaction transaction,
     required List<SaleItem> items,
     required Map<int, Product> productsMap,
-    String pharmacyName = 'Apotek Medika Sehat',
+    String pharmacyName = 'PharmaLoka',
     String pharmacyAddress = 'Jl. Merdeka No. 45, Jakarta',
     String cashierName = 'Kasir Staff',
     Uint8List? logoBytes,
