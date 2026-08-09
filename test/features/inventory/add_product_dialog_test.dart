@@ -73,4 +73,75 @@ void main() {
     expect(products.first.name, equals('Ibuprofen 400mg'));
     expect(products.first.isControlled, isTrue);
   });
+
+  testWidgets('AddProductDialog calculates price per purchase unit vs base unit',
+      (tester) async {
+    final db = AppDatabase(NativeDatabase.memory());
+    addTearDown(db.close);
+
+    final container = ProviderContainer(
+      overrides: [databaseProvider.overrideWithValue(db)],
+    );
+    addTearDown(container.dispose);
+
+    await tester.pumpWidget(
+      UncontrolledProviderScope(
+        container: container,
+        child: const MaterialApp(
+          locale: Locale('id'),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: Scaffold(body: AddProductDialog()),
+        ),
+      ),
+    );
+
+    await tester.pumpAndSettle();
+
+    // Fill purchase unit price and units per purchase unit
+    await tester.enterText(
+        find.byKey(const Key('productNameInput')), 'Paracetamol Box Test');
+    await tester.enterText(
+        find.byKey(const Key('productBarcodeInput')), '8999999111222');
+    await tester.enterText(
+        find.byKey(const Key('productInternalCodeInput')), 'PCT-BOX');
+    await tester.enterText(
+        find.byKey(const Key('activeIngredientInput')), 'Paracetamol');
+
+    await tester.dragUntilVisible(
+      find.byKey(const Key('purchaseUnitPriceInput')),
+      find.byType(SingleChildScrollView),
+      const Offset(0, -100),
+    );
+    await tester.enterText(
+        find.byKey(const Key('purchaseUnitPriceInput')), '100000');
+    await tester.pumpAndSettle();
+
+    // Change base price directly
+    await tester.enterText(
+        find.byKey(const Key('costPricePerBaseUnitInput')), '1000');
+    await tester.pumpAndSettle();
+
+    // Select controlled substance and category
+    await tester.dragUntilVisible(
+      find.byKey(const Key('isControlledCheckbox')),
+      find.byType(SingleChildScrollView),
+      const Offset(0, -100),
+    );
+    await tester.tap(find.byKey(const Key('isControlledCheckbox')));
+    await tester.pumpAndSettle();
+
+    // Save
+    await tester.dragUntilVisible(
+      find.byKey(const Key('saveProductButton')),
+      find.byType(SingleChildScrollView),
+      const Offset(0, -100),
+    );
+    await tester.tap(find.byKey(const Key('saveProductButton')));
+    await tester.pumpAndSettle();
+
+    final products = await container.read(productRepositoryProvider).listProducts();
+    expect(products, hasLength(1));
+    expect(products.first.name, 'Paracetamol Box Test');
+  });
 }

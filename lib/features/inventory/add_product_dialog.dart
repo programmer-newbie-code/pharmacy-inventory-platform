@@ -381,6 +381,7 @@ class _AddProductDialogState extends ConsumerState<AddProductDialog> {
                   children: [
                     Expanded(
                       child: TextFormField(
+                        key: const Key('purchaseUnitPriceInput'),
                         controller: _purchaseUnitPriceController,
                         decoration: InputDecoration(
                           labelText: l10n.pricePerPurchaseUnitLabel,
@@ -394,6 +395,7 @@ class _AddProductDialogState extends ConsumerState<AddProductDialog> {
                     const SizedBox(width: 8),
                     Expanded(
                       child: TextFormField(
+                        key: const Key('costPricePerBaseUnitInput'),
                         controller: _costPriceController,
                         decoration: InputDecoration(
                           labelText: l10n.costPricePerBaseUnitLabel,

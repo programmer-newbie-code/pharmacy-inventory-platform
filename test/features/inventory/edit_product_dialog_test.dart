@@ -68,6 +68,14 @@ void main() {
         find.byKey(const Key('editProductNameInput')), 'Amoxicillin 500mg (Updated)');
     await tester.pumpAndSettle();
 
+    // Change purchase unit price and base cost price
+    await tester.dragUntilVisible(
+      find.byKey(const Key('editBaseUnitDropdown')),
+      find.byType(SingleChildScrollView),
+      const Offset(0, -100),
+    );
+    await tester.pumpAndSettle();
+
     // Toggle controlled substance switch
     await tester.dragUntilVisible(
       find.byType(SwitchListTile),
