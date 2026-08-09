@@ -132,11 +132,17 @@ jobs:
       - name: Generate drift code
         run: dart run build_runner build --delete-conflicting-outputs
       - run: flutter build apk --release --build-name=${{ env.BUILD_VER }} --build-number=${{ github.run_number }}
+      - run: flutter build appbundle --release --build-name=${{ env.BUILD_VER }} --build-number=${{ github.run_number }}
       - name: Upload APK Release Artifact
         uses: actions/upload-artifact@v4
         with:
           name: android-apk-release
           path: build/app/outputs/flutter-apk/app-release.apk
+      - name: Upload AppBundle Release Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-aab-release
+          path: build/app/outputs/bundle/release/app-release.aab
 
   create-release:
     if: startsWith(github.ref, 'refs/tags/v')
@@ -151,16 +157,22 @@ jobs:
         with:
           name: windows-release
           path: windows-release
-      - name: Download Android Artifact
+      - name: Download Android APK Artifact
         uses: actions/download-artifact@v4
         with:
           name: android-apk-release
           path: android-release
-      - name: Package Windows Zip & Rename APK & Copy MSIX
+      - name: Download Android AAB Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: android-aab-release
+          path: android-aab-release
+      - name: Package Windows Zip & Rename Assets
         run: |
           cd windows-release && zip -r ../pharmacy-inventory-platform-windows-${{ github.ref_name }}.zip . && cd ..
           cp windows-release/*.msix pharmacy-inventory-platform-windows-${{ github.ref_name }}.msix || true
           cp android-release/app-release.apk pharmacy-inventory-platform-android-${{ github.ref_name }}.apk
+          cp android-aab-release/app-release.aab pharmacy-inventory-platform-android-${{ github.ref_name }}.aab
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
@@ -168,6 +180,7 @@ jobs:
             pharmacy-inventory-platform-windows-${{ github.ref_name }}.zip
             pharmacy-inventory-platform-windows-${{ github.ref_name }}.msix
             pharmacy-inventory-platform-android-${{ github.ref_name }}.apk
+            pharmacy-inventory-platform-android-${{ github.ref_name }}.aab
           generate_release_notes: true
 
   deploy-gh-pages:
