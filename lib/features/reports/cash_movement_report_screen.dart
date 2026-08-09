@@ -5,6 +5,7 @@ import '../../core/app_theme.dart';
 import '../../core/formatters.dart';
 import '../../core/providers.dart';
 import '../../data/database.dart';
+import '../../l10n/app_localizations.dart';
 
 final cashMovementsFutureProvider =
     FutureProvider.family.autoDispose<List<CashMovement>, DateTimeRange>(
@@ -50,29 +51,31 @@ class _CashMovementReportScreenState
     }
   }
 
-  String _formatCategory(String cat) {
+  String _formatCategory(BuildContext context, String cat) {
+    final l10n = AppLocalizations.of(context)!;
     switch (cat) {
       case 'owner_draw':
-        return '👑 Ambil Untung Owner (Prive)';
+        return l10n.ownerDrawCategory;
       case 'operational_expense':
-        return '💸 Pengeluaran Operasional';
+        return l10n.operationalExpenseCategory;
       case 'bank_deposit':
-        return '🏦 Setor Kas ke Bank';
+        return l10n.bankDepositCategory;
       case 'topup':
-        return '💵 Tambah Modal Kasir';
+        return l10n.topupCategory;
       default:
-        return 'Lain-lain ($cat)';
+        return '${l10n.otherCategory} ($cat)';
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final movementsAsync =
         ref.watch(cashMovementsFutureProvider(_selectedDateRange));
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Laporan Arus Kas & Prive Owner'),
+        title: Text(l10n.cashMovementReportTitle),
       ),
       body: Column(
         children: [
@@ -131,7 +134,7 @@ class _CashMovementReportScreenState
                         children: [
                           Expanded(
                             child: _MetricCard(
-                              title: 'AMBIL UNTUNG OWNER (PRIVE)',
+                              title: l10n.ownerDrawMetric,
                               value: formatIdr(totalOwnerPrive),
                               icon: Icons.workspace_premium,
                               color: Colors.purple,
@@ -140,7 +143,7 @@ class _CashMovementReportScreenState
                           const SizedBox(width: 12),
                           Expanded(
                             child: _MetricCard(
-                              title: 'TOTAL TARIK KAS (OUT)',
+                              title: l10n.cashOutMetric,
                               value: formatIdr(totalOut),
                               icon: Icons.arrow_upward,
                               color: Colors.orange,
@@ -149,7 +152,7 @@ class _CashMovementReportScreenState
                           const SizedBox(width: 12),
                           Expanded(
                             child: _MetricCard(
-                              title: 'TOTAL TAMBAH KAS (IN)',
+                              title: l10n.cashInMetric,
                               value: formatIdr(totalIn),
                               icon: Icons.arrow_downward,
                               color: AppTheme.successColor,
@@ -160,9 +163,9 @@ class _CashMovementReportScreenState
                       const SizedBox(height: 24),
 
                       // History Table
-                      const Text(
-                        'Riwayat Mutasi Arus Kas',
-                        style: TextStyle(
+                      Text(
+                        l10n.movementHistoryTitle,
+                        style: const TextStyle(
                             fontSize: 18, fontWeight: FontWeight.bold),
                       ),
                       const SizedBox(height: 12),
@@ -198,7 +201,7 @@ class _CashMovementReportScreenState
                                       ),
                                     ),
                                     title: Text(
-                                      _formatCategory(m.category),
+                                      _formatCategory(context, m.category),
                                       style: const TextStyle(
                                           fontWeight: FontWeight.bold),
                                     ),

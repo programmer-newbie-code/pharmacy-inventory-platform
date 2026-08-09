@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/app_theme.dart';
 import '../../core/providers.dart';
+import '../../l10n/app_localizations.dart';
 import '../auth/auth_session.dart';
 
 class CashMovementDialog extends ConsumerStatefulWidget {
@@ -69,6 +70,8 @@ class _CashMovementDialogState extends ConsumerState<CashMovementDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     return AlertDialog(
       title: Row(
         children: [
@@ -77,8 +80,8 @@ class _CashMovementDialogState extends ConsumerState<CashMovementDialog> {
             color: _movementType == 'cash_out' ? Colors.orange : AppTheme.successColor,
           ),
           const SizedBox(width: 8),
-          const Flexible(
-            child: Text('Catat Arus Kas / Prive Owner'),
+          Flexible(
+            child: Text(l10n.cashMovementTitle),
           ),
         ],
       ),
@@ -92,16 +95,16 @@ class _CashMovementDialogState extends ConsumerState<CashMovementDialog> {
               // Movement Type Toggle
               SegmentedButton<String>(
                 key: const Key('movementTypeToggle'),
-                segments: const [
+                segments: [
                   ButtonSegment(
                     value: 'cash_out',
-                    label: Text('Tarik Kas (Out)'),
-                    icon: Icon(Icons.arrow_upward),
+                    label: Text(l10n.cashOutLabel),
+                    icon: const Icon(Icons.arrow_upward),
                   ),
                   ButtonSegment(
                     value: 'cash_in',
-                    label: Text('Tambah Kas (In)'),
-                    icon: Icon(Icons.arrow_downward),
+                    label: Text(l10n.cashInLabel),
+                    icon: const Icon(Icons.arrow_downward),
                   ),
                 ],
                 selected: {_movementType},
@@ -123,32 +126,32 @@ class _CashMovementDialogState extends ConsumerState<CashMovementDialog> {
                   border: OutlineInputBorder(),
                 ),
                 items: _movementType == 'cash_out'
-                    ? const [
+                    ? [
                         DropdownMenuItem(
                           value: 'owner_draw',
-                          child: Text('👑 Ambil Untung Owner (Prive)'),
+                          child: Text(l10n.ownerDrawCategory),
                         ),
                         DropdownMenuItem(
                           value: 'operational_expense',
-                          child: Text('💸 Pengeluaran Operasional'),
+                          child: Text(l10n.operationalExpenseCategory),
                         ),
                         DropdownMenuItem(
                           value: 'bank_deposit',
-                          child: Text('🏦 Setor Kas ke Bank'),
+                          child: Text(l10n.bankDepositCategory),
                         ),
                         DropdownMenuItem(
                           value: 'other',
-                          child: Text('Lain-lain'),
+                          child: Text(l10n.otherCategory),
                         ),
                       ]
-                    : const [
+                    : [
                         DropdownMenuItem(
                           value: 'topup',
-                          child: Text('💵 Tambah Modal Kasir'),
+                          child: Text(l10n.topupCategory),
                         ),
                         DropdownMenuItem(
                           value: 'other',
-                          child: Text('Lain-lain'),
+                          child: Text(l10n.otherCategory),
                         ),
                       ],
                 onChanged: (val) {

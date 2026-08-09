@@ -3,37 +3,39 @@ import 'package:pharmacy_inventory_platform/data/pharmacy_settings_service.dart'
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
-  TestWidgetsFlutterBinding.ensureInitialized();
-
-  setUp(() {
+  test('PharmacySettings copyWith and Service save/get settings', () async {
     SharedPreferences.setMockInitialValues({});
-  });
-
-  test('getSettings returns default values when uninitialized', () async {
     final service = PharmacySettingsService();
-    final settings = await service.getSettings();
 
-    expect(settings.name, 'Apotek Sehat Pharmacy');
-    expect(settings.address, contains('Jl. Kesehatan'));
-    expect(settings.phone, contains('021'));
-    expect(settings.logoPath, isNull);
-  });
+    final initial = await service.getSettings();
+    expect(initial.name, 'Apotek Sehat Pharmacy');
+    expect(initial.logoPath, isNull);
 
-  test('saveSettings persists custom values', () async {
-    final service = PharmacySettingsService();
-    await service.saveSettings(
-      PharmacySettings(
-        name: 'Apotek Medika Utama',
-        address: 'Jl. Sudirman No. 10',
-        phone: '08123456789',
-        logoPath: '/path/to/logo.png',
-      ),
+    final updated = initial.copyWith(
+      name: 'Apotek Mandiri',
+      address: 'Jl. Merdeka 45',
+      phone: '08123456789',
+      logoPath: '/tmp/logo.png',
     );
 
-    final settings = await service.getSettings();
-    expect(settings.name, 'Apotek Medika Utama');
-    expect(settings.address, 'Jl. Sudirman No. 10');
-    expect(settings.phone, '08123456789');
-    expect(settings.logoPath, '/path/to/logo.png');
+    await service.saveSettings(updated);
+
+    final loaded = await service.getSettings();
+    expect(loaded.name, 'Apotek Mandiri');
+    expect(loaded.address, 'Jl. Merdeka 45');
+    expect(loaded.phone, '08123456789');
+    expect(loaded.logoPath, '/tmp/logo.png');
+
+    // Test removing logo
+    final noLogo = loaded.copyWith(logoPath: null);
+    await service.saveSettings(PharmacySettings(
+      name: noLogo.name,
+      address: noLogo.address,
+      phone: noLogo.phone,
+      logoPath: null,
+    ));
+
+    final reloaded = await service.getSettings();
+    expect(reloaded.logoPath, isNull);
   });
 }

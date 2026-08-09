@@ -6,6 +6,8 @@ import '../../core/formatters.dart';
 import '../../core/providers.dart';
 import '../../data/report_repository.dart';
 
+import '../../l10n/app_localizations.dart';
+
 final procurementReportFutureProvider =
     FutureProvider.family.autoDispose<ProcurementSummary, DateTimeRange>(
         (ref, range) async {
@@ -52,12 +54,13 @@ class _ProcurementReportScreenState
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final procurementAsync =
         ref.watch(procurementReportFutureProvider(_selectedDateRange));
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Procurement & Purchasing Report'),
+        title: Text(l10n.procurementReportTitle),
       ),
       body: Column(
         children: [

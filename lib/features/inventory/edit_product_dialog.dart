@@ -1,8 +1,12 @@
 import 'package:drift/drift.dart' hide Column, isNotNull, isNull;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../core/app_theme.dart';
+import '../../core/formatters.dart';
 import '../../core/providers.dart';
+import '../../core/unit_constants.dart';
 import '../../data/database.dart';
+import '../../l10n/app_localizations.dart';
 
 class EditProductDialog extends ConsumerStatefulWidget {
   const EditProductDialog({super.key, required this.product});
@@ -20,7 +24,10 @@ class _EditProductDialogState extends ConsumerState<EditProductDialog> {
   late TextEditingController _activeIngredientController;
   late TextEditingController _ingredientPctController;
   late TextEditingController _baseUnitController;
+  late TextEditingController _purchaseUnitController;
+  late TextEditingController _unitsPerPurchaseUnitController;
   late TextEditingController _costPriceController;
+  late TextEditingController _purchaseUnitPriceController;
   late TextEditingController _marginController;
   late TextEditingController _reorderThresholdController;
 
@@ -38,8 +45,16 @@ class _EditProductDialogState extends ConsumerState<EditProductDialog> {
     _ingredientPctController =
         TextEditingController(text: p.ingredientPct.toString());
     _baseUnitController = TextEditingController(text: p.baseUnit);
+    _purchaseUnitController = TextEditingController(text: p.purchaseUnit);
+    _unitsPerPurchaseUnitController =
+        TextEditingController(text: p.unitsPerPurchaseUnit.toString());
     _costPriceController =
         TextEditingController(text: p.costPricePerBaseUnit.toString());
+
+    final initialPurchasePrice = p.costPricePerBaseUnit * p.unitsPerPurchaseUnit;
+    _purchaseUnitPriceController =
+        TextEditingController(text: initialPurchasePrice.toStringAsFixed(0));
+
     _marginController = TextEditingController(text: p.marginPct.toString());
     _reorderThresholdController =
         TextEditingController(text: p.reorderThreshold.toString());
@@ -48,13 +63,48 @@ class _EditProductDialogState extends ConsumerState<EditProductDialog> {
     _category = p.category;
   }
 
+  void _onPurchasePriceChanged(String val) {
+    final purchasePrice = double.tryParse(val) ?? 0.0;
+    final units = int.tryParse(_unitsPerPurchaseUnitController.text) ?? 1;
+    if (units > 0) {
+      final basePrice = purchasePrice / units;
+      _costPriceController.value = TextEditingValue(
+        text: basePrice == basePrice.roundToDouble()
+            ? basePrice.toStringAsFixed(0)
+            : basePrice.toStringAsFixed(2),
+      );
+      setState(() {});
+    }
+  }
+
+  void _onBasePriceChanged(String val) {
+    final basePrice = double.tryParse(val) ?? 0.0;
+    final units = int.tryParse(_unitsPerPurchaseUnitController.text) ?? 1;
+    if (units > 0) {
+      final purchasePrice = basePrice * units;
+      _purchaseUnitPriceController.value = TextEditingValue(
+        text: purchasePrice == purchasePrice.roundToDouble()
+            ? purchasePrice.toStringAsFixed(0)
+            : purchasePrice.toStringAsFixed(2),
+      );
+      setState(() {});
+    }
+  }
+
+  void _onUnitsChanged(String val) {
+    _onPurchasePriceChanged(_purchaseUnitPriceController.text);
+  }
+
   @override
   void dispose() {
     _nameController.dispose();
     _activeIngredientController.dispose();
     _ingredientPctController.dispose();
     _baseUnitController.dispose();
+    _purchaseUnitController.dispose();
+    _unitsPerPurchaseUnitController.dispose();
     _costPriceController.dispose();
+    _purchaseUnitPriceController.dispose();
     _marginController.dispose();
     _reorderThresholdController.dispose();
     super.dispose();
@@ -69,6 +119,9 @@ class _EditProductDialogState extends ConsumerState<EditProductDialog> {
       activeIngredient: _activeIngredientController.text.trim(),
       ingredientPct: double.tryParse(_ingredientPctController.text) ?? 100,
       baseUnit: _baseUnitController.text.trim(),
+      purchaseUnit: _purchaseUnitController.text.trim(),
+      unitsPerPurchaseUnit:
+          int.tryParse(_unitsPerPurchaseUnitController.text) ?? 1,
       costPricePerBaseUnit:
           double.tryParse(_costPriceController.text) ?? widget.product.costPricePerBaseUnit,
       marginPct: double.tryParse(_marginController.text) ?? widget.product.marginPct,
@@ -82,14 +135,15 @@ class _EditProductDialogState extends ConsumerState<EditProductDialog> {
 
     await repo.updateProduct(updated, updatedBy: 'admin');
 
-    if (!mounted) return;
-    Navigator.of(context).pop(true);
+    if (mounted) Navigator.of(context).pop(true);
   }
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     return AlertDialog(
-      title: Text('Edit Product: ${widget.product.name}'),
+      title: const Text('Edit Product Details'),
       content: SingleChildScrollView(
         child: Form(
           key: _formKey,
@@ -104,26 +158,165 @@ class _EditProductDialogState extends ConsumerState<EditProductDialog> {
                     v == null || v.trim().isEmpty ? 'Name required' : null,
               ),
               const SizedBox(height: 12),
-              TextFormField(
-                controller: _activeIngredientController,
-                decoration:
-                    const InputDecoration(labelText: 'Active Ingredient'),
-              ),
-              const SizedBox(height: 12),
               Row(
                 children: [
                   Expanded(
                     child: TextFormField(
-                      controller: _costPriceController,
+                      controller: _activeIngredientController,
                       decoration: const InputDecoration(
-                          labelText: 'Cost Price (IDR) *'),
-                      keyboardType: TextInputType.number,
+                          labelText: 'Active Ingredient *'),
                       validator: (v) => v == null || v.trim().isEmpty
-                          ? 'Cost required'
+                          ? 'Ingredient required'
                           : null,
                     ),
                   ),
                   const SizedBox(width: 12),
+                  Expanded(
+                    child: TextFormField(
+                      controller: _ingredientPctController,
+                      decoration:
+                          const InputDecoration(labelText: 'Pct (%) *'),
+                      keyboardType: TextInputType.number,
+                      validator: (v) => v == null || v.trim().isEmpty
+                          ? 'Pct required'
+                          : null,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+
+              // ── Units row ───────────────────────────────────────────────
+              Row(
+                children: [
+                  Expanded(
+                    child: EditableUnitDropdown(
+                      widgetKey: const Key('editBaseUnitDropdown'),
+                      controller: _baseUnitController,
+                      labelText: l10n.baseUnitLabel,
+                      defaultOptions: defaultBaseUnits,
+                      validator: (v) =>
+                          (v == null || v.trim().isEmpty) ? 'Wajib' : null,
+                      onChanged: (_) => setState(() {}),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: EditableUnitDropdown(
+                      widgetKey: const Key('editPurchaseUnitDropdown'),
+                      controller: _purchaseUnitController,
+                      labelText: l10n.purchaseUnitLabel,
+                      defaultOptions: defaultPurchaseUnits,
+                      validator: (v) =>
+                          (v == null || v.trim().isEmpty) ? 'Wajib' : null,
+                      onChanged: (_) => setState(() {}),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              TextFormField(
+                controller: _unitsPerPurchaseUnitController,
+                decoration: InputDecoration(
+                  labelText: l10n.unitsPerPurchaseUnitLabel,
+                  suffixText: _baseUnitController.text,
+                  border: const OutlineInputBorder(),
+                ),
+                keyboardType: TextInputType.number,
+                onChanged: _onUnitsChanged,
+                validator: (v) => (v == null || int.tryParse(v) == null)
+                    ? 'Angka tidak valid'
+                    : null,
+              ),
+              const SizedBox(height: 12),
+
+              // ── Price row (Dual Box vs Tablet Calculation) ───────────────
+              Row(
+                children: [
+                  Expanded(
+                    child: TextFormField(
+                      controller: _purchaseUnitPriceController,
+                      decoration: InputDecoration(
+                        labelText: l10n.pricePerPurchaseUnitLabel,
+                        prefixText: 'Rp ',
+                        border: const OutlineInputBorder(),
+                      ),
+                      keyboardType: TextInputType.number,
+                      onChanged: _onPurchasePriceChanged,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: TextFormField(
+                      controller: _costPriceController,
+                      decoration: InputDecoration(
+                        labelText: l10n.costPricePerBaseUnitLabel,
+                        prefixText: 'Rp ',
+                        border: const OutlineInputBorder(),
+                      ),
+                      keyboardType: TextInputType.number,
+                      onChanged: _onBasePriceChanged,
+                      validator: (v) =>
+                          v == null || v.trim().isEmpty ? 'Cost required' : null,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+
+              // ── Price Conversion Live Breakdown Card ──────────────────────
+              Builder(builder: (ctx) {
+                final purchasePrice =
+                    double.tryParse(_purchaseUnitPriceController.text) ?? 0.0;
+                final basePrice =
+                    double.tryParse(_costPriceController.text) ?? 0.0;
+                final units =
+                    int.tryParse(_unitsPerPurchaseUnitController.text) ?? 1;
+                final pUnit = _purchaseUnitController.text.trim().isEmpty
+                    ? 'box'
+                    : _purchaseUnitController.text.trim();
+                final bUnit = _baseUnitController.text.trim().isEmpty
+                    ? 'tablet'
+                    : _baseUnitController.text.trim();
+
+                return Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: AppTheme.primaryColor.withAlpha(15),
+                    borderRadius: BorderRadius.circular(8),
+                    border:
+                        Border.all(color: AppTheme.primaryColor.withAlpha(40)),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.calculate,
+                          size: 18, color: AppTheme.primaryColor),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          l10n.conversionBreakdownHint(
+                            pUnit,
+                            units,
+                            bUnit,
+                            formatIdr(purchasePrice).replaceAll('Rp ', ''),
+                            formatIdr(basePrice).replaceAll('Rp ', ''),
+                          ),
+                          style: const TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                            color: AppTheme.primaryColor,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }),
+              const SizedBox(height: 12),
+
+              Row(
+                children: [
                   Expanded(
                     child: TextFormField(
                       controller: _marginController,
@@ -132,21 +325,6 @@ class _EditProductDialogState extends ConsumerState<EditProductDialog> {
                       keyboardType: TextInputType.number,
                       validator: (v) => v == null || v.trim().isEmpty
                           ? 'Margin required'
-                          : null,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 12),
-              Row(
-                children: [
-                  Expanded(
-                    child: TextFormField(
-                      controller: _baseUnitController,
-                      decoration:
-                          const InputDecoration(labelText: 'Base Unit *'),
-                      validator: (v) => v == null || v.trim().isEmpty
-                          ? 'Unit required'
                           : null,
                     ),
                   ),
