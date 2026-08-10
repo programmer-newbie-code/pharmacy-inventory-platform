@@ -32,13 +32,16 @@ void main() {
     expect(await repo.countUsers(), 1);
   });
 
-  test('findByUsername returns null for a username that does not exist', () async {
+  test('findByUsername returns null for a username that does not exist',
+      () async {
     expect(await repo.findByUsername('nobody'), isNull);
   });
 
   test('listUsers returns all users ordered by username', () async {
-    await repo.createUser(username: 'siti', passwordHash: 'hash', role: 'kasir');
-    await repo.createUser(username: 'andi', passwordHash: 'hash', role: 'inventory');
+    await repo.createUser(
+        username: 'siti', passwordHash: 'hash', role: 'kasir');
+    await repo.createUser(
+        username: 'andi', passwordHash: 'hash', role: 'inventory');
 
     final users = await repo.listUsers();
     expect(users, hasLength(2));
@@ -47,16 +50,37 @@ void main() {
   });
 
   test('updateUserRole and updateUserPassword modify user details', () async {
-    final id = await repo.createUser(username: 'budi', passwordHash: 'old-hash', role: 'kasir');
-    
+    final id = await repo.createUser(
+        username: 'budi', passwordHash: 'old-hash', role: 'kasir');
+
     final roleUpdated = await repo.updateUserRole(userId: id, newRole: 'admin');
     expect(roleUpdated, isTrue);
 
-    final passUpdated = await repo.updateUserPassword(userId: id, newPasswordHash: 'new-hash');
+    final passUpdated =
+        await repo.updateUserPassword(userId: id, newPasswordHash: 'new-hash');
     expect(passUpdated, isTrue);
 
     final user = await repo.findByUsername('budi');
     expect(user!.role, equals('admin'));
     expect(user.passwordHash, equals('new-hash'));
+  });
+
+  test('stores and clears a user photo path', () async {
+    final id = await repo.createUser(
+      username: 'photo-user',
+      passwordHash: 'hash',
+      role: 'kasir',
+      photoPath: '/images/original.jpg',
+    );
+    expect((await repo.findByUsername('photo-user'))!.photoPath,
+        '/images/original.jpg');
+
+    expect(await repo.updateUserPhoto(userId: id, photoPath: '/images/new.jpg'),
+        isTrue);
+    expect((await repo.findByUsername('photo-user'))!.photoPath,
+        '/images/new.jpg');
+
+    expect(await repo.updateUserPhoto(userId: id, photoPath: null), isTrue);
+    expect((await repo.findByUsername('photo-user'))!.photoPath, isNull);
   });
 }

@@ -90,4 +90,25 @@ void main() {
         await repository.listProducts(isControlledOnly: true);
     expect(controlledOnly, isEmpty);
   });
+
+  test('stores product image and uses default category', () async {
+    final id = await repository.createProduct(
+      barcode: '8991234567891',
+      internalCode: 'IMG-001',
+      name: 'Image Product',
+      activeIngredient: 'Test',
+      ingredientPct: 100,
+      baseUnit: 'tablet',
+      purchaseUnit: 'box',
+      unitsPerPurchaseUnit: 10,
+      costPricePerBaseUnit: 100,
+      marginPct: 10,
+      reorderThreshold: 1,
+      createdBy: 'admin',
+      imagePath: '/images/product.jpg',
+    );
+    final product = await repository.getProductById(id);
+    expect(product!.imagePath, '/images/product.jpg');
+    expect(product.category, 'Obat Bebas');
+  });
 }
