@@ -298,6 +298,20 @@
     "placeholders": {
       "path": {}
     }
-  }
+  },
+  "receiptDirectoryLabel": "Lokasi Folder Struk (Opsional)",
+  "receiptDirectoryHint": "Default: Documents/PharmaLoka/Receipts/",
+  "brandingReceiptSaved": "Branding apotek, logo, dan folder struk berhasil diperbarui!",
+  "productImageOptional": "Unggah Foto Obat (Opsional)",
+  "productImageEdit": "Unggah / Ubah Foto Obat",
+  "cartQuantityDialogTitle": "Jumlah & Satuan ({product})",
+  "@cartQuantityDialogTitle": {"placeholders": {"product": {}}},
+  "cartUnitRatio": "Rasio satuan: 1 {purchaseUnit} = {ratio} {baseUnit}",
+  "@cartUnitRatio": {"placeholders": {"purchaseUnit": {}, "ratio": {"type": "int"}, "baseUnit": {}}},
+  "cartQuantityForUnit": "Jumlah ({unit})",
+  "@cartQuantityForUnit": {"placeholders": {"unit": {}}},
+  "cartTotal": "Total: {quantity} {unit}",
+  "@cartTotal": {"placeholders": {"quantity": {"type": "int"}, "unit": {}}},
+  "changePhotoTooltip": "Ubah foto"
 }
 

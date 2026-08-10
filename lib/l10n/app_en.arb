@@ -298,6 +298,20 @@
     "placeholders": {
       "path": {}
     }
-  }
+  },
+  "receiptDirectoryLabel": "Receipt Folder Path (Optional)",
+  "receiptDirectoryHint": "Default: Documents/PharmaLoka/Receipts/",
+  "brandingReceiptSaved": "Pharmacy branding, logo, and receipt folder updated!",
+  "productImageOptional": "Upload Product Photo (Optional)",
+  "productImageEdit": "Upload / Change Product Photo",
+  "cartQuantityDialogTitle": "Quantity & Unit ({product})",
+  "@cartQuantityDialogTitle": {"placeholders": {"product": {}}},
+  "cartUnitRatio": "Unit ratio: 1 {purchaseUnit} = {ratio} {baseUnit}",
+  "@cartUnitRatio": {"placeholders": {"purchaseUnit": {}, "ratio": {"type": "int"}, "baseUnit": {}}},
+  "cartQuantityForUnit": "Quantity ({unit})",
+  "@cartQuantityForUnit": {"placeholders": {"unit": {}}},
+  "cartTotal": "Total: {quantity} {unit}",
+  "@cartTotal": {"placeholders": {"quantity": {"type": "int"}, "unit": {}}},
+  "changePhotoTooltip": "Change photo"
 }
 

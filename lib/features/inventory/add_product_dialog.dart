@@ -253,26 +253,31 @@ class _AddProductDialogState extends ConsumerState<AddProductDialog> {
                               Center(
                                 child: ClipRRect(
                                   borderRadius: BorderRadius.circular(10),
-                                  child: Image.file(File(_imagePath!), fit: BoxFit.contain, height: 90),
+                                  child: Image.file(File(_imagePath!),
+                                      fit: BoxFit.contain, height: 90),
                                 ),
                               ),
                               Positioned(
                                 top: 4,
                                 right: 4,
                                 child: IconButton(
-                                  icon: const Icon(Icons.cancel, color: Colors.red),
-                                  onPressed: () => setState(() => _imagePath = null),
+                                  icon: const Icon(Icons.cancel,
+                                      color: Colors.red),
+                                  onPressed: () =>
+                                      setState(() => _imagePath = null),
                                 ),
                               ),
                             ],
                           )
-                        : const Column(
+                        : Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Icon(Icons.add_photo_alternate, size: 30, color: AppTheme.primaryColor),
-                              SizedBox(height: 4),
-                              Text('Upload Foto Obat (Opsional)',
-                                  style: TextStyle(fontSize: 12, color: Colors.grey)),
+                              const Icon(Icons.add_photo_alternate,
+                                  size: 30, color: AppTheme.primaryColor),
+                              const SizedBox(height: 4),
+                              Text(l10n.productImageOptional,
+                                  style: const TextStyle(
+                                      fontSize: 12, color: Colors.grey)),
                             ],
                           ),
                   ),

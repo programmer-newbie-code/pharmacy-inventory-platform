@@ -55,7 +55,8 @@ class _EditProductDialogState extends ConsumerState<EditProductDialog> {
     _costPriceController =
         TextEditingController(text: p.costPricePerBaseUnit.toString());
 
-    final initialPurchasePrice = p.costPricePerBaseUnit * p.unitsPerPurchaseUnit;
+    final initialPurchasePrice =
+        p.costPricePerBaseUnit * p.unitsPerPurchaseUnit;
     _purchaseUnitPriceController =
         TextEditingController(text: initialPurchasePrice.toStringAsFixed(0));
 
@@ -139,11 +140,12 @@ class _EditProductDialogState extends ConsumerState<EditProductDialog> {
       purchaseUnit: _purchaseUnitController.text.trim(),
       unitsPerPurchaseUnit:
           int.tryParse(_unitsPerPurchaseUnitController.text) ?? 1,
-      costPricePerBaseUnit:
-          double.tryParse(_costPriceController.text) ?? widget.product.costPricePerBaseUnit,
-      marginPct: double.tryParse(_marginController.text) ?? widget.product.marginPct,
-      reorderThreshold:
-          int.tryParse(_reorderThresholdController.text) ?? widget.product.reorderThreshold,
+      costPricePerBaseUnit: double.tryParse(_costPriceController.text) ??
+          widget.product.costPricePerBaseUnit,
+      marginPct:
+          double.tryParse(_marginController.text) ?? widget.product.marginPct,
+      reorderThreshold: int.tryParse(_reorderThresholdController.text) ??
+          widget.product.reorderThreshold,
       isControlled: _isControlled,
       controlledCategory: Value(_isControlled ? _controlledCategory : null),
       category: _category,
@@ -184,26 +186,31 @@ class _EditProductDialogState extends ConsumerState<EditProductDialog> {
                             Center(
                               child: ClipRRect(
                                 borderRadius: BorderRadius.circular(10),
-                                child: Image.file(File(_imagePath!), fit: BoxFit.contain, height: 90),
+                                child: Image.file(File(_imagePath!),
+                                    fit: BoxFit.contain, height: 90),
                               ),
                             ),
                             Positioned(
                               top: 4,
                               right: 4,
                               child: IconButton(
-                                icon: const Icon(Icons.cancel, color: Colors.red),
-                                onPressed: () => setState(() => _imagePath = null),
+                                icon:
+                                    const Icon(Icons.cancel, color: Colors.red),
+                                onPressed: () =>
+                                    setState(() => _imagePath = null),
                               ),
                             ),
                           ],
                         )
-                      : const Column(
+                      : Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(Icons.add_photo_alternate, size: 30, color: AppTheme.primaryColor),
-                            SizedBox(height: 4),
-                            Text('Upload / Ubah Foto Obat',
-                                style: TextStyle(fontSize: 12, color: Colors.grey)),
+                            const Icon(Icons.add_photo_alternate,
+                                size: 30, color: AppTheme.primaryColor),
+                            const SizedBox(height: 4),
+                            Text(l10n.productImageEdit,
+                                style: const TextStyle(
+                                    fontSize: 12, color: Colors.grey)),
                           ],
                         ),
                 ),
@@ -233,12 +240,10 @@ class _EditProductDialogState extends ConsumerState<EditProductDialog> {
                   Expanded(
                     child: TextFormField(
                       controller: _ingredientPctController,
-                      decoration:
-                          const InputDecoration(labelText: 'Pct (%) *'),
+                      decoration: const InputDecoration(labelText: 'Pct (%) *'),
                       keyboardType: TextInputType.number,
-                      validator: (v) => v == null || v.trim().isEmpty
-                          ? 'Pct required'
-                          : null,
+                      validator: (v) =>
+                          v == null || v.trim().isEmpty ? 'Pct required' : null,
                     ),
                   ),
                 ],
@@ -315,8 +320,9 @@ class _EditProductDialogState extends ConsumerState<EditProductDialog> {
                       ),
                       keyboardType: TextInputType.number,
                       onChanged: _onBasePriceChanged,
-                      validator: (v) =>
-                          v == null || v.trim().isEmpty ? 'Cost required' : null,
+                      validator: (v) => v == null || v.trim().isEmpty
+                          ? 'Cost required'
+                          : null,
                     ),
                   ),
                 ],
@@ -391,8 +397,8 @@ class _EditProductDialogState extends ConsumerState<EditProductDialog> {
                   Expanded(
                     child: TextFormField(
                       controller: _reorderThresholdController,
-                      decoration: const InputDecoration(
-                          labelText: 'Reorder Alert Qty'),
+                      decoration:
+                          const InputDecoration(labelText: 'Reorder Alert Qty'),
                       keyboardType: TextInputType.number,
                     ),
                   ),

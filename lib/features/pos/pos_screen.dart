@@ -94,6 +94,7 @@ class _PosScreenState extends ConsumerState<PosScreen> {
   }
 
   Future<void> _showEditCartItemDialog(int index) async {
+    final l10n = AppLocalizations.of(context)!;
     final item = _cart[index];
     final prod = item.product;
     final bUnit = prod.baseUnit;
@@ -116,13 +117,13 @@ class _PosScreenState extends ConsumerState<PosScreen> {
           final totalSubtotal = totalBaseUnits * item.unitPrice;
 
           return AlertDialog(
-            title: Text('Input Jumlah & Satuan (${prod.name})'),
+            title: Text(l10n.cartQuantityDialogTitle(prod.name)),
             content: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Rasio Satuan: 1 $pUnit = $ratio $bUnit',
+                  l10n.cartUnitRatio(pUnit, ratio, bUnit),
                   style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
                 ),
                 const SizedBox(height: 16),
@@ -134,7 +135,7 @@ class _PosScreenState extends ConsumerState<PosScreen> {
                         controller: boxController,
                         keyboardType: TextInputType.number,
                         decoration: InputDecoration(
-                          labelText: 'Jumlah ($pUnit)',
+                          labelText: l10n.cartQuantityForUnit(pUnit),
                           border: const OutlineInputBorder(),
                         ),
                         onChanged: (_) => setDialogState(() {}),
@@ -147,7 +148,7 @@ class _PosScreenState extends ConsumerState<PosScreen> {
                         controller: tabController,
                         keyboardType: TextInputType.number,
                         decoration: InputDecoration(
-                          labelText: 'Jumlah ($bUnit)',
+                          labelText: l10n.cartQuantityForUnit(bUnit),
                           border: const OutlineInputBorder(),
                         ),
                         onChanged: (_) => setDialogState(() {}),
@@ -165,7 +166,7 @@ class _PosScreenState extends ConsumerState<PosScreen> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text('Total: $totalBaseUnits $bUnit',
+                      Text(l10n.cartTotal(totalBaseUnits, bUnit),
                           style: const TextStyle(fontWeight: FontWeight.bold)),
                       Text(
                         formatIdr(totalSubtotal),
@@ -183,7 +184,7 @@ class _PosScreenState extends ConsumerState<PosScreen> {
             actions: [
               TextButton(
                 onPressed: () => Navigator.of(ctx).pop(),
-                child: const Text('Batal'),
+                child: Text(l10n.cancelButton),
               ),
               ElevatedButton(
                 key: const Key('saveCartItemQtyBtn'),
@@ -201,7 +202,7 @@ class _PosScreenState extends ConsumerState<PosScreen> {
                   }
                   Navigator.of(ctx).pop();
                 },
-                child: const Text('Simpan'),
+                child: Text(l10n.saveButton),
               ),
             ],
           );
