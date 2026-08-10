@@ -10,6 +10,7 @@ class Users extends Table {
   TextColumn get username => text().unique()();
   TextColumn get passwordHash => text()();
   TextColumn get role => text()(); // admin|inventory|kasir|audit
+  TextColumn get photoPath => text().nullable()();
   DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
 }
 
@@ -47,6 +48,7 @@ class Products extends Table {
   DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
   DateTimeColumn get updatedAt => dateTime().nullable()();
   TextColumn get deviceId => text().nullable()();
+  TextColumn get imagePath => text().nullable()();
 }
 
 @DataClassName('StockBatch')
@@ -358,7 +360,7 @@ class AppDatabase extends _$AppDatabase {
   factory AppDatabase.defaultConnection() => AppDatabase(openConnection());
 
   @override
-  int get schemaVersion => 9;
+  int get schemaVersion => 10;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -396,6 +398,10 @@ class AppDatabase extends _$AppDatabase {
           }
           if (from < 9) {
             await m.createTable(cashMovements);
+          }
+          if (from < 10) {
+            await m.addColumn(products, products.imagePath);
+            await m.addColumn(users, users.photoPath);
           }
         },
       );

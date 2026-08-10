@@ -1,9 +1,12 @@
+import 'dart:io';
 import 'package:drift/drift.dart' hide Column, isNotNull, isNull;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:image_picker/image_picker.dart';
 import '../../core/app_theme.dart';
 import '../../core/formatters.dart';
 import '../../core/providers.dart';
+import '../../data/media_storage_service.dart';
 import '../../core/unit_constants.dart';
 import '../../data/database.dart';
 import '../../l10n/app_localizations.dart';
@@ -34,6 +37,7 @@ class _EditProductDialogState extends ConsumerState<EditProductDialog> {
   late bool _isControlled;
   String? _controlledCategory;
   late String _category;
+  String? _imagePath;
 
   @override
   void initState() {
@@ -61,6 +65,19 @@ class _EditProductDialogState extends ConsumerState<EditProductDialog> {
     _isControlled = p.isControlled;
     _controlledCategory = p.controlledCategory;
     _category = p.category;
+    _imagePath = p.imagePath;
+  }
+
+  Future<void> _pickProductImage() async {
+    final picker = ImagePicker();
+    final picked = await picker.pickImage(source: ImageSource.gallery);
+    if (picked != null) {
+      final path = await MediaStorageService().saveImage(
+        picked.path,
+        folder: 'products',
+      );
+      if (mounted) setState(() => _imagePath = path);
+    }
   }
 
   void _onPurchasePriceChanged(String val) {
@@ -130,6 +147,7 @@ class _EditProductDialogState extends ConsumerState<EditProductDialog> {
       isControlled: _isControlled,
       controlledCategory: Value(_isControlled ? _controlledCategory : null),
       category: _category,
+      imagePath: Value(_imagePath),
       updatedBy: const Value('admin'),
     );
 
@@ -150,6 +168,47 @@ class _EditProductDialogState extends ConsumerState<EditProductDialog> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
+              GestureDetector(
+                onTap: _pickProductImage,
+                child: Container(
+                  height: 90,
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade100,
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: Colors.grey.shade300),
+                  ),
+                  child: _imagePath != null && File(_imagePath!).existsSync()
+                      ? Stack(
+                          children: [
+                            Center(
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(10),
+                                child: Image.file(File(_imagePath!), fit: BoxFit.contain, height: 90),
+                              ),
+                            ),
+                            Positioned(
+                              top: 4,
+                              right: 4,
+                              child: IconButton(
+                                icon: const Icon(Icons.cancel, color: Colors.red),
+                                onPressed: () => setState(() => _imagePath = null),
+                              ),
+                            ),
+                          ],
+                        )
+                      : const Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.add_photo_alternate, size: 30, color: AppTheme.primaryColor),
+                            SizedBox(height: 4),
+                            Text('Upload / Ubah Foto Obat',
+                                style: TextStyle(fontSize: 12, color: Colors.grey)),
+                          ],
+                        ),
+                ),
+              ),
+              const SizedBox(height: 12),
               TextFormField(
                 key: const Key('editProductNameInput'),
                 controller: _nameController,

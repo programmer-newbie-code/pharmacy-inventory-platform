@@ -1,8 +1,12 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:image_picker/image_picker.dart';
 
 import '../../core/app_theme.dart';
 import '../../core/providers.dart';
+import '../../data/media_storage_service.dart';
 import '../../data/database.dart';
 import '../../l10n/app_localizations.dart';
 import '../auth/auth_session.dart';
@@ -25,6 +29,7 @@ class _UserManagementScreenState extends ConsumerState<UserManagementScreen> {
     final usernameController = TextEditingController();
     final passwordController = TextEditingController();
     String selectedRole = 'kasir';
+    String? photoPath;
 
     await showDialog(
       context: context,
@@ -35,6 +40,30 @@ class _UserManagementScreenState extends ConsumerState<UserManagementScreen> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
+                GestureDetector(
+                  onTap: () async {
+                    final picker = ImagePicker();
+                    final picked = await picker.pickImage(source: ImageSource.gallery);
+                    if (picked != null) {
+                      final path = await MediaStorageService().saveImage(
+                        picked.path,
+                        folder: 'users',
+                      );
+                      setDialogState(() => photoPath = path);
+                    }
+                  },
+                  child: CircleAvatar(
+                    radius: 36,
+                    backgroundColor: AppTheme.primaryColor.withAlpha(20),
+                    backgroundImage: photoPath != null && File(photoPath!).existsSync()
+                        ? FileImage(File(photoPath!))
+                        : null,
+                    child: photoPath == null || !File(photoPath!).existsSync()
+                        ? const Icon(Icons.add_a_photo, size: 28, color: AppTheme.primaryColor)
+                        : null,
+                  ),
+                ),
+                const SizedBox(height: 12),
                 TextField(
                   key: const Key('addUsernameInput'),
                   controller: usernameController,
@@ -83,6 +112,7 @@ class _UserManagementScreenState extends ConsumerState<UserManagementScreen> {
                         username: username,
                         passwordHash: hash,
                         role: selectedRole,
+                        photoPath: photoPath,
                       );
                   ref.invalidate(usersListFutureProvider);
                   if (ctx.mounted) Navigator.of(ctx).pop();
@@ -184,6 +214,20 @@ class _UserManagementScreenState extends ConsumerState<UserManagementScreen> {
     );
   }
 
+  Future<void> _changeUserPhoto(User user) async {
+    final picked = await ImagePicker().pickImage(source: ImageSource.gallery);
+    if (picked == null) return;
+    final path = await MediaStorageService().saveImage(
+      picked.path,
+      folder: 'users',
+    );
+    await ref.read(userRepositoryProvider).updateUserPhoto(
+          userId: user.id,
+          photoPath: path,
+        );
+    ref.invalidate(usersListFutureProvider);
+  }
+
   Color _getRoleColor(String role) {
     switch (role) {
       case 'admin':
@@ -256,7 +300,12 @@ class _UserManagementScreenState extends ConsumerState<UserManagementScreen> {
                 child: ListTile(
                   leading: CircleAvatar(
                     backgroundColor: _getRoleColor(user.role).withValues(alpha: 0.2),
-                    child: Icon(Icons.person, color: _getRoleColor(user.role)),
+                    backgroundImage: user.photoPath != null && File(user.photoPath!).existsSync()
+                        ? FileImage(File(user.photoPath!))
+                        : null,
+                    child: user.photoPath == null || !File(user.photoPath!).existsSync()
+                        ? Icon(Icons.person, color: _getRoleColor(user.role))
+                        : null,
                   ),
                   title: Text(
                     user.username,
@@ -266,6 +315,12 @@ class _UserManagementScreenState extends ConsumerState<UserManagementScreen> {
                   trailing: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
+                      IconButton(
+                        key: Key('changePhotoBtn_${user.id}'),
+                        tooltip: 'Change photo',
+                        icon: const Icon(Icons.photo_camera_outlined),
+                        onPressed: () => _changeUserPhoto(user),
+                      ),
                       IconButton(
                         key: Key('changeRoleBtn_${user.id}'),
                         tooltip: l10n.changeRoleButton,

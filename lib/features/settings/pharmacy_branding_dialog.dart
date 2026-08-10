@@ -1,10 +1,12 @@
 import 'dart:io';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../core/app_theme.dart';
 import '../../core/providers.dart';
 import '../../data/pharmacy_settings_service.dart';
+import '../../data/receipt_storage_service.dart';
 import '../../l10n/app_localizations.dart';
 
 class PharmacyBrandingDialog extends ConsumerStatefulWidget {
@@ -18,6 +20,7 @@ class _PharmacyBrandingDialogState extends ConsumerState<PharmacyBrandingDialog>
   final _nameController = TextEditingController();
   final _addressController = TextEditingController();
   final _phoneController = TextEditingController();
+  final _receiptDirController = TextEditingController();
   String? _logoPath;
   bool _isLoading = true;
 
@@ -30,11 +33,17 @@ class _PharmacyBrandingDialogState extends ConsumerState<PharmacyBrandingDialog>
   Future<void> _loadSettings() async {
     final service = ref.read(pharmacySettingsServiceProvider);
     final settings = await service.getSettings();
+    final receiptStorage = ref.read(receiptStorageServiceProvider);
+    final customReceiptDir = await receiptStorage.getCustomBaseDirectoryPath();
+
     setState(() {
       _nameController.text = settings.name;
       _addressController.text = settings.address;
       _phoneController.text = settings.phone;
       _logoPath = settings.logoPath;
+      if (customReceiptDir != null) {
+        _receiptDirController.text = customReceiptDir;
+      }
       _isLoading = false;
     });
   }
@@ -58,11 +67,14 @@ class _PharmacyBrandingDialogState extends ConsumerState<PharmacyBrandingDialog>
       ),
     );
 
+    final receiptStorage = ref.read(receiptStorageServiceProvider);
+    await receiptStorage.setCustomBaseDirectoryPath(_receiptDirController.text.trim());
+
     if (mounted) {
       Navigator.of(context).pop(true);
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Pharmacy branding and logo updated successfully!'),
+          content: Text('Pharmacy branding, logo, and receipt folder updated!'),
           backgroundColor: AppTheme.successColor,
         ),
       );
@@ -123,6 +135,24 @@ class _PharmacyBrandingDialogState extends ConsumerState<PharmacyBrandingDialog>
                     key: const Key('brandingPhoneInput'),
                     controller: _phoneController,
                     decoration: InputDecoration(labelText: l10n.pharmacyPhoneLabel),
+                  ),
+                  const SizedBox(height: 8),
+                  TextField(
+                    key: const Key('receiptDirInput'),
+                    controller: _receiptDirController,
+                    decoration: InputDecoration(
+                      labelText: 'Receipt Folder Path (Optional)',
+                      hintText: 'Default: Documents/PharmaLoka/Receipts/',
+                      suffixIcon: IconButton(
+                        icon: const Icon(Icons.folder_open),
+                        onPressed: () async {
+                          final selectedDir = await FilePicker.platform.getDirectoryPath();
+                          if (selectedDir != null) {
+                            setState(() => _receiptDirController.text = selectedDir);
+                          }
+                        },
+                      ),
+                    ),
                   ),
                 ],
               ),

@@ -3,12 +3,12 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:pharmacy_inventory_platform/data/database.dart';
 
 void main() {
-  test('schema version 9 includes cash_movements table and controlledCategory column',
+  test('schema version 10 includes image_path in products and photo_path in users',
       () async {
     final database = AppDatabase(NativeDatabase.memory());
     addTearDown(database.close);
 
-    expect(database.schemaVersion, 9);
+    expect(database.schemaVersion, 10);
     final tables = await database
         .customSelect("SELECT name FROM sqlite_master WHERE type = 'table'")
         .get();
@@ -26,6 +26,11 @@ void main() {
     final productColumns =
         await database.customSelect('PRAGMA table_info(products)').get();
     expect(productColumns.map((row) => row.read<String>('name')),
-        contains('controlled_category'));
+        contains('image_path'));
+
+    final userColumns =
+        await database.customSelect('PRAGMA table_info(users)').get();
+    expect(userColumns.map((row) => row.read<String>('name')),
+        contains('photo_path'));
   });
 }
