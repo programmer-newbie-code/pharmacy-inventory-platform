@@ -52,4 +52,21 @@ void main() {
     await service.setCustomBaseDirectoryPath('');
     expect(await service.getCustomBaseDirectoryPath(), isNull);
   });
+
+  test('uses configured base directory and sanitizes transaction number',
+      () async {
+    SharedPreferences.setMockInitialValues({});
+    final prefs = await SharedPreferences.getInstance();
+    final service = ReceiptStorageService(prefsOverride: prefs);
+    await service.setCustomBaseDirectoryPath(tempDir.path);
+
+    final file = await service.saveReceiptPdf(
+      txnNo: 'TXN/invalid:1',
+      createdAt: DateTime(2026, 8, 10),
+      pdfBytes: Uint8List.fromList([7]),
+    );
+    expect(file.path, startsWith(tempDir.path));
+    expect(file.path, contains('receipt_TXN_invalid_1.pdf'));
+    expect(await file.readAsBytes(), [7]);
+  });
 }

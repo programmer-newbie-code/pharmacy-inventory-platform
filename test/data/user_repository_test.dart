@@ -82,5 +82,7 @@ void main() {
 
     expect(await repo.updateUserPhoto(userId: id, photoPath: null), isTrue);
     expect((await repo.findByUsername('photo-user'))!.photoPath, isNull);
+    expect(await repo.updateUserPhoto(userId: 999, photoPath: '/none.jpg'),
+        isFalse);
   });
 }

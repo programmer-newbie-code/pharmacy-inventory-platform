@@ -111,4 +111,20 @@ void main() {
     expect(product!.imagePath, '/images/product.jpg');
     expect(product.category, 'Obat Bebas');
   });
+
+  test('records and lists CSV import history transactionally', () async {
+    await repository.transaction(() => repository.recordCsvImportLog(
+          sourceName: 'catalog.csv',
+          createdBy: 'admin',
+          totalRows: 2,
+          importedRows: 1,
+          rejectedRows: 1,
+          status: 'partial',
+          errorSummary: 'duplicate barcode',
+        ));
+    final logs = await repository.listCsvImportLogs();
+    expect(logs, hasLength(1));
+    expect(logs.single.sourceName, 'catalog.csv');
+    expect(logs.single.errorSummary, 'duplicate barcode');
+  });
 }
