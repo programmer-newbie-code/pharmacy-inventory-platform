@@ -40,24 +40,48 @@ class SalesSummary {
 
 enum BestSellingRankMode { netQuantity, netRevenue }
 
+class BestSellingMedicinesFilter {
+  const BestSellingMedicinesFilter({
+    required this.startDate,
+    required this.endDate,
+    required this.rankMode,
+  });
+
+  final DateTime startDate;
+  final DateTime endDate;
+  final BestSellingRankMode rankMode;
+
+  @override
+  bool operator ==(Object other) =>
+      other is BestSellingMedicinesFilter &&
+      other.startDate == startDate &&
+      other.endDate == endDate &&
+      other.rankMode == rankMode;
+
+  @override
+  int get hashCode => Object.hash(startDate, endDate, rankMode);
+}
+
 class BestSellingMedicineRow {
   const BestSellingMedicineRow({
     required this.productId,
     required this.productName,
-    required this.quantitySold,
+    required this.grossQuantity,
     required this.returnedQuantity,
     required this.grossRevenue,
+    required this.refundedRevenue,
+    required this.netQuantity,
     required this.netRevenue,
   });
 
   final int productId;
   final String productName;
-  final int quantitySold;
+  final int grossQuantity;
   final int returnedQuantity;
   final double grossRevenue;
+  final double refundedRevenue;
+  final int netQuantity;
   final double netRevenue;
-
-  int get netQuantity => quantitySold - returnedQuantity;
 }
 
 class ReportRepository {
@@ -120,11 +144,11 @@ class ReportRepository {
   ///
   /// Returns are attributed using their processed date, so the report reflects
   /// the stock and revenue movement that happened during the selected period.
-  Future<List<BestSellingMedicineRow>> getBestSellingMedicines({
-    required DateTime startDate,
-    required DateTime endDate,
-    BestSellingRankMode rankBy = BestSellingRankMode.netQuantity,
-  }) async {
+  Future<List<BestSellingMedicineRow>> getBestSellingMedicines(
+    BestSellingMedicinesFilter filter,
+  ) async {
+    final startDate = filter.startDate;
+    final endDate = filter.endDate;
     final transactions = await (_db.select(_db.saleTransactions)
           ..where((txn) =>
               txn.createdAt.isBiggerOrEqual(Variable(startDate)) &
@@ -168,28 +192,29 @@ class ReportRepository {
     for (final item in saleItems) {
       final total = totals.putIfAbsent(item.productId, _BestSellingTotals.new);
       final returnedQuantity = returnedBySaleItem[item.id] ?? 0;
-      total.quantitySold += item.qtySold;
+      total.grossQuantity += item.qtySold;
       total.returnedQuantity += returnedQuantity;
       total.grossRevenue += item.subtotal;
-      total.netRevenue += item.subtotal - (returnedQuantity * item.unitPrice);
+      total.refundedRevenue += returnedQuantity * item.unitPrice;
     }
 
-    final rows = totals.entries
-        .map((entry) {
-          final total = entry.value;
-          return BestSellingMedicineRow(
-            productId: entry.key,
-            productName: productNames[entry.key] ?? 'Unknown Product',
-            quantitySold: total.quantitySold,
-            returnedQuantity: total.returnedQuantity,
-            grossRevenue: total.grossRevenue,
-            netRevenue: total.netRevenue,
-          );
-        })
-        .where((row) => row.netQuantity > 0)
-        .toList();
+    final rows = totals.entries.map((entry) {
+      final total = entry.value;
+      return BestSellingMedicineRow(
+        productId: entry.key,
+        productName: productNames[entry.key] ?? 'Unknown Product',
+        grossQuantity: total.grossQuantity,
+        returnedQuantity: total.returnedQuantity,
+        grossRevenue: total.grossRevenue,
+        refundedRevenue: total.refundedRevenue,
+        netQuantity: (total.grossQuantity - total.returnedQuantity)
+            .clamp(0, total.grossQuantity),
+        netRevenue: (total.grossRevenue - total.refundedRevenue)
+            .clamp(0.0, total.grossRevenue),
+      );
+    }).toList();
     rows.sort((a, b) {
-      final primary = rankBy == BestSellingRankMode.netQuantity
+      final primary = filter.rankMode == BestSellingRankMode.netQuantity
           ? b.netQuantity.compareTo(a.netQuantity)
           : b.netRevenue.compareTo(a.netRevenue);
       return primary != 0 ? primary : a.productName.compareTo(b.productName);
@@ -383,8 +408,8 @@ class DetailedSaleRow {
 }
 
 class _BestSellingTotals {
-  int quantitySold = 0;
+  int grossQuantity = 0;
   int returnedQuantity = 0;
   double grossRevenue = 0;
-  double netRevenue = 0;
+  double refundedRevenue = 0;
 }

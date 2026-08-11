@@ -234,25 +234,46 @@ void main() {
         .write(ReturnTransactionsCompanion(createdAt: Value(transactionDate)));
 
     final byQuantity = await reportRepo.getBestSellingMedicines(
-      startDate: DateTime(2026, 8, 5),
-      endDate: DateTime(2026, 8, 5, 23, 59, 59),
-      rankBy: BestSellingRankMode.netQuantity,
+      BestSellingMedicinesFilter(
+        startDate: DateTime(2026, 8, 5),
+        endDate: DateTime(2026, 8, 5, 23, 59, 59),
+        rankMode: BestSellingRankMode.netQuantity,
+      ),
     );
     final byRevenue = await reportRepo.getBestSellingMedicines(
-      startDate: DateTime(2026, 8, 5),
-      endDate: DateTime(2026, 8, 5, 23, 59, 59),
-      rankBy: BestSellingRankMode.netRevenue,
+      BestSellingMedicinesFilter(
+        startDate: DateTime(2026, 8, 5),
+        endDate: DateTime(2026, 8, 5, 23, 59, 59),
+        rankMode: BestSellingRankMode.netRevenue,
+      ),
     );
 
     expect(byQuantity.map((row) => row.productName), [
       'Quantity Leader',
       'Revenue Leader',
     ]);
-    expect(byQuantity.first.netQuantity, 8);
+    expect(byQuantity.first.grossQuantity, 10);
     expect(byQuantity.first.returnedQuantity, 2);
+    expect(byQuantity.first.netQuantity, 8);
+    expect(byQuantity.first.grossRevenue, 1000);
+    expect(byQuantity.first.refundedRevenue, 200);
     expect(byQuantity.first.netRevenue, 800);
     expect(byRevenue.first.productName, 'Revenue Leader');
     expect(byRevenue.first.netRevenue, 2500);
+  });
+
+  test(
+      'returns no best-selling medicines when the selected period has no sales',
+      () async {
+    final rows = await reportRepo.getBestSellingMedicines(
+      BestSellingMedicinesFilter(
+        startDate: DateTime(2020, 1, 1),
+        endDate: DateTime(2020, 1, 1, 23, 59, 59),
+        rankMode: BestSellingRankMode.netQuantity,
+      ),
+    );
+
+    expect(rows, isEmpty);
   });
 
   test('returns shift discrepancies for date range', () async {

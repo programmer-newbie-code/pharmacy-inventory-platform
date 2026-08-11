@@ -90,9 +90,11 @@ final salesAnalyticsFutureProvider = FutureProvider.family
   final prodMap = {for (var p in products) p.id: p};
   final categoryMap = <String, double>{};
   final topProducts = await reportRepo.getBestSellingMedicines(
-    startDate: range.start,
-    endDate: range.end,
-    rankBy: filter.rankBy,
+    BestSellingMedicinesFilter(
+      startDate: range.start,
+      endDate: range.end,
+      rankMode: filter.rankBy,
+    ),
   );
 
   // Calculate returns per product
