@@ -136,8 +136,9 @@ void main() {
     );
 
     // Get the sale items for the return
-    final saleItems = await (db.select(db.saleItems)
-          ..where((t) => t.transactionId.equals(txn.id)))
+    final saleItems = await (db.select(
+      db.saleItems,
+    )..where((t) => t.transactionId.equals(txn.id)))
         .get();
 
     await returnRepo.processReturn(
@@ -145,12 +146,7 @@ void main() {
       processedBy: 1,
       reason: 'defective',
       refundMethod: 'Cash',
-      returnItems: [
-        ReturnItemInput(
-          saleItem: saleItems.first,
-          qtyReturned: 5,
-        ),
-      ],
+      returnItems: [ReturnItemInput(saleItem: saleItems.first, qtyReturned: 5)],
     );
 
     final now = DateTime.now();
@@ -220,8 +216,9 @@ void main() {
           ..where((txn) => txn.id.equals(revenueSale.id)))
         .write(SaleTransactionsCompanion(createdAt: Value(transactionDate)));
 
-    final quantitySaleItem = await (db.select(db.saleItems)
-          ..where((item) => item.transactionId.equals(quantitySale.id)))
+    final quantitySaleItem = await (db.select(
+      db.saleItems,
+    )..where((item) => item.transactionId.equals(quantitySale.id)))
         .getSingle();
     final returned = await returnRepo.processReturn(
       originalTxnId: quantitySale.id,
@@ -277,18 +274,19 @@ void main() {
   });
 
   test(
-      'returns no best-selling medicines when the selected period has no sales',
-      () async {
-    final rows = await reportRepo.getBestSellingMedicines(
-      BestSellingMedicinesFilter(
-        startDate: DateTime(2020, 1, 1),
-        endDate: DateTime(2020, 1, 1, 23, 59, 59),
-        rankMode: BestSellingRankMode.netQuantity,
-      ),
-    );
+    'returns no best-selling medicines when the selected period has no sales',
+    () async {
+      final rows = await reportRepo.getBestSellingMedicines(
+        BestSellingMedicinesFilter(
+          startDate: DateTime(2020, 1, 1),
+          endDate: DateTime(2020, 1, 1, 23, 59, 59),
+          rankMode: BestSellingRankMode.netQuantity,
+        ),
+      );
 
-    expect(rows, isEmpty);
-  });
+      expect(rows, isEmpty);
+    },
+  );
 
   test('returns shift discrepancies for date range', () async {
     final prodId = await productRepo.createProduct(
@@ -320,7 +318,7 @@ void main() {
     await saleRepo.createSaleTransaction(
       cashierId: 1,
       items: [
-        CartItemInput(product: product, qtyBaseUnit: 5, unitPrice: 1000.0)
+        CartItemInput(product: product, qtyBaseUnit: 5, unitPrice: 1000.0),
       ],
       paymentMethod: 'Cash',
     );
@@ -360,8 +358,9 @@ void main() {
     late Directory tempDir;
 
     setUp(() async {
-      tempDir = await Directory.systemTemp
-          .createTemp('best_selling_repo_export_test_');
+      tempDir = await Directory.systemTemp.createTemp(
+        'best_selling_repo_export_test_',
+      );
     });
 
     tearDown(() async {
@@ -434,51 +433,83 @@ void main() {
     });
 
     test(
-        'exports the supplied procurement summary before recording its audit event',
-        () async {
-      final file = await exportRepo.exportProcurementReport(
-        summary: const ProcurementSummary(
-          totalPurchaseSpend: 50000,
-          totalOrdersCount: 1,
-          receivedBatchesCount: 2,
-          supplierSpendMap: {'Supplier A': 50000},
-        ),
-        startDate: DateTime(2026, 8, 1),
-        endDate: DateTime(2026, 8, 11, 23, 59, 59),
-        userId: 1,
-        baseDirectoryOverride: tempDir,
-      );
+      'exports the supplied procurement summary before recording its audit event',
+      () async {
+        final file = await exportRepo.exportProcurementReport(
+          summary: const ProcurementSummary(
+            totalPurchaseSpend: 50000,
+            totalOrdersCount: 1,
+            receivedBatchesCount: 2,
+            supplierSpendMap: {'Supplier A': 50000},
+          ),
+          startDate: DateTime(2026, 8, 1),
+          endDate: DateTime(2026, 8, 11, 23, 59, 59),
+          userId: 1,
+          baseDirectoryOverride: tempDir,
+        );
 
-      expect(await file.exists(), isTrue);
-      final logs = await db.select(db.auditLogs).get();
-      expect(logs.single.action, 'export_procurement_report');
-      expect(logs.single.userId, 1);
-      expect(logs.single.newValue, contains('rows: 1'));
-    });
+        expect(await file.exists(), isTrue);
+        final logs = await db.select(db.auditLogs).get();
+        expect(logs.single.action, 'export_procurement_report');
+        expect(logs.single.userId, 1);
+        expect(logs.single.newValue, contains('rows: 1'));
+      },
+    );
 
-    test('exports the supplied movement rows before recording its audit event',
-        () async {
-      final movement = await shiftRepo.recordCashMovement(
-        shiftId: 1,
-        movementType: 'cash_out',
-        category: 'owner_draw',
-        amount: 25000,
-        performedBy: 1,
-      );
+    test(
+      'exports the supplied movement rows before recording its audit event',
+      () async {
+        final movement = await shiftRepo.recordCashMovement(
+          shiftId: 1,
+          movementType: 'cash_out',
+          category: 'owner_draw',
+          amount: 25000,
+          performedBy: 1,
+        );
 
-      final file = await exportRepo.exportCashMovementReport(
-        movements: [movement],
-        startDate: DateTime(2026, 8, 1),
-        endDate: DateTime(2026, 8, 11, 23, 59, 59),
-        userId: 1,
-        baseDirectoryOverride: tempDir,
-      );
+        final file = await exportRepo.exportCashMovementReport(
+          movements: [movement],
+          startDate: DateTime(2026, 8, 1),
+          endDate: DateTime(2026, 8, 11, 23, 59, 59),
+          userId: 1,
+          baseDirectoryOverride: tempDir,
+        );
 
-      expect(await file.exists(), isTrue);
-      final logs = await db.select(db.auditLogs).get();
-      expect(logs.single.action, 'export_cash_movement_report');
-      expect(logs.single.userId, 1);
-      expect(logs.single.newValue, contains('rows: 1'));
-    });
+        expect(await file.exists(), isTrue);
+        final logs = await db.select(db.auditLogs).get();
+        expect(logs.single.action, 'export_cash_movement_report');
+        expect(logs.single.userId, 1);
+        expect(logs.single.newValue, contains('rows: 1'));
+      },
+    );
+
+    test(
+      'exports supplied sales data before recording contextual audit data',
+      () async {
+        final file = await exportRepo.exportSalesReport(
+          summary: const SalesSummary(
+            totalTransactions: 2,
+            totalRevenue: 2000,
+            totalCostOfGoods: 1000,
+            grossProfit: 1000,
+            totalRefunds: 0,
+            netRevenue: 2000,
+          ),
+          rows: const [],
+          startDate: DateTime(2026, 8, 1),
+          endDate: DateTime(2026, 8, 11, 23, 59, 59),
+          userId: 1,
+          baseDirectoryOverride: tempDir,
+        );
+
+        expect(await file.exists(), isTrue);
+        expect(await file.length(), greaterThan(0));
+        final logs = await db.select(db.auditLogs).get();
+        expect(logs.single.action, 'export_sales_report');
+        expect(logs.single.userId, 1);
+        expect(logs.single.newValue, contains('transactions: 2'));
+        expect(logs.single.newValue, contains('rows: 0'));
+      },
+    );
   });
 }
