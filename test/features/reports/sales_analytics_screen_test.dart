@@ -9,7 +9,9 @@ import 'package:pharmacy_inventory_platform/data/sale_repository.dart';
 import 'package:pharmacy_inventory_platform/features/reports/sales_analytics_screen.dart';
 
 void main() {
-  testWidgets('renders SalesAnalyticsScreen with executive metrics and top products table', (tester) async {
+  testWidgets(
+      'renders SalesAnalyticsScreen with executive metrics and best-selling medicines controls',
+      (tester) async {
     final db = AppDatabase(NativeDatabase.memory());
     addTearDown(db.close);
 
@@ -63,7 +65,8 @@ void main() {
         );
 
     final saleRepo = SaleRepository(db);
-    final prod = await (db.select(db.products)..where((p) => p.id.equals(10))).getSingle();
+    final prod = await (db.select(db.products)..where((p) => p.id.equals(10)))
+        .getSingle();
     await saleRepo.createSaleTransaction(
       cashierId: 1,
       items: [CartItemInput(product: prod, qtyBaseUnit: 10, unitPrice: 1500)],
@@ -92,6 +95,9 @@ void main() {
     expect(find.text('NET PROFIT'), findsOneWidget);
     expect(find.text('Amoxicillin 500mg'), findsOneWidget);
     expect(find.text('Sales by Product Category'), findsOneWidget);
-    expect(find.text('Top 5 Best-Selling Products'), findsOneWidget);
+    expect(find.text('Best-Selling Medicines'), findsOneWidget);
+    expect(find.text('Net units'), findsNWidgets(2));
+    expect(find.text('Net revenue'), findsNWidgets(2));
+    expect(find.text('Custom range'), findsOneWidget);
   });
 }

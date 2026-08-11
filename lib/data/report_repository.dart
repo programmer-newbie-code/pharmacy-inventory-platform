@@ -38,6 +38,28 @@ class SalesSummary {
       totalRevenue > 0 ? (grossProfit / totalRevenue) * 100 : 0;
 }
 
+enum BestSellingRankMode { netQuantity, netRevenue }
+
+class BestSellingMedicineRow {
+  const BestSellingMedicineRow({
+    required this.productId,
+    required this.productName,
+    required this.quantitySold,
+    required this.returnedQuantity,
+    required this.grossRevenue,
+    required this.netRevenue,
+  });
+
+  final int productId;
+  final String productName;
+  final int quantitySold;
+  final int returnedQuantity;
+  final double grossRevenue;
+  final double netRevenue;
+
+  int get netQuantity => quantitySold - returnedQuantity;
+}
+
 class ReportRepository {
   ReportRepository(this._db, {AuditLogger? auditLogger})
       : _auditLogger = auditLogger;
@@ -82,8 +104,7 @@ class ReportRepository {
               tbl.createdAt.isBiggerOrEqual(Variable(startDate)) &
               tbl.createdAt.isSmallerOrEqual(Variable(endDate))))
         .get();
-    final totalRefunds =
-        refunds.fold(0.0, (sum, r) => sum + r.refundAmount);
+    final totalRefunds = refunds.fold(0.0, (sum, r) => sum + r.refundAmount);
 
     return SalesSummary(
       totalTransactions: count,
@@ -93,6 +114,87 @@ class ReportRepository {
       totalRefunds: totalRefunds,
       netRevenue: revenue - totalRefunds,
     );
+  }
+
+  /// Returns medicines ranked by net quantity or net revenue for a period.
+  ///
+  /// Returns are attributed using their processed date, so the report reflects
+  /// the stock and revenue movement that happened during the selected period.
+  Future<List<BestSellingMedicineRow>> getBestSellingMedicines({
+    required DateTime startDate,
+    required DateTime endDate,
+    BestSellingRankMode rankBy = BestSellingRankMode.netQuantity,
+  }) async {
+    final transactions = await (_db.select(_db.saleTransactions)
+          ..where((txn) =>
+              txn.createdAt.isBiggerOrEqual(Variable(startDate)) &
+              txn.createdAt.isSmallerOrEqual(Variable(endDate))))
+        .get();
+    if (transactions.isEmpty) return const [];
+
+    final transactionIds = transactions.map((txn) => txn.id).toList();
+    final saleItems = await (_db.select(_db.saleItems)
+          ..where((item) => item.transactionId.isIn(transactionIds)))
+        .get();
+    if (saleItems.isEmpty) return const [];
+
+    final productIds = saleItems.map((item) => item.productId).toSet().toList();
+    final products = await (_db.select(_db.products)
+          ..where((product) => product.id.isIn(productIds)))
+        .get();
+    final productNames = {
+      for (final product in products) product.id: product.name
+    };
+
+    final returns = await (_db.select(_db.returnTransactions)
+          ..where((txn) =>
+              txn.createdAt.isBiggerOrEqual(Variable(startDate)) &
+              txn.createdAt.isSmallerOrEqual(Variable(endDate)) &
+              txn.originalTxnId.isIn(transactionIds)))
+        .get();
+    final returnedBySaleItem = <int, int>{};
+    if (returns.isNotEmpty) {
+      final returnItems = await (_db.select(_db.returnItems)
+            ..where(
+                (item) => item.returnTxnId.isIn(returns.map((txn) => txn.id))))
+          .get();
+      for (final item in returnItems) {
+        returnedBySaleItem[item.saleItemId] =
+            (returnedBySaleItem[item.saleItemId] ?? 0) + item.qtyReturned;
+      }
+    }
+
+    final totals = <int, _BestSellingTotals>{};
+    for (final item in saleItems) {
+      final total = totals.putIfAbsent(item.productId, _BestSellingTotals.new);
+      final returnedQuantity = returnedBySaleItem[item.id] ?? 0;
+      total.quantitySold += item.qtySold;
+      total.returnedQuantity += returnedQuantity;
+      total.grossRevenue += item.subtotal;
+      total.netRevenue += item.subtotal - (returnedQuantity * item.unitPrice);
+    }
+
+    final rows = totals.entries
+        .map((entry) {
+          final total = entry.value;
+          return BestSellingMedicineRow(
+            productId: entry.key,
+            productName: productNames[entry.key] ?? 'Unknown Product',
+            quantitySold: total.quantitySold,
+            returnedQuantity: total.returnedQuantity,
+            grossRevenue: total.grossRevenue,
+            netRevenue: total.netRevenue,
+          );
+        })
+        .where((row) => row.netQuantity > 0)
+        .toList();
+    rows.sort((a, b) {
+      final primary = rankBy == BestSellingRankMode.netQuantity
+          ? b.netQuantity.compareTo(a.netQuantity)
+          : b.netRevenue.compareTo(a.netRevenue);
+      return primary != 0 ? primary : a.productName.compareTo(b.productName);
+    });
+    return rows;
   }
 
   /// Generates procurement / purchasing summary report for a given date range.
@@ -115,7 +217,8 @@ class ReportRepository {
     for (final po in pos) {
       if (po.status != 'cancelled') {
         totalSpend += po.totalAmount;
-        final sName = supplierMap[po.supplierId] ?? 'Supplier #${po.supplierId}';
+        final sName =
+            supplierMap[po.supplierId] ?? 'Supplier #${po.supplierId}';
         supplierSpend[sName] = (supplierSpend[sName] ?? 0.0) + po.totalAmount;
       }
     }
@@ -279,4 +382,9 @@ class DetailedSaleRow {
   final double subtotal;
 }
 
-
+class _BestSellingTotals {
+  int quantitySold = 0;
+  int returnedQuantity = 0;
+  double grossRevenue = 0;
+  double netRevenue = 0;
+}

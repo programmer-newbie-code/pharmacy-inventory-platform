@@ -9,6 +9,7 @@ import 'package:pharmacy_inventory_platform/data/report_repository.dart';
 import 'package:pharmacy_inventory_platform/data/sale_repository.dart';
 import 'package:pharmacy_inventory_platform/data/stock_batch_repository.dart';
 import 'package:pharmacy_inventory_platform/data/return_repository.dart';
+
 void main() {
   late AppDatabase db;
   late ProductRepository productRepo;
@@ -161,6 +162,99 @@ void main() {
     expect(summary.netRevenue, equals(1000.0));
   });
 
+  test('ranks best-selling medicines by net quantity and revenue', () async {
+    Future<Product> createProduct(String suffix, String name) async {
+      final productId = await productRepo.createProduct(
+        barcode: '8999999000$suffix',
+        internalCode: 'BEST-$suffix',
+        name: name,
+        activeIngredient: name,
+        ingredientPct: 100,
+        baseUnit: 'tablet',
+        purchaseUnit: 'box',
+        unitsPerPurchaseUnit: 10,
+        costPricePerBaseUnit: 100,
+        marginPct: 50,
+        reorderThreshold: 10,
+        category: 'General',
+        createdBy: 'admin',
+      );
+      await batchRepo.createStockBatch(
+        productId: productId,
+        batchNo: 'BEST-$suffix',
+        receivedDate: DateTime(2026, 8, 1),
+        expiryDate: DateTime(2027, 8, 1),
+        qtyReceivedBaseUnit: 100,
+        costPricePerBaseUnit: 100,
+        supplier: 'Supplier',
+        createdBy: 'admin',
+      );
+      return (await productRepo.getProductById(productId))!;
+    }
+
+    final quantityLeader = await createProduct('41', 'Quantity Leader');
+    final revenueLeader = await createProduct('42', 'Revenue Leader');
+    final transactionDate = DateTime(2026, 8, 5, 10);
+
+    final quantitySale = await saleRepo.createSaleTransaction(
+      cashierId: 1,
+      items: [
+        CartItemInput(product: quantityLeader, qtyBaseUnit: 10, unitPrice: 100),
+      ],
+      paymentMethod: 'Cash',
+    );
+    final revenueSale = await saleRepo.createSaleTransaction(
+      cashierId: 1,
+      items: [
+        CartItemInput(product: revenueLeader, qtyBaseUnit: 5, unitPrice: 500),
+      ],
+      paymentMethod: 'Cash',
+    );
+    await (db.update(db.saleTransactions)
+          ..where((txn) => txn.id.equals(quantitySale.id)))
+        .write(SaleTransactionsCompanion(createdAt: Value(transactionDate)));
+    await (db.update(db.saleTransactions)
+          ..where((txn) => txn.id.equals(revenueSale.id)))
+        .write(SaleTransactionsCompanion(createdAt: Value(transactionDate)));
+
+    final quantitySaleItem = await (db.select(db.saleItems)
+          ..where((item) => item.transactionId.equals(quantitySale.id)))
+        .getSingle();
+    final returned = await returnRepo.processReturn(
+      originalTxnId: quantitySale.id,
+      processedBy: 1,
+      reason: 'defective',
+      refundMethod: 'Cash',
+      returnItems: [
+        ReturnItemInput(saleItem: quantitySaleItem, qtyReturned: 2),
+      ],
+    );
+    await (db.update(db.returnTransactions)
+          ..where((txn) => txn.id.equals(returned.id)))
+        .write(ReturnTransactionsCompanion(createdAt: Value(transactionDate)));
+
+    final byQuantity = await reportRepo.getBestSellingMedicines(
+      startDate: DateTime(2026, 8, 5),
+      endDate: DateTime(2026, 8, 5, 23, 59, 59),
+      rankBy: BestSellingRankMode.netQuantity,
+    );
+    final byRevenue = await reportRepo.getBestSellingMedicines(
+      startDate: DateTime(2026, 8, 5),
+      endDate: DateTime(2026, 8, 5, 23, 59, 59),
+      rankBy: BestSellingRankMode.netRevenue,
+    );
+
+    expect(byQuantity.map((row) => row.productName), [
+      'Quantity Leader',
+      'Revenue Leader',
+    ]);
+    expect(byQuantity.first.netQuantity, 8);
+    expect(byQuantity.first.returnedQuantity, 2);
+    expect(byQuantity.first.netRevenue, 800);
+    expect(byRevenue.first.productName, 'Revenue Leader');
+    expect(byRevenue.first.netRevenue, 2500);
+  });
+
   test('returns shift discrepancies for date range', () async {
     final prodId = await productRepo.createProduct(
       barcode: '8999999000333',
@@ -190,7 +284,9 @@ void main() {
     );
     await saleRepo.createSaleTransaction(
       cashierId: 1,
-      items: [CartItemInput(product: product, qtyBaseUnit: 5, unitPrice: 1000.0)],
+      items: [
+        CartItemInput(product: product, qtyBaseUnit: 5, unitPrice: 1000.0)
+      ],
       paymentMethod: 'Cash',
     );
 
