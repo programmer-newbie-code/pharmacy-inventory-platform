@@ -21,15 +21,18 @@ class AutoBackupScheduler {
     this.intervalHours = 24,
     this.maxLocalBackups = 7,
     SharedPreferences? prefs,
+    Future<Directory> Function()? backupDirectoryProvider,
   })  : _backupService = backupService,
         _driveBackupService = driveBackupService,
-        _prefsOverride = prefs;
+        _prefsOverride = prefs,
+        _backupDirectoryProvider = backupDirectoryProvider;
 
   final BackupService _backupService;
   final GoogleDriveBackupService _driveBackupService;
   final int intervalHours;
   final int maxLocalBackups;
   final SharedPreferences? _prefsOverride;
+  final Future<Directory> Function()? _backupDirectoryProvider;
 
   Timer? _timer;
   bool _running = false;
@@ -75,9 +78,7 @@ class AutoBackupScheduler {
   Future<DateTime?> getLastBackupTime() async {
     final prefs = _prefsOverride ?? await SharedPreferences.getInstance();
     final millis = prefs.getInt(_lastAutoBackupKey);
-    return millis != null
-        ? DateTime.fromMillisecondsSinceEpoch(millis)
-        : null;
+    return millis != null ? DateTime.fromMillisecondsSinceEpoch(millis) : null;
   }
 
   /// Returns the next scheduled backup time, or null if not active.
@@ -132,7 +133,8 @@ class AutoBackupScheduler {
     _running = true;
 
     try {
-      final dir = await getBackupDirectory();
+      final dir =
+          await (_backupDirectoryProvider?.call() ?? getBackupDirectory());
       await _backupService.createBackupJson(dir.path);
       await _rotateOldBackups(dir);
 
@@ -146,12 +148,7 @@ class AutoBackupScheduler {
       // Optional Drive upload
       final driveEnabled = await isDriveEnabled();
       if (driveEnabled) {
-        final user = _driveBackupService.currentUser;
-        if (user != null) {
-          await _driveBackupService.uploadBackupToDrive(
-            accessToken: user.accessToken,
-          );
-        }
+        await _driveBackupService.uploadCurrentUserBackupToDrive();
       }
     } catch (_) {
       // Auto-backup should never crash the app. Failures are visible
@@ -172,8 +169,7 @@ class AutoBackupScheduler {
     if (files.length <= maxLocalBackups) return;
 
     // Sort by modified time descending (newest first)
-    files.sort((a, b) =>
-        b.lastModifiedSync().compareTo(a.lastModifiedSync()));
+    files.sort((a, b) => b.lastModifiedSync().compareTo(a.lastModifiedSync()));
 
     for (final old in files.skip(maxLocalBackups)) {
       try {
