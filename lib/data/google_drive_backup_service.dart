@@ -178,6 +178,29 @@ class GoogleDriveBackupService {
     _currentUser = null;
   }
 
+  /// Uploads with the active account, or records that re-authentication is needed.
+  Future<GoogleDriveBackupResult> uploadCurrentUserBackupToDrive() async {
+    final user = _currentUser;
+    if (user != null) {
+      return uploadBackupToDrive(accessToken: user.accessToken);
+    }
+
+    await _db.into(_db.backupLogs).insert(
+          BackupLogsCompanion.insert(
+            timestamp: Value(DateTime.now()),
+            destination: 'drive',
+            status: 'Failed',
+            fileSize: const Value(0),
+          ),
+        );
+    return GoogleDriveBackupResult(
+      success: false,
+      fileId: null,
+      fileName: 'pharmacy_backup.json',
+      fileSize: 0,
+    );
+  }
+
   /// Uploads a JSON backup payload to Google Drive.
   Future<GoogleDriveBackupResult> uploadBackupToDrive({
     required String accessToken,
