@@ -7,32 +7,54 @@ import '../../core/providers.dart';
 import '../../data/report_repository.dart';
 
 class CategorySalesData {
-  CategorySalesData({required this.category, required this.totalAmount, required this.unitsSold});
+  CategorySalesData(
+      {required this.category,
+      required this.totalAmount,
+      required this.unitsSold});
   final String category;
   final double totalAmount;
   final int unitsSold;
 }
 
-class TopProductData {
-  TopProductData({required this.productName, required this.unitsSold, required this.revenue});
-  final String productName;
-  final int unitsSold;
-  final double revenue;
+class SalesAnalyticsFilter {
+  const SalesAnalyticsFilter({required this.range, required this.rankBy});
+
+  final DateTimeRange range;
+  final BestSellingRankMode rankBy;
+
+  @override
+  bool operator ==(Object other) =>
+      other is SalesAnalyticsFilter &&
+      other.range == range &&
+      other.rankBy == rankBy;
+
+  @override
+  int get hashCode => Object.hash(range, rankBy);
 }
 
-final salesAnalyticsFutureProvider = FutureProvider.family.autoDispose<Map<String, dynamic>, DateTimeRange>((ref, range) async {
+final salesAnalyticsFutureProvider = FutureProvider.family
+    .autoDispose<Map<String, dynamic>, SalesAnalyticsFilter>(
+        (ref, filter) async {
+  final range = filter.range;
   final reportRepo = ref.watch(reportRepositoryProvider);
   final saleRepo = ref.watch(saleRepositoryProvider);
   final prodRepo = ref.watch(productRepositoryProvider);
   final returnRepo = ref.watch(returnRepositoryProvider);
 
-  final summary = await reportRepo.getSalesSummary(startDate: range.start, endDate: range.end);
+  final summary = await reportRepo.getSalesSummary(
+      startDate: range.start, endDate: range.end);
   final txns = await saleRepo.listTransactions();
   final products = await prodRepo.listProducts();
   final returns = await returnRepo.listReturns();
 
-  final filteredTxns = txns.where((t) => t.createdAt.isAfter(range.start) && t.createdAt.isBefore(range.end)).toList();
-  final filteredReturns = returns.where((r) => r.createdAt.isAfter(range.start) && r.createdAt.isBefore(range.end)).toList();
+  final filteredTxns = txns
+      .where((t) =>
+          t.createdAt.isAfter(range.start) && t.createdAt.isBefore(range.end))
+      .toList();
+  final filteredReturns = returns
+      .where((r) =>
+          r.createdAt.isAfter(range.start) && r.createdAt.isBefore(range.end))
+      .toList();
 
   double totalRefunds = 0;
   for (final r in filteredReturns) {
@@ -40,7 +62,12 @@ final salesAnalyticsFutureProvider = FutureProvider.family.autoDispose<Map<Strin
   }
 
   // Payment methods breakdown
-  final paymentCounts = <String, int>{'Cash': 0, 'QRIS': 0, 'Debit': 0, 'Credit': 0};
+  final paymentCounts = <String, int>{
+    'Cash': 0,
+    'QRIS': 0,
+    'Debit': 0,
+    'Credit': 0
+  };
   for (final t in filteredTxns) {
     final pm = t.paymentMethod;
     paymentCounts[pm] = (paymentCounts[pm] ?? 0) + 1;
@@ -53,49 +80,48 @@ final salesAnalyticsFutureProvider = FutureProvider.family.autoDispose<Map<Strin
   for (final t in filteredTxns) {
     final items = await saleRepo.getSaleItemsForTransaction(t.id);
     for (final item in items) {
-      prodSalesMap[item.productId] = (prodSalesMap[item.productId] ?? 0) + item.qtySold;
-      prodRevMap[item.productId] = (prodRevMap[item.productId] ?? 0) + item.subtotal;
+      prodSalesMap[item.productId] =
+          (prodSalesMap[item.productId] ?? 0) + item.qtySold;
+      prodRevMap[item.productId] =
+          (prodRevMap[item.productId] ?? 0) + item.subtotal;
     }
   }
 
   final prodMap = {for (var p in products) p.id: p};
   final categoryMap = <String, double>{};
-  final topProducts = <TopProductData>[];
+  final topProducts = await reportRepo.getBestSellingMedicines(
+    startDate: range.start,
+    endDate: range.end,
+    rankBy: filter.rankBy,
+  );
 
   // Calculate returns per product
-  final prodRefundQty = <int, int>{};
   final prodRefundAmount = <int, double>{};
   for (final r in filteredReturns) {
     final rItems = await returnRepo.getReturnItemsForReturn(r.id);
     for (final ri in rItems) {
-      final saleItem = await (saleRepo.getSaleItemsForTransaction(r.originalTxnId));
-      final matchingSaleItem = saleItem.where((s) => s.id == ri.saleItemId).firstOrNull;
+      final saleItem =
+          await (saleRepo.getSaleItemsForTransaction(r.originalTxnId));
+      final matchingSaleItem =
+          saleItem.where((s) => s.id == ri.saleItemId).firstOrNull;
       if (matchingSaleItem != null) {
         final prodId = matchingSaleItem.productId;
-        prodRefundQty[prodId] = (prodRefundQty[prodId] ?? 0) + ri.qtyReturned;
-        prodRefundAmount[prodId] = (prodRefundAmount[prodId] ?? 0) + (ri.qtyReturned * matchingSaleItem.unitPrice);
+        prodRefundAmount[prodId] = (prodRefundAmount[prodId] ?? 0) +
+            (ri.qtyReturned * matchingSaleItem.unitPrice);
       }
     }
   }
 
   prodSalesMap.forEach((prodId, qty) {
     final prod = prodMap[prodId];
-    final name = prod?.name ?? 'Product #$prodId';
     final grossRev = prodRevMap[prodId] ?? 0;
     final refundAmt = prodRefundAmount[prodId] ?? 0;
-    final refundQty = prodRefundQty[prodId] ?? 0;
 
     final netRev = (grossRev - refundAmt).clamp(0.0, double.infinity);
-    final netQty = (qty - refundQty).clamp(0, 999999);
     final cat = prod?.category ?? 'General';
 
     categoryMap[cat] = (categoryMap[cat] ?? 0) + netRev;
-    if (netQty > 0 || netRev > 0) {
-      topProducts.add(TopProductData(productName: name, unitsSold: netQty, revenue: netRev));
-    }
   });
-
-  topProducts.sort((a, b) => b.revenue.compareTo(a.revenue));
 
   return {
     'summary': summary,
@@ -103,7 +129,7 @@ final salesAnalyticsFutureProvider = FutureProvider.family.autoDispose<Map<Strin
     'totalRefunds': totalRefunds,
     'paymentCounts': paymentCounts,
     'categoryMap': categoryMap,
-    'topProducts': topProducts.take(5).toList(),
+    'topProducts': topProducts,
   };
 });
 
@@ -111,12 +137,14 @@ class SalesAnalyticsScreen extends ConsumerStatefulWidget {
   const SalesAnalyticsScreen({super.key});
 
   @override
-  ConsumerState<SalesAnalyticsScreen> createState() => _SalesAnalyticsScreenState();
+  ConsumerState<SalesAnalyticsScreen> createState() =>
+      _SalesAnalyticsScreenState();
 }
 
 class _SalesAnalyticsScreenState extends ConsumerState<SalesAnalyticsScreen> {
   late DateTimeRange _dateRange;
   String _selectedPreset = 'This Month';
+  BestSellingRankMode _rankBy = BestSellingRankMode.netQuantity;
 
   @override
   void initState() {
@@ -145,9 +173,32 @@ class _SalesAnalyticsScreenState extends ConsumerState<SalesAnalyticsScreen> {
     });
   }
 
+  Future<void> _selectCustomRange() async {
+    final selected = await showDateRangePicker(
+      context: context,
+      firstDate: DateTime(2020),
+      lastDate: DateTime.now(),
+      initialDateRange: _dateRange,
+    );
+    if (selected == null || !mounted) return;
+    setState(() {
+      _selectedPreset = 'Custom';
+      _dateRange = DateTimeRange(
+        start: DateTime(
+            selected.start.year, selected.start.month, selected.start.day),
+        end: DateTime(selected.end.year, selected.end.month, selected.end.day,
+            23, 59, 59),
+      );
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
-    final analyticsAsync = ref.watch(salesAnalyticsFutureProvider(_dateRange));
+    final analyticsAsync = ref.watch(
+      salesAnalyticsFutureProvider(
+        SalesAnalyticsFilter(range: _dateRange, rankBy: _rankBy),
+      ),
+    );
 
     return Scaffold(
       appBar: AppBar(
@@ -168,10 +219,16 @@ class _SalesAnalyticsScreenState extends ConsumerState<SalesAnalyticsScreen> {
                   segments: const [
                     ButtonSegment(value: 'Today', label: Text('Today')),
                     ButtonSegment(value: 'This Week', label: Text('This Week')),
-                    ButtonSegment(value: 'This Month', label: Text('This Month')),
+                    ButtonSegment(
+                        value: 'This Month', label: Text('This Month')),
                   ],
                   selected: {_selectedPreset},
                   onSelectionChanged: (val) => _applyPreset(val.first),
+                ),
+                OutlinedButton.icon(
+                  onPressed: _selectCustomRange,
+                  icon: const Icon(Icons.date_range),
+                  label: const Text('Custom range'),
                 ),
                 Text(
                   '${_dateRange.start.toIso8601String().split('T').first} - ${_dateRange.end.toIso8601String().split('T').first}',
@@ -187,7 +244,8 @@ class _SalesAnalyticsScreenState extends ConsumerState<SalesAnalyticsScreen> {
                 final totalRefunds = data['totalRefunds'] as double;
                 final paymentCounts = data['paymentCounts'] as Map<String, int>;
                 final categoryMap = data['categoryMap'] as Map<String, double>;
-                final topProducts = data['topProducts'] as List<TopProductData>;
+                final topProducts =
+                    data['topProducts'] as List<BestSellingMedicineRow>;
 
                 final marginPct = summary.totalRevenue > 0
                     ? (summary.grossProfit / summary.totalRevenue) * 100
@@ -226,7 +284,8 @@ class _SalesAnalyticsScreenState extends ConsumerState<SalesAnalyticsScreen> {
                           Expanded(
                             child: _MetricCard(
                               title: 'NET PROFIT',
-                              value: '${formatIdr(summary.grossProfit - totalRefunds)} (${marginPct.toStringAsFixed(1)}%)',
+                              value:
+                                  '${formatIdr(summary.grossProfit - totalRefunds)} (${marginPct.toStringAsFixed(1)}%)',
                               icon: Icons.trending_up,
                               color: Colors.teal,
                             ),
@@ -247,24 +306,32 @@ class _SalesAnalyticsScreenState extends ConsumerState<SalesAnalyticsScreen> {
                       // Sales by Category
                       const Text(
                         'Sales by Product Category',
-                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold, fontSize: 18),
                       ),
                       const SizedBox(height: 8),
                       if (categoryMap.isEmpty)
-                        const Text('No category sales data for selected period.')
+                        const Text(
+                            'No category sales data for selected period.')
                       else
                         ...categoryMap.entries.map((e) {
-                          final pct = summary.totalRevenue > 0 ? (e.value / summary.totalRevenue) : 0.0;
+                          final pct = summary.totalRevenue > 0
+                              ? (e.value / summary.totalRevenue)
+                              : 0.0;
                           return Padding(
                             padding: const EdgeInsets.symmetric(vertical: 4.0),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
                                   children: [
-                                    Text(e.key, style: const TextStyle(fontWeight: FontWeight.w600)),
-                                    Text('${formatIdr(e.value)} (${(pct * 100).toStringAsFixed(1)}%)'),
+                                    Text(e.key,
+                                        style: const TextStyle(
+                                            fontWeight: FontWeight.w600)),
+                                    Text(
+                                        '${formatIdr(e.value)} (${(pct * 100).toStringAsFixed(1)}%)'),
                                   ],
                                 ),
                                 const SizedBox(height: 4),
@@ -279,10 +346,24 @@ class _SalesAnalyticsScreenState extends ConsumerState<SalesAnalyticsScreen> {
                         }),
                       const SizedBox(height: 24),
 
-                      // Top 5 Best-Selling Products Table & Chart
                       const Text(
-                        'Top 5 Best-Selling Products',
-                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                        'Best-Selling Medicines',
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold, fontSize: 18),
+                      ),
+                      const SizedBox(height: 8),
+                      SegmentedButton<BestSellingRankMode>(
+                        segments: const [
+                          ButtonSegment(
+                              value: BestSellingRankMode.netQuantity,
+                              label: Text('Net units')),
+                          ButtonSegment(
+                              value: BestSellingRankMode.netRevenue,
+                              label: Text('Net revenue')),
+                        ],
+                        selected: {_rankBy},
+                        onSelectionChanged: (value) =>
+                            setState(() => _rankBy = value.first),
                       ),
                       const SizedBox(height: 8),
                       if (topProducts.isEmpty)
@@ -297,24 +378,43 @@ class _SalesAnalyticsScreenState extends ConsumerState<SalesAnalyticsScreen> {
                               child: BarChart(
                                 BarChartData(
                                   alignment: BarChartAlignment.spaceAround,
-                                  maxY: (topProducts.first.revenue * 1.2).clamp(10.0, double.infinity),
+                                  maxY: ((_rankBy ==
+                                                  BestSellingRankMode
+                                                      .netQuantity
+                                              ? topProducts.first.netQuantity
+                                                  .toDouble()
+                                              : topProducts.first.netRevenue) *
+                                          1.2)
+                                      .clamp(10.0, double.infinity),
                                   barTouchData: BarTouchData(enabled: true),
                                   titlesData: FlTitlesData(
                                     show: true,
-                                    leftTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                                    rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                                    topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                                    leftTitles: const AxisTitles(
+                                        sideTitles:
+                                            SideTitles(showTitles: false)),
+                                    rightTitles: const AxisTitles(
+                                        sideTitles:
+                                            SideTitles(showTitles: false)),
+                                    topTitles: const AxisTitles(
+                                        sideTitles:
+                                            SideTitles(showTitles: false)),
                                     bottomTitles: AxisTitles(
                                       sideTitles: SideTitles(
                                         showTitles: true,
                                         getTitlesWidget: (value, meta) {
                                           final index = value.toInt();
-                                          if (index >= 0 && index < topProducts.length) {
-                                            final name = topProducts[index].productName;
-                                            final shortName = name.length > 8 ? '${name.substring(0, 7)}…' : name;
+                                          if (index >= 0 &&
+                                              index < topProducts.length) {
+                                            final name =
+                                                topProducts[index].productName;
+                                            final shortName = name.length > 8
+                                                ? '${name.substring(0, 7)}…'
+                                                : name;
                                             return SideTitleWidget(
                                               axisSide: meta.axisSide,
-                                              child: Text(shortName, style: const TextStyle(fontSize: 10)),
+                                              child: Text(shortName,
+                                                  style: const TextStyle(
+                                                      fontSize: 10)),
                                             );
                                           }
                                           return const SizedBox.shrink();
@@ -324,17 +424,23 @@ class _SalesAnalyticsScreenState extends ConsumerState<SalesAnalyticsScreen> {
                                   ),
                                   gridData: const FlGridData(show: false),
                                   borderData: FlBorderData(show: false),
-                                  barGroups: topProducts.asMap().entries.map((entry) {
+                                  barGroups:
+                                      topProducts.asMap().entries.map((entry) {
                                     final idx = entry.key;
                                     final item = entry.value;
                                     return BarChartGroupData(
                                       x: idx,
                                       barRods: [
                                         BarChartRodData(
-                                          toY: item.revenue,
+                                          toY: _rankBy ==
+                                                  BestSellingRankMode
+                                                      .netQuantity
+                                              ? item.netQuantity.toDouble()
+                                              : item.netRevenue,
                                           color: Colors.indigo,
                                           width: 16,
-                                          borderRadius: BorderRadius.circular(4),
+                                          borderRadius:
+                                              BorderRadius.circular(4),
                                         ),
                                       ],
                                     );
@@ -351,16 +457,18 @@ class _SalesAnalyticsScreenState extends ConsumerState<SalesAnalyticsScreen> {
                             child: DataTable(
                               columns: const [
                                 DataColumn(label: Text('Product')),
-                                DataColumn(label: Text('Qty Sold')),
-                                DataColumn(label: Text('Revenue')),
+                                DataColumn(label: Text('Net units')),
+                                DataColumn(label: Text('Returned')),
+                                DataColumn(label: Text('Net revenue')),
                               ],
                               rows: topProducts
                                   .map(
                                     (p) => DataRow(
                                       cells: [
                                         DataCell(Text(p.productName)),
-                                        DataCell(Text('${p.unitsSold}')),
-                                        DataCell(Text(formatIdr(p.revenue))),
+                                        DataCell(Text('${p.netQuantity}')),
+                                        DataCell(Text('${p.returnedQuantity}')),
+                                        DataCell(Text(formatIdr(p.netRevenue))),
                                       ],
                                     ),
                                   )
@@ -374,7 +482,8 @@ class _SalesAnalyticsScreenState extends ConsumerState<SalesAnalyticsScreen> {
                       // Payment Method Breakdown
                       const Text(
                         'Payment Method Breakdown',
-                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold, fontSize: 18),
                       ),
                       const SizedBox(height: 8),
                       Wrap(
@@ -394,7 +503,8 @@ class _SalesAnalyticsScreenState extends ConsumerState<SalesAnalyticsScreen> {
                 );
               },
               loading: () => const Center(child: CircularProgressIndicator()),
-              error: (err, _) => Center(child: Text('Error loading analytics: $err')),
+              error: (err, _) =>
+                  Center(child: Text('Error loading analytics: $err')),
             ),
           ),
         ],
@@ -432,7 +542,11 @@ class _MetricCard extends StatelessWidget {
                 children: [
                   Icon(icon, color: color, size: 20),
                   const SizedBox(width: 6),
-                  Text(title, style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.grey.shade700)),
+                  Text(title,
+                      style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.grey.shade700)),
                 ],
               ),
             ),
@@ -442,7 +556,8 @@ class _MetricCard extends StatelessWidget {
               alignment: Alignment.centerLeft,
               child: Text(
                 value,
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: color),
+                style: TextStyle(
+                    fontSize: 16, fontWeight: FontWeight.bold, color: color),
               ),
             ),
           ],
