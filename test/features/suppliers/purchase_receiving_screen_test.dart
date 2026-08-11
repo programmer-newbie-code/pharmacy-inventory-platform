@@ -7,7 +7,17 @@ import 'package:pharmacy_inventory_platform/core/providers.dart';
 import 'package:pharmacy_inventory_platform/data/database.dart';
 import 'package:pharmacy_inventory_platform/data/purchase_order_repository.dart';
 import 'package:pharmacy_inventory_platform/data/supplier_repository.dart';
+import 'package:pharmacy_inventory_platform/features/auth/auth_session.dart';
 import 'package:pharmacy_inventory_platform/features/suppliers/purchase_receiving_screen.dart';
+
+class _AuthenticatedSession extends AuthSession {
+  _AuthenticatedSession(this.user);
+
+  final User user;
+
+  @override
+  User build() => user;
+}
 
 void main() {
   testWidgets('renders PurchaseReceivingScreen and completes receiving session',
@@ -17,6 +27,17 @@ void main() {
 
     final supplierRepo = SupplierRepository(db);
     final poRepo = PurchaseOrderRepository(db);
+
+    await db.into(db.users).insert(
+          UsersCompanion.insert(
+            id: const Value(2),
+            username: 'receiver',
+            passwordHash: 'hash',
+            role: 'inventory',
+          ),
+        );
+    final receiver =
+        await (db.select(db.users)..where((u) => u.id.equals(2))).getSingle();
 
     await db.into(db.products).insert(
           ProductsCompanion.insert(
@@ -48,6 +69,7 @@ void main() {
 
     final container = ProviderContainer(overrides: [
       databaseProvider.overrideWithValue(db),
+      authSessionProvider.overrideWith(() => _AuthenticatedSession(receiver)),
     ]);
     addTearDown(container.dispose);
 
@@ -79,5 +101,10 @@ void main() {
           ..where((p) => p.id.equals(po.id)))
         .getSingle();
     expect(updatedPo.status, equals('received'));
+
+    final receivingItem = await (db.select(db.purchaseReceivingItems)
+          ..where((item) => item.purchaseOrderId.equals(po.id)))
+        .getSingle();
+    expect(receivingItem.receivedBy, equals(receiver.id));
   });
 }
