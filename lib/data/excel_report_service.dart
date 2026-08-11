@@ -5,6 +5,7 @@ import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 
 import 'report_repository.dart';
+import 'database.dart';
 
 class ExcelReportService {
   /// Generates an Excel (.xlsx) file bytes for the provided [SalesSummary] data.
@@ -15,13 +16,14 @@ class ExcelReportService {
     required DateTime endDate,
   }) {
     final excel = Excel.createExcel();
-    
+
     // Rename default Sheet1 to Sales Summary
     const summarySheetName = 'Sales Summary';
     excel.rename('Sheet1', summarySheetName);
     final summarySheet = excel[summarySheetName];
 
-    final currencyFormat = NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0);
+    final currencyFormat =
+        NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0);
     final dateFormat = DateFormat('yyyy-MM-dd HH:mm');
 
     // Header Title
@@ -29,7 +31,8 @@ class ExcelReportService {
       TextCellValue('Pharmacy Inventory Platform — Sales & Financial Report'),
     ]);
     summarySheet.appendRow([
-      TextCellValue('Period: ${DateFormat('yyyy-MM-dd').format(startDate)} to ${DateFormat('yyyy-MM-dd').format(endDate)}'),
+      TextCellValue(
+          'Period: ${DateFormat('yyyy-MM-dd').format(startDate)} to ${DateFormat('yyyy-MM-dd').format(endDate)}'),
     ]);
     summarySheet.appendRow([]);
 
@@ -109,7 +112,8 @@ class ExcelReportService {
     );
     final docsDir = await getApplicationDocumentsDirectory();
     final timestamp = DateFormat('yyyyMMdd_HHmmss').format(DateTime.now());
-    final file = File(p.join(docsDir.path, 'pharmacy_sales_report_$timestamp.xlsx'));
+    final file =
+        File(p.join(docsDir.path, 'pharmacy_sales_report_$timestamp.xlsx'));
     await file.writeAsBytes(bytes);
     return file;
   }
@@ -182,7 +186,8 @@ class ExcelReportService {
     required List<BestSellingMedicineRow> rows,
     Directory? baseDirectoryOverride,
   }) async {
-    final bytes = generateBestSellingMedicinesReport(filter: filter, rows: rows);
+    final bytes =
+        generateBestSellingMedicinesReport(filter: filter, rows: rows);
     final baseDir =
         baseDirectoryOverride ?? await getApplicationDocumentsDirectory();
     final fileDateFormat = DateFormat('yyyy-MM-dd');
@@ -196,6 +201,171 @@ class ExcelReportService {
         '${rankModeSlug}_'
         '$timestamp.xlsx';
     final file = File(p.join(baseDir.path, fileName));
+    await file.writeAsBytes(bytes);
+    return file;
+  }
+
+  List<int> generateProcurementReport({
+    required ProcurementSummary summary,
+    required DateTime startDate,
+    required DateTime endDate,
+  }) {
+    final excel = Excel.createExcel();
+    const sheetName = 'Procurement';
+    excel.rename('Sheet1', sheetName);
+    final sheet = excel[sheetName];
+    final currencyFormat =
+        NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0);
+    final dateFormat = DateFormat('yyyy-MM-dd');
+
+    sheet.appendRow([
+      TextCellValue('Pharmacy Inventory Platform — Procurement Report'),
+    ]);
+    sheet.appendRow([
+      TextCellValue(
+        'Period: ${dateFormat.format(startDate)} to ${dateFormat.format(endDate)}',
+      ),
+    ]);
+    sheet.appendRow([TextCellValue('Metric'), TextCellValue('Value')]);
+    sheet.appendRow([
+      TextCellValue('Total Purchases'),
+      TextCellValue(currencyFormat.format(summary.totalPurchaseSpend)),
+    ]);
+    sheet.appendRow([
+      TextCellValue('Purchase Orders'),
+      IntCellValue(summary.totalOrdersCount),
+    ]);
+    sheet.appendRow([
+      TextCellValue('Batches Received'),
+      IntCellValue(summary.receivedBatchesCount),
+    ]);
+    sheet.appendRow(
+        [TextCellValue('Supplier'), TextCellValue('Purchase Spend')]);
+    for (final entry in summary.supplierSpendMap.entries) {
+      sheet.appendRow([
+        TextCellValue(entry.key),
+        TextCellValue(currencyFormat.format(entry.value)),
+      ]);
+    }
+
+    return excel.save() ?? [];
+  }
+
+  Future<File> exportAndSaveProcurementReport({
+    required ProcurementSummary summary,
+    required DateTime startDate,
+    required DateTime endDate,
+    Directory? baseDirectoryOverride,
+  }) async {
+    final bytes = generateProcurementReport(
+      summary: summary,
+      startDate: startDate,
+      endDate: endDate,
+    );
+    final baseDir =
+        baseDirectoryOverride ?? await getApplicationDocumentsDirectory();
+    final file = File(
+      p.join(
+        baseDir.path,
+        'pharmacy_procurement_report_${DateFormat('yyyy-MM-dd').format(startDate)}_'
+        '${DateFormat('yyyy-MM-dd').format(endDate)}_'
+        '${DateFormat('yyyyMMdd_HHmmss').format(DateTime.now())}.xlsx',
+      ),
+    );
+    await file.writeAsBytes(bytes);
+    return file;
+  }
+
+  List<int> generateCashMovementReport({
+    required List<CashMovement> movements,
+    required DateTime startDate,
+    required DateTime endDate,
+  }) {
+    final excel = Excel.createExcel();
+    const sheetName = 'Cash Movements';
+    excel.rename('Sheet1', sheetName);
+    final sheet = excel[sheetName];
+    final currencyFormat =
+        NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0);
+    final dateFormat = DateFormat('yyyy-MM-dd');
+    final timeFormat = DateFormat('yyyy-MM-dd HH:mm');
+
+    double totalCashIn = 0;
+    double totalCashOut = 0;
+    double totalOwnerDraw = 0;
+    for (final movement in movements) {
+      if (movement.movementType == 'cash_out') {
+        totalCashOut += movement.amount;
+        if (movement.category == 'owner_draw') {
+          totalOwnerDraw += movement.amount;
+        }
+      } else {
+        totalCashIn += movement.amount;
+      }
+    }
+
+    sheet.appendRow([
+      TextCellValue('Pharmacy Inventory Platform — Cash Movement Report'),
+    ]);
+    sheet.appendRow([
+      TextCellValue(
+        'Period: ${dateFormat.format(startDate)} to ${dateFormat.format(endDate)}',
+      ),
+    ]);
+    sheet.appendRow([
+      TextCellValue('Date & Time'),
+      TextCellValue('Type'),
+      TextCellValue('Category'),
+      TextCellValue('Amount'),
+      TextCellValue('Notes'),
+    ]);
+    for (final movement in movements) {
+      sheet.appendRow([
+        TextCellValue(timeFormat.format(movement.createdAt)),
+        TextCellValue(movement.movementType),
+        TextCellValue(movement.category),
+        TextCellValue(currencyFormat.format(movement.amount)),
+        TextCellValue(movement.notes ?? '-'),
+      ]);
+    }
+    sheet.appendRow([]);
+    sheet.appendRow([
+      TextCellValue('Total Cash In'),
+      TextCellValue(currencyFormat.format(totalCashIn))
+    ]);
+    sheet.appendRow([
+      TextCellValue('Total Cash Out'),
+      TextCellValue(currencyFormat.format(totalCashOut))
+    ]);
+    sheet.appendRow([
+      TextCellValue('Owner Draw'),
+      TextCellValue(currencyFormat.format(totalOwnerDraw))
+    ]);
+
+    return excel.save() ?? [];
+  }
+
+  Future<File> exportAndSaveCashMovementReport({
+    required List<CashMovement> movements,
+    required DateTime startDate,
+    required DateTime endDate,
+    Directory? baseDirectoryOverride,
+  }) async {
+    final bytes = generateCashMovementReport(
+      movements: movements,
+      startDate: startDate,
+      endDate: endDate,
+    );
+    final baseDir =
+        baseDirectoryOverride ?? await getApplicationDocumentsDirectory();
+    final file = File(
+      p.join(
+        baseDir.path,
+        'pharmacy_cash_movement_report_${DateFormat('yyyy-MM-dd').format(startDate)}_'
+        '${DateFormat('yyyy-MM-dd').format(endDate)}_'
+        '${DateFormat('yyyyMMdd_HHmmss').format(DateTime.now())}.xlsx',
+      ),
+    );
     await file.writeAsBytes(bytes);
     return file;
   }

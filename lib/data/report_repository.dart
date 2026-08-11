@@ -385,7 +385,8 @@ class ReportRepository {
     required int userId,
     Directory? baseDirectoryOverride,
   }) async {
-    final file = await _excelReportService.exportAndSaveBestSellingMedicinesReport(
+    final file =
+        await _excelReportService.exportAndSaveBestSellingMedicinesReport(
       filter: filter,
       rows: rows,
       baseDirectoryOverride: baseDirectoryOverride,
@@ -399,6 +400,54 @@ class ReportRepository {
       details: 'Period: ${filter.startDate.toIso8601String()} to '
           '${filter.endDate.toIso8601String()}, rankMode: $rankModeLabel, '
           'rows: ${rows.length}',
+    );
+    return file;
+  }
+
+  /// Saves the exact procurement data rendered by the report, then records
+  /// the successful export in the audit trail.
+  Future<File> exportProcurementReport({
+    required ProcurementSummary summary,
+    required DateTime startDate,
+    required DateTime endDate,
+    required int userId,
+    Directory? baseDirectoryOverride,
+  }) async {
+    final file = await _excelReportService.exportAndSaveProcurementReport(
+      summary: summary,
+      startDate: startDate,
+      endDate: endDate,
+      baseDirectoryOverride: baseDirectoryOverride,
+    );
+    await logExport(
+      userId: userId,
+      exportType: 'procurement_report',
+      details: 'Period: ${startDate.toIso8601String()} to '
+          '${endDate.toIso8601String()}, rows: ${summary.supplierSpendMap.length}',
+    );
+    return file;
+  }
+
+  /// Saves the exact cash movement rows rendered by the report, then records
+  /// the successful export in the audit trail.
+  Future<File> exportCashMovementReport({
+    required List<CashMovement> movements,
+    required DateTime startDate,
+    required DateTime endDate,
+    required int userId,
+    Directory? baseDirectoryOverride,
+  }) async {
+    final file = await _excelReportService.exportAndSaveCashMovementReport(
+      movements: movements,
+      startDate: startDate,
+      endDate: endDate,
+      baseDirectoryOverride: baseDirectoryOverride,
+    );
+    await logExport(
+      userId: userId,
+      exportType: 'cash_movement_report',
+      details: 'Period: ${startDate.toIso8601String()} to '
+          '${endDate.toIso8601String()}, rows: ${movements.length}',
     );
     return file;
   }

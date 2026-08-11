@@ -413,4 +413,72 @@ void main() {
       expect(logs.single.newValue, contains('netRevenue'));
     });
   });
+
+  group('report export audit parity', () {
+    late Directory tempDir;
+    late ReportRepository exportRepo;
+
+    setUp(() async {
+      tempDir = await Directory.systemTemp.createTemp('report_export_test_');
+      exportRepo = ReportRepository(
+        db,
+        auditLogger: AuditLogger(db),
+        excelReportService: ExcelReportService(),
+      );
+    });
+
+    tearDown(() async {
+      if (await tempDir.exists()) {
+        await tempDir.delete(recursive: true);
+      }
+    });
+
+    test(
+        'exports the supplied procurement summary before recording its audit event',
+        () async {
+      final file = await exportRepo.exportProcurementReport(
+        summary: const ProcurementSummary(
+          totalPurchaseSpend: 50000,
+          totalOrdersCount: 1,
+          receivedBatchesCount: 2,
+          supplierSpendMap: {'Supplier A': 50000},
+        ),
+        startDate: DateTime(2026, 8, 1),
+        endDate: DateTime(2026, 8, 11, 23, 59, 59),
+        userId: 1,
+        baseDirectoryOverride: tempDir,
+      );
+
+      expect(await file.exists(), isTrue);
+      final logs = await db.select(db.auditLogs).get();
+      expect(logs.single.action, 'export_procurement_report');
+      expect(logs.single.userId, 1);
+      expect(logs.single.newValue, contains('rows: 1'));
+    });
+
+    test('exports the supplied movement rows before recording its audit event',
+        () async {
+      final movement = await shiftRepo.recordCashMovement(
+        shiftId: 1,
+        movementType: 'cash_out',
+        category: 'owner_draw',
+        amount: 25000,
+        performedBy: 1,
+      );
+
+      final file = await exportRepo.exportCashMovementReport(
+        movements: [movement],
+        startDate: DateTime(2026, 8, 1),
+        endDate: DateTime(2026, 8, 11, 23, 59, 59),
+        userId: 1,
+        baseDirectoryOverride: tempDir,
+      );
+
+      expect(await file.exists(), isTrue);
+      final logs = await db.select(db.auditLogs).get();
+      expect(logs.single.action, 'export_cash_movement_report');
+      expect(logs.single.userId, 1);
+      expect(logs.single.newValue, contains('rows: 1'));
+    });
+  });
 }
