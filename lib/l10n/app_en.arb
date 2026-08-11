@@ -374,6 +374,13 @@
   "notesOptional": "Notes (optional)",
   "cashMovementSaved": "Cash movement recorded.",
   "cashMovementFailed": "Could not record cash movement. Try again.",
-  "saveCashMovement": "Save cash movement"
+  "saveCashMovement": "Save cash movement",
+  "reviewShift": "Review shift",
+  "reviewNoteOptional": "Review note (optional)",
+  "reviewShiftButton": "Mark reviewed",
+  "shiftReviewed": "Reviewed",
+  "shiftUnreviewed": "Needs review",
+  "reviewSaved": "Shift review saved.",
+  "reviewFailed": "Could not save shift review. Try again."
 }
 

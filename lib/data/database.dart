@@ -152,6 +152,10 @@ class CashierShifts extends Table {
   RealColumn get actualCash => real().nullable()(); // entered by cashier
   RealColumn get discrepancy => real().nullable()(); // actual - expected
   TextColumn get discrepancyReason => text().nullable()();
+  @ReferenceName('reviewedCashierShifts')
+  IntColumn get reviewedBy => integer().nullable().references(Users, #id)();
+  DateTimeColumn get reviewedAt => dateTime().nullable()();
+  TextColumn get reviewNote => text().nullable()();
   TextColumn get status => text()(); // open|closed
   DateTimeColumn get openedAt => dateTime().withDefault(currentDateAndTime)();
   DateTimeColumn get closedAt => dateTime().nullable()();
@@ -360,7 +364,7 @@ class AppDatabase extends _$AppDatabase {
   factory AppDatabase.defaultConnection() => AppDatabase(openConnection());
 
   @override
-  int get schemaVersion => 10;
+  int get schemaVersion => 11;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -402,6 +406,11 @@ class AppDatabase extends _$AppDatabase {
           if (from < 10) {
             await m.addColumn(products, products.imagePath);
             await m.addColumn(users, users.photoPath);
+          }
+          if (from < 11) {
+            await m.addColumn(cashierShifts, cashierShifts.reviewedBy);
+            await m.addColumn(cashierShifts, cashierShifts.reviewedAt);
+            await m.addColumn(cashierShifts, cashierShifts.reviewNote);
           }
         },
       );

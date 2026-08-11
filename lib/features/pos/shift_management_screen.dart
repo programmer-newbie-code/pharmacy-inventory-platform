@@ -194,9 +194,34 @@ class _ShiftManagementScreenState extends ConsumerState<ShiftManagementScreen> {
     }
   }
 
+  Future<void> _handleReviewShift(CashierShift shift) async {
+    final currentUser = ref.read(authSessionProvider);
+    final l10n = AppLocalizations.of(context)!;
+    if (currentUser == null || !ref.read(permissionCheckerProvider).canReviewShifts(currentUser.role)) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.sessionRequired)));
+      return;
+    }
+    final noteController = TextEditingController();
+    final confirmed = await showDialog<bool>(context: context, builder: (ctx) => AlertDialog(
+      title: Text(l10n.reviewShift),
+      content: TextField(key: const Key('reviewShiftNoteInput'), controller: noteController, decoration: InputDecoration(labelText: l10n.reviewNoteOptional)),
+      actions: [TextButton(onPressed: () => Navigator.of(ctx).pop(false), child: Text(l10n.cancelButton)), ElevatedButton(key: const Key('confirmReviewShiftBtn'), onPressed: () => Navigator.of(ctx).pop(true), child: Text(l10n.reviewShiftButton))],
+    ));
+    if (confirmed != true) return;
+    try {
+      await ref.read(cashierShiftRepositoryProvider).reviewShift(shiftId: shift.id, reviewedBy: currentUser.id, reviewNote: noteController.text);
+      ref.invalidate(shiftListFutureProvider);
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.reviewSaved)));
+    } catch (_) {
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.reviewFailed)));
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final currentUser = ref.watch(authSessionProvider);
+    final canReview = ref.watch(permissionCheckerProvider).canReviewShifts(currentUser?.role);
     final shiftListAsync = ref.watch(shiftListFutureProvider);
 
     return Scaffold(
@@ -313,10 +338,13 @@ class _ShiftManagementScreenState extends ConsumerState<ShiftManagementScreen> {
                               ),
                               subtitle: Text(
                                 '${l10n.shiftOpened}: ${s.openedAt.toIso8601String().replaceAll('T', ' ').substring(0, 16)}'
-                                '${isClosed ? '\n${l10n.expectedCash}: Rp ${(s.expectedCash ?? 0).toStringAsFixed(0)} | ${l10n.actualCash}: Rp ${(s.actualCash ?? 0).toStringAsFixed(0)}' : ''}',
+                                '${isClosed ? '\n${l10n.expectedCash}: Rp ${(s.expectedCash ?? 0).toStringAsFixed(0)} | ${l10n.actualCash}: Rp ${(s.actualCash ?? 0).toStringAsFixed(0)}\n${s.reviewedAt == null ? l10n.shiftUnreviewed : l10n.shiftReviewed}' : ''}',
                               ),
                               trailing: isClosed
-                                  ? Chip(
+                                  ? Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Chip(
                                       label: Text(
                                         disc == 0
                                             ? l10n.shiftClosedBalanced
@@ -329,6 +357,10 @@ class _ShiftManagementScreenState extends ConsumerState<ShiftManagementScreen> {
                                           : (disc > 0
                                               ? Colors.blue.shade100
                                               : Colors.red.shade100),
+                                        ),
+                                        if (canReview && s.reviewedAt == null)
+                                          IconButton(key: Key('reviewShiftBtn-${s.id}'), tooltip: l10n.reviewShift, onPressed: () => _handleReviewShift(s), icon: const Icon(Icons.verified_user)),
+                                      ],
                                     )
                                   : null,
                             );
