@@ -103,6 +103,7 @@ class ExcelReportService {
     required List<DetailedSaleRow> rows,
     required DateTime startDate,
     required DateTime endDate,
+    Directory? baseDirectoryOverride,
   }) async {
     final bytes = generateSalesReport(
       summary: summary,
@@ -110,7 +111,8 @@ class ExcelReportService {
       startDate: startDate,
       endDate: endDate,
     );
-    final docsDir = await getApplicationDocumentsDirectory();
+    final docsDir =
+        baseDirectoryOverride ?? await getApplicationDocumentsDirectory();
     final timestamp = DateFormat('yyyyMMdd_HHmmss').format(DateTime.now());
     final file =
         File(p.join(docsDir.path, 'pharmacy_sales_report_$timestamp.xlsx'));

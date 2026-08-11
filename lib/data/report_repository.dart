@@ -119,9 +119,11 @@ class ReportRepository {
     required DateTime endDate,
   }) async {
     final query = _db.select(_db.saleTransactions)
-      ..where((tbl) =>
-          tbl.createdAt.isBiggerOrEqual(Variable(startDate)) &
-          tbl.createdAt.isSmallerOrEqual(Variable(endDate)));
+      ..where(
+        (tbl) =>
+            tbl.createdAt.isBiggerOrEqual(Variable(startDate)) &
+            tbl.createdAt.isSmallerOrEqual(Variable(endDate)),
+      );
     final txns = await query.get();
 
     int count = txns.length;
@@ -130,13 +132,15 @@ class ReportRepository {
     // Calculate COGS by joining sale items with stock batches
     double cogs = 0.0;
     for (final txn in txns) {
-      final items = await (_db.select(_db.saleItems)
-            ..where((tbl) => tbl.transactionId.equals(txn.id)))
+      final items = await (_db.select(
+        _db.saleItems,
+      )..where((tbl) => tbl.transactionId.equals(txn.id)))
           .get();
 
       for (final item in items) {
-        final batch = await (_db.select(_db.stockBatches)
-              ..where((tbl) => tbl.id.equals(item.batchId)))
+        final batch = await (_db.select(
+          _db.stockBatches,
+        )..where((tbl) => tbl.id.equals(item.batchId)))
             .getSingleOrNull();
 
         final costPerUnit = batch?.costPricePerBaseUnit ?? 0.0;
@@ -146,9 +150,11 @@ class ReportRepository {
 
     // Total refunds in the same period
     final refunds = await (_db.select(_db.returnTransactions)
-          ..where((tbl) =>
-              tbl.createdAt.isBiggerOrEqual(Variable(startDate)) &
-              tbl.createdAt.isSmallerOrEqual(Variable(endDate))))
+          ..where(
+            (tbl) =>
+                tbl.createdAt.isBiggerOrEqual(Variable(startDate)) &
+                tbl.createdAt.isSmallerOrEqual(Variable(endDate)),
+          ))
         .get();
     final totalRefunds = refunds.fold(0.0, (sum, r) => sum + r.refundAmount);
 
@@ -172,37 +178,44 @@ class ReportRepository {
     final startDate = filter.startDate;
     final endDate = filter.endDate;
     final transactions = await (_db.select(_db.saleTransactions)
-          ..where((txn) =>
-              txn.createdAt.isBiggerOrEqual(Variable(startDate)) &
-              txn.createdAt.isSmallerOrEqual(Variable(endDate))))
+          ..where(
+            (txn) =>
+                txn.createdAt.isBiggerOrEqual(Variable(startDate)) &
+                txn.createdAt.isSmallerOrEqual(Variable(endDate)),
+          ))
         .get();
     if (transactions.isEmpty) return const [];
 
     final transactionIds = transactions.map((txn) => txn.id).toList();
-    final saleItems = await (_db.select(_db.saleItems)
-          ..where((item) => item.transactionId.isIn(transactionIds)))
+    final saleItems = await (_db.select(
+      _db.saleItems,
+    )..where((item) => item.transactionId.isIn(transactionIds)))
         .get();
     if (saleItems.isEmpty) return const [];
 
     final productIds = saleItems.map((item) => item.productId).toSet().toList();
-    final products = await (_db.select(_db.products)
-          ..where((product) => product.id.isIn(productIds)))
+    final products = await (_db.select(
+      _db.products,
+    )..where((product) => product.id.isIn(productIds)))
         .get();
     final productNames = {
-      for (final product in products) product.id: product.name
+      for (final product in products) product.id: product.name,
     };
 
     final returns = await (_db.select(_db.returnTransactions)
-          ..where((txn) =>
-              txn.createdAt.isBiggerOrEqual(Variable(startDate)) &
-              txn.createdAt.isSmallerOrEqual(Variable(endDate)) &
-              txn.originalTxnId.isIn(transactionIds)))
+          ..where(
+            (txn) =>
+                txn.createdAt.isBiggerOrEqual(Variable(startDate)) &
+                txn.createdAt.isSmallerOrEqual(Variable(endDate)) &
+                txn.originalTxnId.isIn(transactionIds),
+          ))
         .get();
     final returnedBySaleItem = <int, int>{};
     if (returns.isNotEmpty) {
       final returnItems = await (_db.select(_db.returnItems)
             ..where(
-                (item) => item.returnTxnId.isIn(returns.map((txn) => txn.id))))
+              (item) => item.returnTxnId.isIn(returns.map((txn) => txn.id)),
+            ))
           .get();
       for (final item in returnItems) {
         returnedBySaleItem[item.saleItemId] =
@@ -229,10 +242,14 @@ class ReportRepository {
         returnedQuantity: total.returnedQuantity,
         grossRevenue: total.grossRevenue,
         refundedRevenue: total.refundedRevenue,
-        netQuantity: (total.grossQuantity - total.returnedQuantity)
-            .clamp(0, total.grossQuantity),
-        netRevenue: (total.grossRevenue - total.refundedRevenue)
-            .clamp(0.0, total.grossRevenue),
+        netQuantity: (total.grossQuantity - total.returnedQuantity).clamp(
+          0,
+          total.grossQuantity,
+        ),
+        netRevenue: (total.grossRevenue - total.refundedRevenue).clamp(
+          0.0,
+          total.grossRevenue,
+        ),
       );
     }).toList();
     rows.sort((a, b) {
@@ -248,9 +265,11 @@ class ReportRepository {
     BestSellingMedicinesFilter filter,
   ) async {
     final transactions = await (_db.select(_db.saleTransactions)
-          ..where((txn) =>
-              txn.createdAt.isBiggerOrEqual(Variable(filter.startDate)) &
-              txn.createdAt.isSmallerOrEqual(Variable(filter.endDate))))
+          ..where(
+            (txn) =>
+                txn.createdAt.isBiggerOrEqual(Variable(filter.startDate)) &
+                txn.createdAt.isSmallerOrEqual(Variable(filter.endDate)),
+          ))
         .get();
     final paymentCounts = <String, int>{
       'Cash': 0,
@@ -265,8 +284,11 @@ class ReportRepository {
 
     final bestSellingMedicines = await getBestSellingMedicines(filter);
     final products = await (_db.select(_db.products)
-          ..where((product) => product.id
-              .isIn(bestSellingMedicines.map((row) => row.productId))))
+          ..where(
+            (product) => product.id.isIn(
+              bestSellingMedicines.map((row) => row.productId),
+            ),
+          ))
         .get();
     final categories = {
       for (final product in products) product.id: product.category,
@@ -296,9 +318,11 @@ class ReportRepository {
     required DateTime endDate,
   }) async {
     final poQuery = _db.select(_db.purchaseOrders)
-      ..where((tbl) =>
-          tbl.createdAt.isBiggerOrEqual(Variable(startDate)) &
-          tbl.createdAt.isSmallerOrEqual(Variable(endDate)));
+      ..where(
+        (tbl) =>
+            tbl.createdAt.isBiggerOrEqual(Variable(startDate)) &
+            tbl.createdAt.isSmallerOrEqual(Variable(endDate)),
+      );
     final pos = await poQuery.get();
 
     final supplierQuery = await _db.select(_db.suppliers).get();
@@ -317,9 +341,11 @@ class ReportRepository {
     }
 
     final batchesQuery = _db.select(_db.stockBatches)
-      ..where((tbl) =>
-          tbl.receivedDate.isBiggerOrEqual(Variable(startDate)) &
-          tbl.receivedDate.isSmallerOrEqual(Variable(endDate)));
+      ..where(
+        (tbl) =>
+            tbl.receivedDate.isBiggerOrEqual(Variable(startDate)) &
+            tbl.receivedDate.isSmallerOrEqual(Variable(endDate)),
+      );
     final batches = await batchesQuery.get();
 
     return ProcurementSummary(
@@ -336,23 +362,27 @@ class ReportRepository {
     required DateTime endDate,
   }) async {
     final shifts = await (_db.select(_db.cashierShifts)
-          ..where((tbl) =>
-              tbl.status.equals('closed') &
-              tbl.closedAt.isBiggerOrEqual(Variable(startDate)) &
-              tbl.closedAt.isSmallerOrEqual(Variable(endDate))))
+          ..where(
+            (tbl) =>
+                tbl.status.equals('closed') &
+                tbl.closedAt.isBiggerOrEqual(Variable(startDate)) &
+                tbl.closedAt.isSmallerOrEqual(Variable(endDate)),
+          ))
         .get();
 
     return shifts
         .where((s) => s.discrepancy != null && s.discrepancy != 0)
-        .map((s) => ShiftDiscrepancy(
-              shiftId: s.id,
-              cashierId: s.cashierId,
-              expectedCash: s.expectedCash ?? 0,
-              actualCash: s.actualCash ?? 0,
-              discrepancy: s.discrepancy ?? 0,
-              discrepancyReason: s.discrepancyReason,
-              closedAt: s.closedAt!,
-            ))
+        .map(
+          (s) => ShiftDiscrepancy(
+            shiftId: s.id,
+            cashierId: s.cashierId,
+            expectedCash: s.expectedCash ?? 0,
+            actualCash: s.actualCash ?? 0,
+            discrepancy: s.discrepancy ?? 0,
+            discrepancyReason: s.discrepancyReason,
+            closedAt: s.closedAt!,
+          ),
+        )
         .toList();
   }
 
@@ -452,10 +482,44 @@ class ReportRepository {
     return file;
   }
 
+  /// Saves the exact classic-sales data already rendered by the report, then
+  /// records the successful export in the audit trail.
+  Future<File> exportSalesReport({
+    required SalesSummary summary,
+    required List<DetailedSaleRow> rows,
+    required DateTime startDate,
+    required DateTime endDate,
+    required int userId,
+    Directory? baseDirectoryOverride,
+  }) async {
+    final file = await _excelReportService.exportAndSaveReport(
+      summary: summary,
+      rows: rows,
+      startDate: startDate,
+      endDate: endDate,
+      baseDirectoryOverride: baseDirectoryOverride,
+    );
+    if (!await file.exists() || await file.length() == 0) {
+      throw FileSystemException(
+        'Sales report export was not saved.',
+        file.path,
+      );
+    }
+    await logExport(
+      userId: userId,
+      exportType: 'sales_report',
+      details: 'Period: ${startDate.toIso8601String()} to '
+          '${endDate.toIso8601String()}, transactions: '
+          '${summary.totalTransactions}, rows: ${rows.length}',
+    );
+    return file;
+  }
+
   /// Exports prescription sales log as CSV format for BPOM / Kemenkes compliance.
   Future<String> exportPrescriptionSalesCsv() async {
-    final txns = await (_db.select(_db.saleTransactions)
-          ..where((tbl) => tbl.hasPrescription.equals(true)))
+    final txns = await (_db.select(
+      _db.saleTransactions,
+    )..where((tbl) => tbl.hasPrescription.equals(true)))
         .get();
 
     final buffer = StringBuffer();
@@ -464,9 +528,7 @@ class ReportRepository {
     );
 
     for (final _ in txns) {
-      buffer.writeln(
-        ',,,"","",,',
-      );
+      buffer.writeln(',,,"","",,');
     }
 
     return buffer.toString();
@@ -478,20 +540,24 @@ class ReportRepository {
     required DateTime endDate,
   }) async {
     final txns = await (_db.select(_db.saleTransactions)
-          ..where((tbl) =>
-              tbl.createdAt.isBiggerOrEqual(Variable(startDate)) &
-              tbl.createdAt.isSmallerOrEqual(Variable(endDate))))
+          ..where(
+            (tbl) =>
+                tbl.createdAt.isBiggerOrEqual(Variable(startDate)) &
+                tbl.createdAt.isSmallerOrEqual(Variable(endDate)),
+          ))
         .get();
 
     final rows = <DetailedSaleRow>[];
     for (final txn in txns) {
-      final items = await (_db.select(_db.saleItems)
-            ..where((tbl) => tbl.transactionId.equals(txn.id)))
+      final items = await (_db.select(
+        _db.saleItems,
+      )..where((tbl) => tbl.transactionId.equals(txn.id)))
           .get();
 
       for (final item in items) {
-        final product = await (_db.select(_db.products)
-              ..where((tbl) => tbl.id.equals(item.productId)))
+        final product = await (_db.select(
+          _db.products,
+        )..where((tbl) => tbl.id.equals(item.productId)))
             .getSingleOrNull();
 
         rows.add(

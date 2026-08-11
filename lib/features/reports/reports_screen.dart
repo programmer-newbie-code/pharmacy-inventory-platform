@@ -5,6 +5,7 @@ import '../../core/app_theme.dart';
 import '../../core/formatters.dart';
 import '../../core/providers.dart';
 import '../../data/report_repository.dart';
+import '../auth/auth_session.dart';
 import '../../l10n/app_localizations.dart';
 import 'cash_movement_report_screen.dart';
 import 'procurement_report_screen.dart';
@@ -12,8 +13,8 @@ import 'sales_analytics_screen.dart';
 
 enum ReportDateFilter { today, week, month, year, custom }
 
-final salesReportFutureProvider =
-    FutureProvider.family.autoDispose<SalesSummary, DateTimeRange>((ref, range) {
+final salesReportFutureProvider = FutureProvider.family
+    .autoDispose<SalesSummary, DateTimeRange>((ref, range) {
   final repo = ref.watch(reportRepositoryProvider);
   return repo.getSalesSummary(startDate: range.start, endDate: range.end);
 });
@@ -72,12 +73,12 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
         startDate: range.start,
         endDate: range.end,
       );
-      final service = ref.read(excelReportServiceProvider);
-      final file = await service.exportAndSaveReport(
+      final file = await repo.exportSalesReport(
         summary: summary,
         rows: rows,
         startDate: range.start,
         endDate: range.end,
+        userId: ref.read(authSessionProvider)?.id ?? 1,
       );
 
       if (mounted) {
@@ -115,7 +116,14 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
       setState(() {
         _customRange = DateTimeRange(
           start: picked.start,
-          end: DateTime(picked.end.year, picked.end.month, picked.end.day, 23, 59, 59),
+          end: DateTime(
+            picked.end.year,
+            picked.end.month,
+            picked.end.day,
+            23,
+            59,
+            59,
+          ),
         );
         _activeFilter = ReportDateFilter.custom;
       });
@@ -129,9 +137,7 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
     final reportAsync = ref.watch(salesReportFutureProvider(activeRange));
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(l10n.salesReportTitle),
-      ),
+      appBar: AppBar(title: Text(l10n.salesReportTitle)),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -140,7 +146,10 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
             // Date Filter Toolbar
             Card(
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 8,
+                ),
                 child: Wrap(
                   spacing: 8,
                   runSpacing: 8,
@@ -150,32 +159,40 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
                       key: const Key('filterTodayChip'),
                       label: Text(l10n.filterToday),
                       selected: _activeFilter == ReportDateFilter.today,
-                      onSelected: (_) => setState(() => _activeFilter = ReportDateFilter.today),
+                      onSelected: (_) => setState(
+                        () => _activeFilter = ReportDateFilter.today,
+                      ),
                     ),
                     FilterChip(
                       key: const Key('filterWeekChip'),
                       label: Text(l10n.filterThisWeek),
                       selected: _activeFilter == ReportDateFilter.week,
-                      onSelected: (_) => setState(() => _activeFilter = ReportDateFilter.week),
+                      onSelected: (_) =>
+                          setState(() => _activeFilter = ReportDateFilter.week),
                     ),
                     FilterChip(
                       key: const Key('filterMonthChip'),
                       label: Text(l10n.filterThisMonth),
                       selected: _activeFilter == ReportDateFilter.month,
-                      onSelected: (_) => setState(() => _activeFilter = ReportDateFilter.month),
+                      onSelected: (_) => setState(
+                        () => _activeFilter = ReportDateFilter.month,
+                      ),
                     ),
                     FilterChip(
                       key: const Key('filterYearChip'),
                       label: Text(l10n.filterThisYear),
                       selected: _activeFilter == ReportDateFilter.year,
-                      onSelected: (_) => setState(() => _activeFilter = ReportDateFilter.year),
+                      onSelected: (_) =>
+                          setState(() => _activeFilter = ReportDateFilter.year),
                     ),
                     ActionChip(
                       key: const Key('filterCustomChip'),
                       avatar: const Icon(Icons.date_range, size: 18),
-                      label: Text(_activeFilter == ReportDateFilter.custom
-                          ? '${activeRange.start.toString().split(' ').first} - ${activeRange.end.toString().split(' ').first}'
-                          : l10n.filterCustom),
+                      label: Text(
+                        _activeFilter == ReportDateFilter.custom
+                            ? '${activeRange.start.toString().split(' ').first} - ${activeRange.end.toString().split(' ').first}'
+                            : l10n.filterCustom,
+                      ),
                       backgroundColor: _activeFilter == ReportDateFilter.custom
                           ? Theme.of(context).colorScheme.primaryContainer
                           : null,
@@ -209,29 +226,41 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
                             const SizedBox(height: 6),
                             Text(
                               '${activeRange.start.toString().split(' ').first} s/d ${activeRange.end.toString().split(' ').first}',
-                              style: TextStyle(color: Colors.grey.shade600, fontSize: 13),
+                              style: TextStyle(
+                                color: Colors.grey.shade600,
+                                fontSize: 13,
+                              ),
                             ),
                             const SizedBox(height: 20),
-                            _buildKpiRow(l10n.totalTransactions,
-                                '${summary.totalTransactions}', AppTheme.infoColor),
+                            _buildKpiRow(
+                              l10n.totalTransactions,
+                              '${summary.totalTransactions}',
+                              AppTheme.infoColor,
+                            ),
                             const Divider(height: 24),
                             _buildKpiRow(
-                                l10n.totalRevenue,
-                                formatIdr(summary.totalRevenue),
-                                AppTheme.successColor),
+                              l10n.totalRevenue,
+                              formatIdr(summary.totalRevenue),
+                              AppTheme.successColor,
+                            ),
                             const Divider(height: 24),
                             _buildKpiRow(
-                                l10n.cogs,
-                                formatIdr(summary.totalCostOfGoods),
-                                AppTheme.warningColor),
-                            const Divider(height: 24),
-                            _buildKpiRow(l10n.grossProfit,
-                                formatIdr(summary.grossProfit), Colors.purple),
+                              l10n.cogs,
+                              formatIdr(summary.totalCostOfGoods),
+                              AppTheme.warningColor,
+                            ),
                             const Divider(height: 24),
                             _buildKpiRow(
-                                l10n.grossMargin,
-                                '${marginPct.toStringAsFixed(1)}%',
-                                AppTheme.primaryColor),
+                              l10n.grossProfit,
+                              formatIdr(summary.grossProfit),
+                              Colors.purple,
+                            ),
+                            const Divider(height: 24),
+                            _buildKpiRow(
+                              l10n.grossMargin,
+                              '${marginPct.toStringAsFixed(1)}%',
+                              AppTheme.primaryColor,
+                            ),
                           ],
                         ),
                       ),
@@ -249,7 +278,8 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
                       onPressed: () {
                         Navigator.of(context).push(
                           MaterialPageRoute(
-                              builder: (_) => const SalesAnalyticsScreen()),
+                            builder: (_) => const SalesAnalyticsScreen(),
+                          ),
                         );
                       },
                     ),
@@ -262,11 +292,14 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
                         foregroundColor: Colors.white,
                       ),
                       icon: const Icon(Icons.shopping_cart_checkout),
-                      label: const Text('Laporan Pembelian & Stok (Procurement)'),
+                      label: const Text(
+                        'Laporan Pembelian & Stok (Procurement)',
+                      ),
                       onPressed: () {
                         Navigator.of(context).push(
                           MaterialPageRoute(
-                              builder: (_) => const ProcurementReportScreen()),
+                            builder: (_) => const ProcurementReportScreen(),
+                          ),
                         );
                       },
                     ),
@@ -283,7 +316,8 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
                       onPressed: () {
                         Navigator.of(context).push(
                           MaterialPageRoute(
-                              builder: (_) => const CashMovementReportScreen()),
+                            builder: (_) => const CashMovementReportScreen(),
+                          ),
                         );
                       },
                     ),
@@ -300,12 +334,16 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
                               width: 20,
                               height: 20,
                               child: CircularProgressIndicator(
-                                  color: Colors.white, strokeWidth: 2),
+                                color: Colors.white,
+                                strokeWidth: 2,
+                              ),
                             )
                           : const Icon(Icons.table_chart),
-                      label: Text(_isExporting
-                          ? l10n.exportingReport
-                          : l10n.exportExcelButton),
+                      label: Text(
+                        _isExporting
+                            ? l10n.exportingReport
+                            : l10n.exportExcelButton,
+                      ),
                       onPressed: _isExporting
                           ? null
                           : () => _exportExcel(summary, activeRange),
@@ -332,12 +370,17 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(title,
-            style: const TextStyle(fontSize: 14, color: Color(0xFF333333))),
+        Text(
+          title,
+          style: const TextStyle(fontSize: 14, color: Color(0xFF333333)),
+        ),
         Text(
           value,
           style: TextStyle(
-              fontSize: 16, fontWeight: FontWeight.bold, color: color),
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+            color: color,
+          ),
         ),
       ],
     );
