@@ -30,12 +30,17 @@ void main() {
 
     expect(find.text('Pharmacy Branding & Logo'), findsOneWidget);
     expect(find.byKey(const Key('brandingNameInput')), findsOneWidget);
+    expect(find.byKey(const Key('receiptDirInput')), findsOneWidget);
 
-    await tester.enterText(find.byKey(const Key('brandingNameInput')), 'Apotek Utama Express');
+    await tester.enterText(
+        find.byKey(const Key('brandingNameInput')), 'Apotek Utama Express');
+    await tester.enterText(
+        find.byKey(const Key('receiptDirInput')), 'C:/Pharmacy Receipts');
     await tester.tap(find.byKey(const Key('saveBrandingBtn')));
     await tester.pumpAndSettle();
 
     final prefs = await SharedPreferences.getInstance();
     expect(prefs.getString('pharmacy_name'), 'Apotek Utama Express');
+    expect(prefs.getString('receipt_custom_base_dir'), 'C:/Pharmacy Receipts');
   });
 }

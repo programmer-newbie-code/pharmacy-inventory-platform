@@ -147,6 +147,12 @@ void main() {
     await tester.tap(find.byIcon(Icons.point_of_sale_outlined));
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('mobileShellNavigation')), findsOneWidget);
+
+    await tester.tap(find.byIcon(Icons.more_horiz));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Peringatan'), findsOneWidget);
+    expect(find.text('Laporan & Keuangan'), findsOneWidget);
   });
 
   testWidgets('shows authenticated admin navigation in the desktop shell',
