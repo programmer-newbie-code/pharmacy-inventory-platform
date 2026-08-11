@@ -73,12 +73,13 @@ class BackupService {
       for (final entry in data.entries) entry.key: entry.value.length,
     };
 
-    return const JsonEncoder.withIndent('  ').convert({
+    final document = BackupDocument.withIntegrity({
       'schemaVersion': BackupDocument.currentSchemaVersion,
       'createdAt': DateTime.now().toIso8601String(),
       'counts': counts,
       'data': data,
     });
+    return const JsonEncoder.withIndent('  ').convert(document);
   }
 
   /// Creates a full local database backup JSON file.
@@ -106,100 +107,114 @@ class BackupService {
 
   /// Restores database tables from a backup JSON string within a transaction.
   Future<bool> restoreFromBackupData(String jsonStr) async {
-    final document = BackupDocument.parseAndValidate(jsonStr);
-    final data = document.data;
+    try {
+      final document = BackupDocument.parseAndValidate(jsonStr);
+      final data = document.data;
 
-    await _db.transaction(() async {
-      await _db.delete(_db.returnItems).go();
-      await _db.delete(_db.returnTransactions).go();
-      await _db.delete(_db.saleItems).go();
-      await _db.delete(_db.saleTransactions).go();
-      await _db.delete(_db.purchaseOrderItems).go();
-      await _db.delete(_db.purchaseOrders).go();
-      await _db.delete(_db.stockBatches).go();
-      await _db.delete(_db.cashierShifts).go();
-      await _db.delete(_db.auditLogs).go();
-      await _db.delete(_db.csvImportLogs).go();
-      await _db.delete(_db.products).go();
-      await _db.delete(_db.suppliers).go();
-      await _db.delete(_db.storageLocations).go();
-      await _db.delete(_db.users).go();
+      await _db.transaction(() async {
+        await _db.delete(_db.returnItems).go();
+        await _db.delete(_db.returnTransactions).go();
+        await _db.delete(_db.saleItems).go();
+        await _db.delete(_db.saleTransactions).go();
+        await _db.delete(_db.purchaseOrderItems).go();
+        await _db.delete(_db.purchaseOrders).go();
+        await _db.delete(_db.stockBatches).go();
+        await _db.delete(_db.cashierShifts).go();
+        await _db.delete(_db.auditLogs).go();
+        await _db.delete(_db.csvImportLogs).go();
+        await _db.delete(_db.products).go();
+        await _db.delete(_db.suppliers).go();
+        await _db.delete(_db.storageLocations).go();
+        await _db.delete(_db.users).go();
 
-      for (final row in data['users']!) {
-        await _db.into(_db.users).insert(User.fromJson(_json(row)));
-      }
-      for (final row in data['storageLocations']!) {
-        await _db
-            .into(_db.storageLocations)
-            .insert(StorageLocation.fromJson(_json(row)));
-      }
-      for (final row in data['suppliers']!) {
-        await _db.into(_db.suppliers).insert(Supplier.fromJson(_json(row)));
-      }
-      for (final row in data['products']!) {
-        await _db.into(_db.products).insert(Product.fromJson(_json(row)));
-      }
-      for (final row in data['stockBatches']!) {
-        await _db
-            .into(_db.stockBatches)
-            .insert(StockBatch.fromJson(_json(row)));
-      }
-      for (final row in data['saleTransactions']!) {
-        await _db
-            .into(_db.saleTransactions)
-            .insert(SaleTransaction.fromJson(_json(row)));
-      }
-      for (final row in data['saleItems']!) {
-        await _db.into(_db.saleItems).insert(SaleItem.fromJson(_json(row)));
-      }
-      for (final row in data['auditLogs']!) {
-        await _db.into(_db.auditLogs).insert(AuditLog.fromJson(_json(row)));
-      }
-      for (final row in data['csvImportLogs'] ?? const []) {
-        await _db
-            .into(_db.csvImportLogs)
-            .insert(CsvImportLog.fromJson(_json(row)));
-      }
-      for (final row in data['cashierShifts']!) {
-        await _db
-            .into(_db.cashierShifts)
-            .insert(CashierShift.fromJson(_json(row)));
-      }
-      for (final row in data['returnTransactions']!) {
-        await _db
-            .into(_db.returnTransactions)
-            .insert(ReturnTransaction.fromJson(_json(row)));
-      }
-      for (final row in data['returnItems']!) {
-        await _db.into(_db.returnItems).insert(ReturnItem.fromJson(_json(row)));
-      }
-      for (final row in data['purchaseOrders']!) {
-        await _db
-            .into(_db.purchaseOrders)
-            .insert(PurchaseOrder.fromJson(_json(row)));
-      }
-      for (final row in data['purchaseOrderItems']!) {
-        await _db
-            .into(_db.purchaseOrderItems)
-            .insert(PurchaseOrderItem.fromJson(_json(row)));
-      }
+        for (final row in data['users']!) {
+          await _db.into(_db.users).insert(User.fromJson(_json(row)));
+        }
+        for (final row in data['storageLocations']!) {
+          await _db
+              .into(_db.storageLocations)
+              .insert(StorageLocation.fromJson(_json(row)));
+        }
+        for (final row in data['suppliers']!) {
+          await _db.into(_db.suppliers).insert(Supplier.fromJson(_json(row)));
+        }
+        for (final row in data['products']!) {
+          await _db.into(_db.products).insert(Product.fromJson(_json(row)));
+        }
+        for (final row in data['stockBatches']!) {
+          await _db
+              .into(_db.stockBatches)
+              .insert(StockBatch.fromJson(_json(row)));
+        }
+        for (final row in data['saleTransactions']!) {
+          await _db
+              .into(_db.saleTransactions)
+              .insert(SaleTransaction.fromJson(_json(row)));
+        }
+        for (final row in data['saleItems']!) {
+          await _db.into(_db.saleItems).insert(SaleItem.fromJson(_json(row)));
+        }
+        for (final row in data['auditLogs']!) {
+          await _db.into(_db.auditLogs).insert(AuditLog.fromJson(_json(row)));
+        }
+        for (final row in data['csvImportLogs'] ?? const []) {
+          await _db
+              .into(_db.csvImportLogs)
+              .insert(CsvImportLog.fromJson(_json(row)));
+        }
+        for (final row in data['cashierShifts']!) {
+          await _db
+              .into(_db.cashierShifts)
+              .insert(CashierShift.fromJson(_json(row)));
+        }
+        for (final row in data['returnTransactions']!) {
+          await _db
+              .into(_db.returnTransactions)
+              .insert(ReturnTransaction.fromJson(_json(row)));
+        }
+        for (final row in data['returnItems']!) {
+          await _db
+              .into(_db.returnItems)
+              .insert(ReturnItem.fromJson(_json(row)));
+        }
+        for (final row in data['purchaseOrders']!) {
+          await _db
+              .into(_db.purchaseOrders)
+              .insert(PurchaseOrder.fromJson(_json(row)));
+        }
+        for (final row in data['purchaseOrderItems']!) {
+          await _db
+              .into(_db.purchaseOrderItems)
+              .insert(PurchaseOrderItem.fromJson(_json(row)));
+        }
 
-      await _db.delete(_db.backupLogs).go();
-      for (final row in data['backupLogs']!) {
-        await _db.into(_db.backupLogs).insert(BackupLog.fromJson(_json(row)));
-      }
-    });
+        await _db.delete(_db.backupLogs).go();
+        for (final row in data['backupLogs']!) {
+          await _db.into(_db.backupLogs).insert(BackupLog.fromJson(_json(row)));
+        }
+      });
 
-    await _db.into(_db.backupLogs).insert(
-          BackupLogsCompanion.insert(
-            destination: 'restore',
-            status: 'Success',
-            fileSize: Value(utf8.encode(jsonStr).length),
-            timestamp: Value(DateTime.now()),
-          ),
-        );
+      await _db.into(_db.backupLogs).insert(
+            BackupLogsCompanion.insert(
+              destination: 'restore',
+              status: 'Success',
+              fileSize: Value(utf8.encode(jsonStr).length),
+              timestamp: Value(DateTime.now()),
+            ),
+          );
 
-    return true;
+      return true;
+    } catch (_) {
+      await _db.into(_db.backupLogs).insert(
+            BackupLogsCompanion.insert(
+              destination: 'restore',
+              status: 'Failed',
+              fileSize: Value(utf8.encode(jsonStr).length),
+              timestamp: Value(DateTime.now()),
+            ),
+          );
+      rethrow;
+    }
   }
 
   /// Restores database tables from a backup JSON file within a transaction.

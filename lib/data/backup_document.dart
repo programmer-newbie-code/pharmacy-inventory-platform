@@ -1,5 +1,7 @@
 import 'dart:convert';
 
+import 'package:crypto/crypto.dart';
+
 class BackupValidationException implements Exception {
   BackupValidationException(this.message);
 
@@ -42,6 +44,16 @@ class BackupDocument {
   final DateTime createdAt;
   final Map<String, List<Map<String, Object?>>> data;
 
+  /// Adds an integrity record without changing legacy document semantics.
+  static Map<String, dynamic> withIntegrity(Map<String, dynamic> document) {
+    final result = Map<String, dynamic>.from(document)..remove('integrity');
+    result['integrity'] = {
+      'algorithm': 'sha256',
+      'checksum': _checksumFor(result),
+    };
+    return result;
+  }
+
   static BackupDocument parseAndValidate(String source) {
     final Object? decoded;
     try {
@@ -52,6 +64,7 @@ class BackupDocument {
     if (decoded is! Map<String, dynamic>) {
       throw BackupValidationException('Backup root must be an object.');
     }
+    _validateIntegrity(decoded);
 
     final version = decoded['schemaVersion'] ?? decoded['version'];
     if (version is! int || version < 1 || version > currentSchemaVersion) {
@@ -118,6 +131,23 @@ class BackupDocument {
     return BackupDocument(
         schemaVersion: version, createdAt: createdAt, data: data);
   }
+
+  static void _validateIntegrity(Map<String, dynamic> decoded) {
+    final integrity = decoded['integrity'];
+    if (integrity == null) return;
+    if (integrity is! Map ||
+        integrity['algorithm'] != 'sha256' ||
+        integrity['checksum'] is! String) {
+      throw BackupValidationException('Backup integrity metadata is invalid.');
+    }
+    final content = Map<String, dynamic>.from(decoded)..remove('integrity');
+    if (integrity['checksum'] != _checksumFor(content)) {
+      throw BackupValidationException('Backup integrity check failed.');
+    }
+  }
+
+  static String _checksumFor(Map<String, dynamic> document) =>
+      sha256.convert(utf8.encode(jsonEncode(document))).toString();
 
   static void _validateCounts(
     Object? rawCounts,
