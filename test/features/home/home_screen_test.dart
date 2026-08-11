@@ -189,7 +189,7 @@ void main() {
         home: PharmacyShell(),
       ),
     ));
-    await tester.pumpAndSettle();
+    await tester.pump();
 
     expect(find.byKey(const Key('desktopNavUsers')), findsOneWidget);
     expect(find.byKey(const Key('desktopNavBackup')), findsOneWidget);
