@@ -331,6 +331,19 @@
   "exportBestSellingSaved": "Best-selling medicines report saved: {path}",
   "@exportBestSellingSaved": {"placeholders": {"path": {}}},
   "exportBestSellingFailed": "Report export failed. Check storage access and try again.",
-  "exportBestSellingDisabledEmpty": "No sales in this period to export."
+  "exportBestSellingDisabledEmpty": "No sales in this period to export.",
+  "filterDate": "Filter date",
+  "procurementTotalPurchases": "Total purchases",
+  "procurementPurchaseOrders": "Purchase orders",
+  "procurementBatchesReceived": "Batches received",
+  "procurementBySupplier": "Purchases by supplier",
+  "procurementEmpty": "No purchases in the selected period.",
+  "cashMovementEmpty": "No cash movements in the selected period.",
+  "exportProcurementTooltip": "Export procurement report to Excel",
+  "exportProcurementEmpty": "No supplier purchases in this period to export.",
+  "exportingProcurement": "Exporting procurement report...",
+  "exportCashMovementTooltip": "Export cash movement report to Excel",
+  "exportCashMovementEmpty": "No cash movements in this period to export.",
+  "exportingCashMovement": "Exporting cash movement report..."
 }
 

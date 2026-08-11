@@ -331,6 +331,19 @@
   "exportBestSellingSaved": "Laporan obat terlaris disimpan: {path}",
   "@exportBestSellingSaved": {"placeholders": {"path": {}}},
   "exportBestSellingFailed": "Ekspor laporan gagal. Periksa akses penyimpanan lalu coba lagi.",
-  "exportBestSellingDisabledEmpty": "Tidak ada penjualan pada periode ini untuk diekspor."
+  "exportBestSellingDisabledEmpty": "Tidak ada penjualan pada periode ini untuk diekspor.",
+  "filterDate": "Filter tanggal",
+  "procurementTotalPurchases": "Total pembelian",
+  "procurementPurchaseOrders": "Pesanan pembelian",
+  "procurementBatchesReceived": "Batch diterima",
+  "procurementBySupplier": "Pembelian per pemasok",
+  "procurementEmpty": "Tidak ada pembelian pada periode yang dipilih.",
+  "cashMovementEmpty": "Belum ada transaksi arus kas pada periode ini.",
+  "exportProcurementTooltip": "Ekspor laporan pembelian ke Excel",
+  "exportProcurementEmpty": "Tidak ada pembelian pemasok pada periode ini untuk diekspor.",
+  "exportingProcurement": "Mengekspor laporan pembelian...",
+  "exportCashMovementTooltip": "Ekspor laporan arus kas ke Excel",
+  "exportCashMovementEmpty": "Tidak ada arus kas pada periode ini untuk diekspor.",
+  "exportingCashMovement": "Mengekspor laporan arus kas..."
 }
 

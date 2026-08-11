@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:excel/excel.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:pharmacy_inventory_platform/data/database.dart';
 import 'package:pharmacy_inventory_platform/data/excel_report_service.dart';
 import 'package:pharmacy_inventory_platform/data/report_repository.dart';
 
@@ -11,7 +12,9 @@ void main() {
     service = ExcelReportService();
   });
 
-  test('generateSalesReport creates non-empty Excel bytes for summary and detailed rows', () {
+  test(
+      'generateSalesReport creates non-empty Excel bytes for summary and detailed rows',
+      () {
     const summary = SalesSummary(
       totalTransactions: 1,
       totalRevenue: 55000,
@@ -74,7 +77,9 @@ void main() {
       ),
     ];
 
-    test('includes period, rank mode, headers, and rows in the exact order given', () {
+    test(
+        'includes period, rank mode, headers, and rows in the exact order given',
+        () {
       final bytes = service.generateBestSellingMedicinesReport(
         filter: filter,
         rows: rows,
@@ -139,7 +144,9 @@ void main() {
       }
     });
 
-    test('writes a deterministic, descriptive filename into the target directory', () async {
+    test(
+        'writes a deterministic, descriptive filename into the target directory',
+        () async {
       final filter = BestSellingMedicinesFilter(
         startDate: DateTime(2026, 8, 1),
         endDate: DateTime(2026, 8, 11),
@@ -160,5 +167,59 @@ void main() {
       expect(file.path, endsWith('.xlsx'));
       expect(await file.readAsBytes(), isNotEmpty);
     });
+  });
+
+  test(
+      'generates procurement and cash-movement reports from the supplied screen data',
+      () {
+    const procurement = ProcurementSummary(
+      totalPurchaseSpend: 125000,
+      totalOrdersCount: 2,
+      receivedBatchesCount: 3,
+      supplierSpendMap: {'Supplier A': 100000, 'Supplier B': 25000},
+    );
+    final movements = [
+      CashMovement(
+        id: 2,
+        shiftId: 1,
+        movementType: 'cash_out',
+        category: 'owner_draw',
+        amount: 50000,
+        notes: 'Owner draw',
+        performedBy: 1,
+        createdAt: DateTime(2026, 8, 11, 10),
+      ),
+      CashMovement(
+        id: 1,
+        shiftId: 1,
+        movementType: 'cash_in',
+        category: 'topup',
+        amount: 100000,
+        notes: null,
+        performedBy: 1,
+        createdAt: DateTime(2026, 8, 11, 9),
+      ),
+    ];
+    final startDate = DateTime(2026, 8, 1);
+    final endDate = DateTime(2026, 8, 11, 23, 59, 59);
+
+    final procurementBytes = service.generateProcurementReport(
+      summary: procurement,
+      startDate: startDate,
+      endDate: endDate,
+    );
+    final cashBytes = service.generateCashMovementReport(
+      movements: movements,
+      startDate: startDate,
+      endDate: endDate,
+    );
+
+    final procurementSheet = Excel.decodeBytes(procurementBytes)['Procurement'];
+    expect(procurementSheet.row(7)[0]?.value?.toString(), 'Supplier A');
+    expect(procurementSheet.row(8)[0]?.value?.toString(), 'Supplier B');
+
+    final cashSheet = Excel.decodeBytes(cashBytes)['Cash Movements'];
+    expect(cashSheet.row(3)[0]?.value?.toString(), '2026-08-11 10:00');
+    expect(cashSheet.row(4)[0]?.value?.toString(), '2026-08-11 09:00');
   });
 }

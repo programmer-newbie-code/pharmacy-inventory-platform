@@ -9,7 +9,8 @@ import 'package:pharmacy_inventory_platform/features/reports/procurement_report_
 import 'package:pharmacy_inventory_platform/l10n/app_localizations.dart';
 
 void main() {
-  testWidgets('renders ProcurementReportScreen with metric cards and supplier table',
+  testWidgets(
+      'renders ProcurementReportScreen with metric cards and supplier table',
       (tester) async {
     final db = AppDatabase(NativeDatabase.memory());
     addTearDown(db.close);
@@ -34,9 +35,18 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Laporan Pembelian & Stok (Procurement)'), findsOneWidget);
-    expect(find.text('TOTAL PURCHASES'), findsOneWidget);
-    expect(find.text('PURCHASE ORDERS'), findsOneWidget);
-    expect(find.text('BATCHES RECEIVED'), findsOneWidget);
-    expect(find.text('Purchases by Supplier'), findsOneWidget);
+    expect(find.text('Total pembelian'), findsOneWidget);
+    expect(find.text('Pesanan pembelian'), findsOneWidget);
+    expect(find.text('Batch diterima'), findsOneWidget);
+    expect(find.text('Pembelian per pemasok'), findsOneWidget);
+    expect(find.byKey(const Key('exportProcurementReportBtn')), findsOneWidget);
+    expect(
+      tester
+          .widget<IconButton>(
+            find.byKey(const Key('exportProcurementReportBtn')),
+          )
+          .onPressed,
+      isNull,
+    );
   });
 }
