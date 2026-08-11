@@ -14,6 +14,22 @@ void main() {
     expect(manifest, contains('android.permission.CAMERA'));
   });
 
+  test('stops the scanner before every non-resumed app lifecycle state', () {
+    final source = File(
+      'lib/features/inventory/camera_scanner_dialog.dart',
+    ).readAsStringSync();
+
+    expect(
+      source.replaceAll('\r\n', '\n'),
+      contains(
+        'case AppLifecycleState.hidden:\n'
+        '      case AppLifecycleState.paused:\n'
+        '      case AppLifecycleState.inactive:\n'
+        '        unawaited(controller.stop());',
+      ),
+    );
+  });
+
   testWidgets('shows a retryable localized camera permission error',
       (tester) async {
     var retryCount = 0;
