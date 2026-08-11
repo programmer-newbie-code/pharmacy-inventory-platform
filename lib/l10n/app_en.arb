@@ -312,6 +312,18 @@
   "@cartQuantityForUnit": {"placeholders": {"unit": {}}},
   "cartTotal": "Total: {quantity} {unit}",
   "@cartTotal": {"placeholders": {"quantity": {"type": "int"}, "unit": {}}},
-  "changePhotoTooltip": "Change photo"
+  "changePhotoTooltip": "Change photo",
+  "analyticsNetRevenue": "Net revenue",
+  "analyticsGrossRevenue": "Gross revenue",
+  "analyticsNetProfit": "Net profit",
+  "analyticsTotalRefunds": "Total refunds",
+  "analyticsCategorySales": "Sales by product category",
+  "bestSellingMedicines": "Best-selling medicines",
+  "rankByNetUnits": "Net units",
+  "rankByNetRevenue": "Net revenue",
+  "reportProduct": "Medicine",
+  "reportReturned": "Returned",
+  "reportPaymentBreakdown": "Payment method breakdown",
+  "analyticsLoadError": "Analytics could not be loaded. Try again."
 }
 

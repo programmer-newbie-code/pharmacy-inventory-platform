@@ -260,6 +260,17 @@ void main() {
     expect(byQuantity.first.netRevenue, 800);
     expect(byRevenue.first.productName, 'Revenue Leader');
     expect(byRevenue.first.netRevenue, 2500);
+
+    final analytics = await reportRepo.getSalesAnalytics(
+      BestSellingMedicinesFilter(
+        startDate: DateTime(2026, 8, 5),
+        endDate: DateTime(2026, 8, 5, 23, 59, 59),
+        rankMode: BestSellingRankMode.netQuantity,
+      ),
+    );
+    expect(analytics.paymentCounts['Cash'], 2);
+    expect(analytics.categoryRevenue['General'], 3300);
+    expect(analytics.bestSellingMedicines.first.productName, 'Quantity Leader');
   });
 
   test(

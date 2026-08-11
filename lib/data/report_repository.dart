@@ -84,6 +84,20 @@ class BestSellingMedicineRow {
   final double netRevenue;
 }
 
+class SalesAnalyticsData {
+  const SalesAnalyticsData({
+    required this.summary,
+    required this.paymentCounts,
+    required this.categoryRevenue,
+    required this.bestSellingMedicines,
+  });
+
+  final SalesSummary summary;
+  final Map<String, int> paymentCounts;
+  final Map<String, double> categoryRevenue;
+  final List<BestSellingMedicineRow> bestSellingMedicines;
+}
+
 class ReportRepository {
   ReportRepository(this._db, {AuditLogger? auditLogger})
       : _auditLogger = auditLogger;
@@ -220,6 +234,52 @@ class ReportRepository {
       return primary != 0 ? primary : a.productName.compareTo(b.productName);
     });
     return rows;
+  }
+
+  Future<SalesAnalyticsData> getSalesAnalytics(
+    BestSellingMedicinesFilter filter,
+  ) async {
+    final transactions = await (_db.select(_db.saleTransactions)
+          ..where((txn) =>
+              txn.createdAt.isBiggerOrEqual(Variable(filter.startDate)) &
+              txn.createdAt.isSmallerOrEqual(Variable(filter.endDate))))
+        .get();
+    final paymentCounts = <String, int>{
+      'Cash': 0,
+      'QRIS': 0,
+      'Debit': 0,
+      'Credit': 0,
+    };
+    for (final transaction in transactions) {
+      paymentCounts[transaction.paymentMethod] =
+          (paymentCounts[transaction.paymentMethod] ?? 0) + 1;
+    }
+
+    final bestSellingMedicines = await getBestSellingMedicines(filter);
+    final products = await (_db.select(_db.products)
+          ..where((product) => product.id
+              .isIn(bestSellingMedicines.map((row) => row.productId))))
+        .get();
+    final categories = {
+      for (final product in products) product.id: product.category,
+    };
+    final categoryRevenue = <String, double>{};
+    for (final row in bestSellingMedicines) {
+      final category = categories[row.productId] ?? 'General';
+      categoryRevenue[category] =
+          (categoryRevenue[category] ?? 0) + row.netRevenue;
+    }
+
+    final summary = await getSalesSummary(
+      startDate: filter.startDate,
+      endDate: filter.endDate,
+    );
+    return SalesAnalyticsData(
+      summary: summary,
+      paymentCounts: paymentCounts,
+      categoryRevenue: categoryRevenue,
+      bestSellingMedicines: bestSellingMedicines,
+    );
   }
 
   /// Generates procurement / purchasing summary report for a given date range.

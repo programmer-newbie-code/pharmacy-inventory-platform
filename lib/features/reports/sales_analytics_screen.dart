@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/formatters.dart';
 import '../../core/providers.dart';
 import '../../data/report_repository.dart';
+import '../../l10n/app_localizations.dart';
 
 class CategorySalesData {
   CategorySalesData(
@@ -33,106 +34,14 @@ class SalesAnalyticsFilter {
 }
 
 final salesAnalyticsFutureProvider = FutureProvider.family
-    .autoDispose<Map<String, dynamic>, SalesAnalyticsFilter>(
-        (ref, filter) async {
-  final range = filter.range;
-  final reportRepo = ref.watch(reportRepositoryProvider);
-  final saleRepo = ref.watch(saleRepositoryProvider);
-  final prodRepo = ref.watch(productRepositoryProvider);
-  final returnRepo = ref.watch(returnRepositoryProvider);
-
-  final summary = await reportRepo.getSalesSummary(
-      startDate: range.start, endDate: range.end);
-  final txns = await saleRepo.listTransactions();
-  final products = await prodRepo.listProducts();
-  final returns = await returnRepo.listReturns();
-
-  final filteredTxns = txns
-      .where((t) =>
-          t.createdAt.isAfter(range.start) && t.createdAt.isBefore(range.end))
-      .toList();
-  final filteredReturns = returns
-      .where((r) =>
-          r.createdAt.isAfter(range.start) && r.createdAt.isBefore(range.end))
-      .toList();
-
-  double totalRefunds = 0;
-  for (final r in filteredReturns) {
-    totalRefunds += r.refundAmount;
-  }
-
-  // Payment methods breakdown
-  final paymentCounts = <String, int>{
-    'Cash': 0,
-    'QRIS': 0,
-    'Debit': 0,
-    'Credit': 0
-  };
-  for (final t in filteredTxns) {
-    final pm = t.paymentMethod;
-    paymentCounts[pm] = (paymentCounts[pm] ?? 0) + 1;
-  }
-
-  // Product sales and category breakdown
-  final prodSalesMap = <int, int>{}; // prodId -> totalQty
-  final prodRevMap = <int, double>{}; // prodId -> totalRevenue
-
-  for (final t in filteredTxns) {
-    final items = await saleRepo.getSaleItemsForTransaction(t.id);
-    for (final item in items) {
-      prodSalesMap[item.productId] =
-          (prodSalesMap[item.productId] ?? 0) + item.qtySold;
-      prodRevMap[item.productId] =
-          (prodRevMap[item.productId] ?? 0) + item.subtotal;
-    }
-  }
-
-  final prodMap = {for (var p in products) p.id: p};
-  final categoryMap = <String, double>{};
-  final topProducts = await reportRepo.getBestSellingMedicines(
-    BestSellingMedicinesFilter(
-      startDate: range.start,
-      endDate: range.end,
-      rankMode: filter.rankBy,
-    ),
-  );
-
-  // Calculate returns per product
-  final prodRefundAmount = <int, double>{};
-  for (final r in filteredReturns) {
-    final rItems = await returnRepo.getReturnItemsForReturn(r.id);
-    for (final ri in rItems) {
-      final saleItem =
-          await (saleRepo.getSaleItemsForTransaction(r.originalTxnId));
-      final matchingSaleItem =
-          saleItem.where((s) => s.id == ri.saleItemId).firstOrNull;
-      if (matchingSaleItem != null) {
-        final prodId = matchingSaleItem.productId;
-        prodRefundAmount[prodId] = (prodRefundAmount[prodId] ?? 0) +
-            (ri.qtyReturned * matchingSaleItem.unitPrice);
-      }
-    }
-  }
-
-  prodSalesMap.forEach((prodId, qty) {
-    final prod = prodMap[prodId];
-    final grossRev = prodRevMap[prodId] ?? 0;
-    final refundAmt = prodRefundAmount[prodId] ?? 0;
-
-    final netRev = (grossRev - refundAmt).clamp(0.0, double.infinity);
-    final cat = prod?.category ?? 'General';
-
-    categoryMap[cat] = (categoryMap[cat] ?? 0) + netRev;
-  });
-
-  return {
-    'summary': summary,
-    'totalTxns': filteredTxns.length,
-    'totalRefunds': totalRefunds,
-    'paymentCounts': paymentCounts,
-    'categoryMap': categoryMap,
-    'topProducts': topProducts,
-  };
+    .autoDispose<SalesAnalyticsData, SalesAnalyticsFilter>((ref, filter) {
+  return ref.watch(reportRepositoryProvider).getSalesAnalytics(
+        BestSellingMedicinesFilter(
+          startDate: filter.range.start,
+          endDate: filter.range.end,
+          rankMode: filter.rankBy,
+        ),
+      );
 });
 
 class SalesAnalyticsScreen extends ConsumerStatefulWidget {
@@ -196,6 +105,7 @@ class _SalesAnalyticsScreenState extends ConsumerState<SalesAnalyticsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final analyticsAsync = ref.watch(
       salesAnalyticsFutureProvider(
         SalesAnalyticsFilter(range: _dateRange, rankBy: _rankBy),
@@ -204,7 +114,7 @@ class _SalesAnalyticsScreenState extends ConsumerState<SalesAnalyticsScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Sales Analytics & Insights'),
+        title: Text(l10n.analyticsTitle),
       ),
       body: Column(
         children: [
@@ -218,11 +128,13 @@ class _SalesAnalyticsScreenState extends ConsumerState<SalesAnalyticsScreen> {
               runSpacing: 8,
               children: [
                 SegmentedButton<String>(
-                  segments: const [
-                    ButtonSegment(value: 'Today', label: Text('Today')),
-                    ButtonSegment(value: 'This Week', label: Text('This Week')),
+                  segments: [
                     ButtonSegment(
-                        value: 'This Month', label: Text('This Month')),
+                        value: 'Today', label: Text(l10n.filterToday)),
+                    ButtonSegment(
+                        value: 'This Week', label: Text(l10n.filterThisWeek)),
+                    ButtonSegment(
+                        value: 'This Month', label: Text(l10n.filterThisMonth)),
                   ],
                   selected: {_selectedPreset},
                   onSelectionChanged: (val) => _applyPreset(val.first),
@@ -230,7 +142,7 @@ class _SalesAnalyticsScreenState extends ConsumerState<SalesAnalyticsScreen> {
                 OutlinedButton.icon(
                   onPressed: _selectCustomRange,
                   icon: const Icon(Icons.date_range),
-                  label: const Text('Custom range'),
+                  label: Text(l10n.filterCustom),
                 ),
                 Text(
                   '${_dateRange.start.toIso8601String().split('T').first} - ${_dateRange.end.toIso8601String().split('T').first}',
@@ -242,12 +154,11 @@ class _SalesAnalyticsScreenState extends ConsumerState<SalesAnalyticsScreen> {
           Expanded(
             child: analyticsAsync.when(
               data: (data) {
-                final summary = data['summary'] as SalesSummary;
-                final totalRefunds = data['totalRefunds'] as double;
-                final paymentCounts = data['paymentCounts'] as Map<String, int>;
-                final categoryMap = data['categoryMap'] as Map<String, double>;
-                final topProducts =
-                    data['topProducts'] as List<BestSellingMedicineRow>;
+                final summary = data.summary;
+                final totalRefunds = summary.totalRefunds;
+                final paymentCounts = data.paymentCounts;
+                final categoryMap = data.categoryRevenue;
+                final topProducts = data.bestSellingMedicines;
 
                 final marginPct = summary.totalRevenue > 0
                     ? (summary.grossProfit / summary.totalRevenue) * 100
@@ -263,7 +174,7 @@ class _SalesAnalyticsScreenState extends ConsumerState<SalesAnalyticsScreen> {
                         children: [
                           Expanded(
                             child: _MetricCard(
-                              title: 'NET REVENUE',
+                              title: l10n.analyticsNetRevenue,
                               value: formatIdr(summary.netRevenue),
                               icon: Icons.monetization_on,
                               color: Colors.green,
@@ -272,7 +183,7 @@ class _SalesAnalyticsScreenState extends ConsumerState<SalesAnalyticsScreen> {
                           const SizedBox(width: 12),
                           Expanded(
                             child: _MetricCard(
-                              title: 'GROSS REVENUE',
+                              title: l10n.analyticsGrossRevenue,
                               value: formatIdr(summary.totalRevenue),
                               icon: Icons.receipt_long,
                               color: Colors.blue,
@@ -285,7 +196,7 @@ class _SalesAnalyticsScreenState extends ConsumerState<SalesAnalyticsScreen> {
                         children: [
                           Expanded(
                             child: _MetricCard(
-                              title: 'NET PROFIT',
+                              title: l10n.analyticsNetProfit,
                               value:
                                   '${formatIdr(summary.grossProfit - totalRefunds)} (${marginPct.toStringAsFixed(1)}%)',
                               icon: Icons.trending_up,
@@ -295,7 +206,7 @@ class _SalesAnalyticsScreenState extends ConsumerState<SalesAnalyticsScreen> {
                           const SizedBox(width: 12),
                           Expanded(
                             child: _MetricCard(
-                              title: 'TOTAL REFUNDS',
+                              title: l10n.analyticsTotalRefunds,
                               value: formatIdr(totalRefunds),
                               icon: Icons.assignment_return,
                               color: Colors.red,
@@ -306,15 +217,14 @@ class _SalesAnalyticsScreenState extends ConsumerState<SalesAnalyticsScreen> {
                       const SizedBox(height: 24),
 
                       // Sales by Category
-                      const Text(
-                        'Sales by Product Category',
-                        style: TextStyle(
+                      Text(
+                        l10n.analyticsCategorySales,
+                        style: const TextStyle(
                             fontWeight: FontWeight.bold, fontSize: 18),
                       ),
                       const SizedBox(height: 8),
                       if (categoryMap.isEmpty)
-                        const Text(
-                            'No category sales data for selected period.')
+                        Text(l10n.noCategoryData)
                       else
                         ...categoryMap.entries.map((e) {
                           final pct = summary.totalRevenue > 0
@@ -348,20 +258,20 @@ class _SalesAnalyticsScreenState extends ConsumerState<SalesAnalyticsScreen> {
                         }),
                       const SizedBox(height: 24),
 
-                      const Text(
-                        'Best-Selling Medicines',
-                        style: TextStyle(
+                      Text(
+                        l10n.bestSellingMedicines,
+                        style: const TextStyle(
                             fontWeight: FontWeight.bold, fontSize: 18),
                       ),
                       const SizedBox(height: 8),
                       SegmentedButton<BestSellingRankMode>(
-                        segments: const [
+                        segments: [
                           ButtonSegment(
                               value: BestSellingRankMode.netQuantity,
-                              label: Text('Net units')),
+                              label: Text(l10n.rankByNetUnits)),
                           ButtonSegment(
                               value: BestSellingRankMode.netRevenue,
-                              label: Text('Net revenue')),
+                              label: Text(l10n.rankByNetRevenue)),
                         ],
                         selected: {_rankBy},
                         onSelectionChanged: (value) =>
@@ -369,7 +279,7 @@ class _SalesAnalyticsScreenState extends ConsumerState<SalesAnalyticsScreen> {
                       ),
                       const SizedBox(height: 8),
                       if (topProducts.isEmpty)
-                        const Text('No sales recorded in selected period.')
+                        Text(l10n.noSalesData)
                       else ...[
                         Card(
                           elevation: 2,
@@ -457,11 +367,11 @@ class _SalesAnalyticsScreenState extends ConsumerState<SalesAnalyticsScreen> {
                           child: SingleChildScrollView(
                             scrollDirection: Axis.horizontal,
                             child: DataTable(
-                              columns: const [
-                                DataColumn(label: Text('Product')),
-                                DataColumn(label: Text('Net units')),
-                                DataColumn(label: Text('Returned')),
-                                DataColumn(label: Text('Net revenue')),
+                              columns: [
+                                DataColumn(label: Text(l10n.reportProduct)),
+                                DataColumn(label: Text(l10n.rankByNetUnits)),
+                                DataColumn(label: Text(l10n.reportReturned)),
+                                DataColumn(label: Text(l10n.rankByNetRevenue)),
                               ],
                               rows: topProducts
                                   .map(
@@ -482,9 +392,9 @@ class _SalesAnalyticsScreenState extends ConsumerState<SalesAnalyticsScreen> {
                       const SizedBox(height: 24),
 
                       // Payment Method Breakdown
-                      const Text(
-                        'Payment Method Breakdown',
-                        style: TextStyle(
+                      Text(
+                        l10n.reportPaymentBreakdown,
+                        style: const TextStyle(
                             fontWeight: FontWeight.bold, fontSize: 18),
                       ),
                       const SizedBox(height: 8),
@@ -505,8 +415,7 @@ class _SalesAnalyticsScreenState extends ConsumerState<SalesAnalyticsScreen> {
                 );
               },
               loading: () => const Center(child: CircularProgressIndicator()),
-              error: (err, _) =>
-                  Center(child: Text('Error loading analytics: $err')),
+              error: (_, __) => Center(child: Text(l10n.analyticsLoadError)),
             ),
           ),
         ],
