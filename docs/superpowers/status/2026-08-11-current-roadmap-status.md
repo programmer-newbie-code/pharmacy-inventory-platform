@@ -1,7 +1,7 @@
 # Pharmacy Platform Current Roadmap Status
 
 **Audit date:** 2026-08-12
-**Audited revision:** `d7f3e79` (`fix(receipts): recover save and print failures (#139)`)
+**Audited revision:** `55cce68` (`fix(backup): record missing Drive session (#141)`)
 **Method:** implementation and test evidence in the current main branch, open-PR state, and current CI configuration. Historical plan checkboxes are not treated as completion evidence.
 
 ## Status vocabulary
@@ -16,7 +16,7 @@
 
 | Area | Status | Evidence | Remaining work |
 | --- | --- | --- | --- |
-| Branch, signed-commit, PR, CI workflow | Shipped | `AGENT.md`, `.github/workflows/ci.yml`, and PR #139: analyzer, coverage, Windows, Android, signatures, and secret scan all passed before merge; main run `31531734650` passed for `d7f3e79`. | Keep enforcing the workflow for every increment. |
+| Branch, signed-commit, PR, CI workflow | Shipped | `AGENT.md`, `.github/workflows/ci.yml`, and PR #141: analyzer, coverage, Windows, Android, signatures, and secret scan all passed before merge; main run `31535868159` passed for `55cce68`. | Keep enforcing the workflow for every increment. |
 | Release automation | Partial | CI builds Windows and Android artifacts and creates releases from signed `v*` tags. | Verify the next release tag only after all remaining roadmap increments land; keep a release smoke/rollback record. |
 | Current best-selling export increment | Shipped | PR #130 added `ExcelReportService.generateBestSellingMedicinesReport`/`exportAndSaveBestSellingMedicinesReport`, `ReportRepository.exportBestSellingMedicines` (audit-logged), an accessible export button on `SalesAnalyticsScreen`, and wired `reportRepositoryProvider` to actually inject `AuditLogger` (previously a no-op gap — see `docs/superpowers/specs/2026-08-11-best-selling-medicines-export.md`). | None outstanding for this increment; export/audit parity with other reports achieved. |
 
@@ -31,7 +31,7 @@
 | Inventory, batches, adjustments, suppliers, purchase receiving | Partial | Repositories and screens exist for products, batches, suppliers, purchase orders, stock adjustments, and receiving; workflow tests exist. PR #137 now attributes receiving records and their audit trail to the active authenticated user rather than hard-coded user ID `1`. | Audit the remaining acceptance rules in the completion roadmap: negative-stock protection, full receiving reconciliation, and reorder formula fixture coverage. |
 | POS, returns, shifts, receipts, printer recovery | Partial | POS, return, shift, receipt PDF/storage, and targeted tests are present. PR #139 adds per-action busy state plus retryable, localized save and print failure recovery. | Verify price-below-cost authorization, close-shift supervisor review, and physical-printer recovery on a real Windows/Android build. |
 | Backup integrity and restore | Partial | `backup_service.dart`, backup UI/tests, restore preview, backup document validation, and database-health service exist. PR #136 adds SHA-256 backup-document integrity validation and logs failed restore attempts without modifying the live database. | Execute recovery and migration fixtures against production-sized data, then perform a real-device restore smoke test. |
-| Google Drive backup and desktop OAuth | Partial / external verification required | Desktop OAuth configuration, credential store, upload client, and tests exist; Windows now displays configuration guidance instead of a plugin exception. | Verify real Android and Windows OAuth with an authorized Google Cloud configuration and account. The automatic scheduler currently skips Drive upload silently after restart when no in-memory Google account exists; design and test an explicit failure/re-authentication path before representing Drive auto-backup as active. |
+| Google Drive backup and desktop OAuth | Partial / external verification required | Desktop OAuth configuration, credential store, upload client, and tests exist; Windows now displays configuration guidance instead of a plugin exception. PR #141 makes an enabled automatic Drive backup record a `drive` / `Failed` log when a restart leaves no active in-memory OAuth account, instead of silently skipping upload. | Verify real Android and Windows OAuth with an authorized Google Cloud configuration and account. Re-authenticate through the existing Backup action after a restart; no background OAuth or token persistence is claimed. |
 | Android camera barcode scanning | Partial | `camera_scanner_dialog.dart`, Android camera-permission test, retryable permission state, scanner UI, and PR #133 lifecycle stop behavior exist. | Physical-device scan, permission denial/retry, cancellation, torch, lookup, duplicate suppression, and lifecycle smoke testing remain unproven. |
 | Windows keyboard-wedge barcode scanning | Shipped in code / physical verification pending | POS and add-product tests assert desktop scanner-field behavior and Windows guidance; PR #133 makes shared scanner lifecycle shutdown explicit. | Smoke-test USB/Bluetooth scanners for focus, Enter/tab completion, duplicates, and not-found recovery. |
 | Indonesian drug catalog, lookup, CSV import, history | Partial | Bundled `assets/data/indonesian_drugs.csv`, lookup/updater services, staged import dialog, provenance docs, and import-history tests exist. | Verify catalog freshness/attribution, downloaded-catalog fallback, large-file progress, conflict policy, and atomic rollback with production-sized fixtures. |
@@ -49,7 +49,7 @@
 ## Immediate ordered backlog
 
 1. Obtain a regulated-report decision, then correct the proven SIPNAP-period/receipt and prescription-CSV blank-row defects in a dedicated spec/plan and PR.
-2. Perform evidence-led Google Drive/backup and barcode audits. Implement reproducible code defects, including the auto-Drive silent-skip path; request OAuth or physical-device access only where verification cannot be reproduced.
+2. Perform evidence-led Google Drive/backup and barcode audits. The reproducible auto-Drive silent-skip path is fixed in PR #141; request OAuth or physical-device access only where verification cannot be reproduced.
 3. Audit each remaining partial workflow against explicit acceptance criteria and create a separate spec/plan per independent gap.
 4. Complete visual QA of Windows, Android, and GitHub Pages using published/release builds; keep subjective redesigns for product review.
 5. After every green merged increment, repeat this status document with evidence and retire superseded backlog entries.
