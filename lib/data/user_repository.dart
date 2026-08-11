@@ -20,12 +20,14 @@ class UserRepository {
     required String username,
     required String passwordHash,
     required String role,
+    String? photoPath,
   }) {
     return _db.into(_db.users).insert(
           UsersCompanion.insert(
             username: username,
             passwordHash: passwordHash,
             role: role,
+            photoPath: Value(photoPath),
           ),
         );
   }
@@ -53,6 +55,16 @@ class UserRepository {
     final updated = await (_db.update(_db.users)
           ..where((tbl) => tbl.id.equals(userId)))
         .write(UsersCompanion(passwordHash: Value(newPasswordHash)));
+    return updated > 0;
+  }
+
+  Future<bool> updateUserPhoto({
+    required int userId,
+    required String? photoPath,
+  }) async {
+    final updated = await (_db.update(_db.users)
+          ..where((tbl) => tbl.id.equals(userId)))
+        .write(UsersCompanion(photoPath: Value(photoPath)));
     return updated > 0;
   }
 }

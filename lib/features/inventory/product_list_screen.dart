@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -221,6 +222,19 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen> {
                           contentPadding: const EdgeInsets.symmetric(
                             horizontal: 16,
                             vertical: 8,
+                          ),
+                          leading: CircleAvatar(
+                            radius: 22,
+                            backgroundColor: Colors.teal.shade50,
+                            backgroundImage: prod.imagePath != null &&
+                                    File(prod.imagePath!).existsSync()
+                                ? FileImage(File(prod.imagePath!))
+                                : null,
+                            child: prod.imagePath == null ||
+                                    !File(prod.imagePath!).existsSync()
+                                ? const Icon(Icons.medication,
+                                    color: AppTheme.primaryColor)
+                                : null,
                           ),
                           title: Row(
                             children: [

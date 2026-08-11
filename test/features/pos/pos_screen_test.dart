@@ -11,7 +11,8 @@ import 'package:pharmacy_inventory_platform/features/pos/pos_screen.dart';
 import 'package:pharmacy_inventory_platform/l10n/app_localizations.dart';
 
 void main() {
-  testWidgets('uses the focused barcode field instead of camera scanning on Windows',
+  testWidgets(
+      'uses the focused barcode field instead of camera scanning on Windows',
       (tester) async {
     final db = AppDatabase(NativeDatabase.memory());
     addTearDown(db.close);
@@ -36,12 +37,15 @@ void main() {
 
     expect(find.byKey(const Key('cameraScanBtn')), findsNothing);
     expect(
-      tester.widget<TextField>(find.byKey(const Key('posSearchInput'))).autofocus,
+      tester
+          .widget<TextField>(find.byKey(const Key('posSearchInput')))
+          .autofocus,
       isTrue,
     );
   });
 
-  testWidgets('renders PosScreen, adds product to cart, and completes checkout', (tester) async {
+  testWidgets('renders PosScreen, adds product to cart, and completes checkout',
+      (tester) async {
     final db = AppDatabase(NativeDatabase.memory());
     addTearDown(db.close);
 
@@ -118,7 +122,8 @@ void main() {
     await tester.pumpAndSettle();
   });
 
-  testWidgets('completes checkout with Owner Use payment option at 0 total', (tester) async {
+  testWidgets('completes checkout with Owner Use payment option at 0 total',
+      (tester) async {
     final db = AppDatabase(NativeDatabase.memory());
     addTearDown(db.close);
 
@@ -192,10 +197,12 @@ void main() {
     expect(find.text('Transaction Receipt'), findsOneWidget);
   });
 
-  testWidgets('opens CashMovementDialog via posCashMovementBtn', (tester) async {
+  testWidgets('opens CashMovementDialog via posCashMovementBtn',
+      (tester) async {
     final db = AppDatabase(NativeDatabase.memory());
     addTearDown(db.close);
-    await CashierShiftRepository(db).openShift(cashierId: 1, openingBalance: 100000);
+    await CashierShiftRepository(db)
+        .openShift(cashierId: 1, openingBalance: 100000);
 
     final container = ProviderContainer(
       overrides: [databaseProvider.overrideWithValue(db)],
@@ -220,5 +227,69 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Catat Arus Kas / Prive Owner'), findsOneWidget);
+  });
+
+  testWidgets(
+      'opens edit cart item quantity dialog and updates quantity directly',
+      (tester) async {
+    final db = AppDatabase(NativeDatabase.memory());
+    addTearDown(db.close);
+
+    final productRepo = ProductRepository(db);
+    final prodId = await productRepo.createProduct(
+      barcode: '8999999999999',
+      internalCode: 'PAR-BOX',
+      name: 'Paracetamol Box',
+      activeIngredient: 'Paracetamol',
+      ingredientPct: 100.0,
+      baseUnit: 'tablet',
+      purchaseUnit: 'box',
+      unitsPerPurchaseUnit: 100,
+      costPricePerBaseUnit: 100.0,
+      marginPct: 20.0,
+      reorderThreshold: 10,
+      category: 'Obat Bebas',
+      createdBy: 'admin',
+    );
+
+    final container = ProviderContainer(
+      overrides: [databaseProvider.overrideWithValue(db)],
+    );
+    addTearDown(container.dispose);
+
+    await tester.pumpWidget(
+      UncontrolledProviderScope(
+        container: container,
+        child: const MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          locale: Locale('id'),
+          home: PosScreen(),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(Key('addToCart_$prodId')));
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const Key('editCartQty_0')), findsOneWidget);
+
+    final quantityControl = find.byKey(const Key('editCartQty_0'));
+    await tester.ensureVisible(quantityControl);
+    await tester.tap(quantityControl);
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const Key('inputBoxQty')), findsOneWidget);
+    expect(find.byKey(const Key('inputBaseQty')), findsOneWidget);
+
+    await tester.enterText(find.byKey(const Key('inputBoxQty')), '2');
+    await tester.enterText(find.byKey(const Key('inputBaseQty')), '5');
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const Key('saveCartItemQtyBtn')));
+    await tester.pumpAndSettle();
+
+    expect(find.text('2 box + 5 tablet'), findsOneWidget);
   });
 }

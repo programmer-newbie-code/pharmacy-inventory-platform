@@ -147,5 +147,51 @@ void main() {
     await tester.tap(find.byIcon(Icons.point_of_sale_outlined));
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('mobileShellNavigation')), findsOneWidget);
+
+    await tester.tap(find.byIcon(Icons.more_horiz));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Peringatan'), findsOneWidget);
+    expect(find.text('Laporan & Keuangan'), findsOneWidget);
+  });
+
+  testWidgets('shows authenticated admin navigation in the desktop shell',
+      (tester) async {
+    tester.view.physicalSize = const Size(1600, 1000);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(() {
+      tester.view.resetPhysicalSize();
+      tester.view.resetDevicePixelRatio();
+    });
+    final db = AppDatabase(NativeDatabase.memory());
+    addTearDown(db.close);
+    final container = ProviderContainer(
+      overrides: [databaseProvider.overrideWithValue(db)],
+    );
+    addTearDown(container.dispose);
+    final hash = container.read(passwordHasherProvider).hash('secret123');
+    await container.read(userRepositoryProvider).createUser(
+          username: 'owner',
+          passwordHash: hash,
+          role: 'admin',
+        );
+    await container
+        .read(authSessionProvider.notifier)
+        .login('owner', 'secret123');
+
+    await tester.pumpWidget(UncontrolledProviderScope(
+      container: container,
+      child: const MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: PharmacyShell(),
+      ),
+    ));
+    await tester.pump();
+
+    expect(find.byKey(const Key('desktopNavUsers')), findsOneWidget);
+    expect(find.byKey(const Key('desktopNavBackup')), findsOneWidget);
+    expect(find.byType(CircleAvatar), findsWidgets);
+    container.read(authSessionProvider.notifier).logout();
   });
 }

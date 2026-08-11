@@ -86,8 +86,9 @@ class ProductRepository {
     bool isControlled = false,
     String? nationalDrugCode,
     int? storageLocationId,
-    required String category,
+    String? category,
     required String createdBy,
+    String? imagePath,
     int? userIdForAudit,
   }) async {
     final id = await _db.into(_db.products).insert(
@@ -106,8 +107,9 @@ class ProductRepository {
             isControlled: Value(isControlled),
             nationalDrugCode: Value(nationalDrugCode),
             storageLocationId: Value(storageLocationId),
-            category: category,
+            category: category ?? 'Obat Bebas',
             createdBy: createdBy,
+            imagePath: Value(imagePath),
           ),
         );
 

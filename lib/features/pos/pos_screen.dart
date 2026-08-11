@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -91,6 +93,124 @@ class _PosScreenState extends ConsumerState<PosScreen> {
     });
   }
 
+  Future<void> _showEditCartItemDialog(int index) async {
+    final l10n = AppLocalizations.of(context)!;
+    final item = _cart[index];
+    final prod = item.product;
+    final bUnit = prod.baseUnit;
+    final pUnit = prod.purchaseUnit;
+    final ratio = prod.unitsPerPurchaseUnit > 0 ? prod.unitsPerPurchaseUnit : 1;
+
+    int boxQty = item.qtyBaseUnit ~/ ratio;
+    int tabQty = item.qtyBaseUnit % ratio;
+
+    final boxController = TextEditingController(text: '$boxQty');
+    final tabController = TextEditingController(text: '$tabQty');
+
+    await showDialog(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (context, setDialogState) {
+          final curBoxes = int.tryParse(boxController.text) ?? 0;
+          final curTabs = int.tryParse(tabController.text) ?? 0;
+          final totalBaseUnits = (curBoxes * ratio) + curTabs;
+          final totalSubtotal = totalBaseUnits * item.unitPrice;
+
+          return AlertDialog(
+            title: Text(l10n.cartQuantityDialogTitle(prod.name)),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  l10n.cartUnitRatio(pUnit, ratio, bUnit),
+                  style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        key: const Key('inputBoxQty'),
+                        controller: boxController,
+                        keyboardType: TextInputType.number,
+                        decoration: InputDecoration(
+                          labelText: l10n.cartQuantityForUnit(pUnit),
+                          border: const OutlineInputBorder(),
+                        ),
+                        onChanged: (_) => setDialogState(() {}),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: TextField(
+                        key: const Key('inputBaseQty'),
+                        controller: tabController,
+                        keyboardType: TextInputType.number,
+                        decoration: InputDecoration(
+                          labelText: l10n.cartQuantityForUnit(bUnit),
+                          border: const OutlineInputBorder(),
+                        ),
+                        onChanged: (_) => setDialogState(() {}),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: AppTheme.primaryColor.withAlpha(20),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(l10n.cartTotal(totalBaseUnits, bUnit),
+                          style: const TextStyle(fontWeight: FontWeight.bold)),
+                      Text(
+                        formatIdr(totalSubtotal),
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: AppTheme.primaryColor,
+                          fontSize: 16,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(ctx).pop(),
+                child: Text(l10n.cancelButton),
+              ),
+              ElevatedButton(
+                key: const Key('saveCartItemQtyBtn'),
+                onPressed: () {
+                  if (totalBaseUnits > 0) {
+                    setState(() {
+                      _cart[index] = CartItemInput(
+                        product: prod,
+                        qtyBaseUnit: totalBaseUnits,
+                        unitPrice: item.unitPrice,
+                      );
+                    });
+                  } else {
+                    _removeFromCart(index);
+                  }
+                  Navigator.of(ctx).pop();
+                },
+                child: Text(l10n.saveButton),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+
   void _removeFromCart(int index) {
     setState(() {
       _cart.removeAt(index);
@@ -115,7 +235,8 @@ class _PosScreenState extends ConsumerState<PosScreen> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Belum ada shift kasir yang aktif. Silakan masukkan modal awal kasir untuk membuka shift:'),
+            const Text(
+                'Belum ada shift kasir yang aktif. Silakan masukkan modal awal kasir untuk membuka shift:'),
             const SizedBox(height: 12),
             TextField(
               key: const Key('posOpeningBalanceInput'),
@@ -146,7 +267,8 @@ class _PosScreenState extends ConsumerState<PosScreen> {
       final amount = double.tryParse(result) ?? 0.0;
       final shiftRepo = ref.read(cashierShiftRepositoryProvider);
       final currentUser = ref.read(authSessionProvider);
-      await shiftRepo.openShift(cashierId: currentUser?.id ?? 1, openingBalance: amount);
+      await shiftRepo.openShift(
+          cashierId: currentUser?.id ?? 1, openingBalance: amount);
       return true;
     }
     return false;
@@ -154,11 +276,15 @@ class _PosScreenState extends ConsumerState<PosScreen> {
 
   Future<void> _handlePosCashMovement() async {
     final currentUser = ref.read(authSessionProvider);
-    var activeShift = await ref.read(cashierShiftRepositoryProvider).getActiveShift(currentUser?.id ?? 1);
+    var activeShift = await ref
+        .read(cashierShiftRepositoryProvider)
+        .getActiveShift(currentUser?.id ?? 1);
     if (activeShift == null) {
       final opened = await _promptOpenShiftModal();
       if (!opened) return;
-      activeShift = await ref.read(cashierShiftRepositoryProvider).getActiveShift(currentUser?.id ?? 1);
+      activeShift = await ref
+          .read(cashierShiftRepositoryProvider)
+          .getActiveShift(currentUser?.id ?? 1);
     }
     if (!mounted) return;
     if (activeShift != null) {
@@ -173,7 +299,9 @@ class _PosScreenState extends ConsumerState<PosScreen> {
     if (_cart.isEmpty) return;
 
     final currentUser = ref.read(authSessionProvider);
-    var activeShift = await ref.read(cashierShiftRepositoryProvider).getActiveShift(currentUser?.id ?? 1);
+    var activeShift = await ref
+        .read(cashierShiftRepositoryProvider)
+        .getActiveShift(currentUser?.id ?? 1);
     if (activeShift == null) {
       final opened = await _promptOpenShiftModal();
       if (!opened) return;
@@ -319,6 +447,19 @@ class _PosScreenState extends ConsumerState<PosScreen> {
                           margin: const EdgeInsets.only(bottom: 8),
                           child: ListTile(
                             key: Key('productItem_${p.id}'),
+                            leading: CircleAvatar(
+                              radius: 20,
+                              backgroundColor: Colors.teal.shade50,
+                              backgroundImage: p.imagePath != null &&
+                                      File(p.imagePath!).existsSync()
+                                  ? FileImage(File(p.imagePath!))
+                                  : null,
+                              child: p.imagePath == null ||
+                                      !File(p.imagePath!).existsSync()
+                                  ? const Icon(Icons.medication,
+                                      size: 18, color: AppTheme.primaryColor)
+                                  : null,
+                            ),
                             title: Text(
                               p.name,
                               style: const TextStyle(
@@ -422,8 +563,33 @@ class _PosScreenState extends ConsumerState<PosScreen> {
                                     style: const TextStyle(
                                         fontWeight: FontWeight.bold),
                                   ),
-                                  subtitle: Text(
-                                    '${formatIdr(item.unitPrice)} / ${item.product.baseUnit}',
+                                  subtitle: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        '${formatIdr(item.unitPrice)} / ${item.product.baseUnit}',
+                                      ),
+                                      InkWell(
+                                        key: Key('editCartQty_$idx'),
+                                        onTap: () =>
+                                            _showEditCartItemDialog(idx),
+                                        child: Text(
+                                          item.product.unitsPerPurchaseUnit >
+                                                      1 &&
+                                                  item.qtyBaseUnit >=
+                                                      item.product
+                                                          .unitsPerPurchaseUnit
+                                              ? '${item.qtyBaseUnit ~/ item.product.unitsPerPurchaseUnit} ${item.product.purchaseUnit}'
+                                                  '${item.qtyBaseUnit % item.product.unitsPerPurchaseUnit > 0 ? " + ${item.qtyBaseUnit % item.product.unitsPerPurchaseUnit} ${item.product.baseUnit}" : ""}'
+                                              : '${item.qtyBaseUnit} ${item.product.baseUnit}',
+                                          style: const TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            color: AppTheme.primaryColor,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                   trailing: Row(
                                     mainAxisSize: MainAxisSize.min,
@@ -435,12 +601,7 @@ class _PosScreenState extends ConsumerState<PosScreen> {
                                         onPressed: () =>
                                             _updateQuantity(idx, -1),
                                       ),
-                                      Text(
-                                        '${item.qtyBaseUnit}',
-                                        style: const TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 15),
-                                      ),
+                                      const SizedBox(width: 8),
                                       IconButton(
                                         icon: const Icon(
                                             Icons.add_circle_outline,

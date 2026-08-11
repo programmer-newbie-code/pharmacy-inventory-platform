@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -88,7 +90,10 @@ class _PharmacyShellState extends ConsumerState<PharmacyShell> {
     final l10n = AppLocalizations.of(context)!;
     final permission = ref.watch(permissionCheckerProvider);
     final role = ref.watch(authSessionProvider)?.role;
-    final desktop = AppBreakpointWidth.fromWidth(MediaQuery.sizeOf(context).width) == AppBreakpoint.desktop;
+    final photoPath = ref.watch(authSessionProvider)?.photoPath;
+    final desktop =
+        AppBreakpointWidth.fromWidth(MediaQuery.sizeOf(context).width) ==
+            AppBreakpoint.desktop;
     final destinations = <(String, Widget)>[
       ('dashboard', const HomeScreen(embedded: true)),
       ('pos', const PosScreen()),
@@ -105,6 +110,7 @@ class _PharmacyShellState extends ConsumerState<PharmacyShell> {
             canManageSuppliers: permission.canManageSuppliers(role),
             canManageShifts: permission.canManageShifts(role),
             canManageReturns: permission.canManageReturns(role),
+            photoPath: photoPath,
             selectedId: _selected,
             onNavigate: (screen) => _select(_idFor(screen), screen),
           ),
@@ -116,14 +122,28 @@ class _PharmacyShellState extends ConsumerState<PharmacyShell> {
       body: _workspace,
       bottomNavigationBar: NavigationBar(
         key: const Key('mobileShellNavigation'),
-        selectedIndex: _selected == 'pos' ? 1 : _selected == 'inventory' ? 2 : 0,
+        selectedIndex: _selected == 'pos'
+            ? 1
+            : _selected == 'inventory'
+                ? 2
+                : 0,
         onDestinationSelected: (index) {
           if (index == 3) {
             showModalBottomSheet<void>(
               context: context,
               builder: (context) => ListView(shrinkWrap: true, children: [
-                ListTile(title: Text(l10n.alertsTitle), onTap: () { Navigator.pop(context); _select('alerts', const AlertsScreen()); }),
-                ListTile(title: Text(l10n.reportsTitle), onTap: () { Navigator.pop(context); _select('reports', const ReportsScreen()); }),
+                ListTile(
+                    title: Text(l10n.alertsTitle),
+                    onTap: () {
+                      Navigator.pop(context);
+                      _select('alerts', const AlertsScreen());
+                    }),
+                ListTile(
+                    title: Text(l10n.reportsTitle),
+                    onTap: () {
+                      Navigator.pop(context);
+                      _select('reports', const ReportsScreen());
+                    }),
               ]),
             );
             return;
@@ -132,20 +152,37 @@ class _PharmacyShellState extends ConsumerState<PharmacyShell> {
           _select(destination.$1, destination.$2);
         },
         destinations: [
-          NavigationDestination(icon: const Icon(Icons.dashboard_outlined), selectedIcon: const Icon(Icons.dashboard), label: l10n.dashboardNav),
-          NavigationDestination(icon: const Icon(Icons.point_of_sale_outlined), selectedIcon: const Icon(Icons.point_of_sale), label: l10n.posTitle),
-          NavigationDestination(icon: const Icon(Icons.inventory_2_outlined), selectedIcon: const Icon(Icons.inventory_2), label: l10n.inventoryTitle),
-          NavigationDestination(icon: const Icon(Icons.more_horiz), label: l10n.moreNav),
+          NavigationDestination(
+              icon: const Icon(Icons.dashboard_outlined),
+              selectedIcon: const Icon(Icons.dashboard),
+              label: l10n.dashboardNav),
+          NavigationDestination(
+              icon: const Icon(Icons.point_of_sale_outlined),
+              selectedIcon: const Icon(Icons.point_of_sale),
+              label: l10n.posTitle),
+          NavigationDestination(
+              icon: const Icon(Icons.inventory_2_outlined),
+              selectedIcon: const Icon(Icons.inventory_2),
+              label: l10n.inventoryTitle),
+          NavigationDestination(
+              icon: const Icon(Icons.more_horiz), label: l10n.moreNav),
         ],
       ),
     );
   }
 
   String _idFor(Widget screen) => switch (screen) {
-    PosScreen() => 'pos', ProductListScreen() => 'inventory', AlertsScreen() => 'alerts',
-    ShiftManagementScreen() => 'shifts', ReturnScreen() => 'returns', PurchaseOrderScreen() => 'suppliers',
-    ReportsScreen() => 'reports', BackupScreen() => 'backup', UserManagementScreen() => 'users', _ => 'dashboard',
-  };
+        PosScreen() => 'pos',
+        ProductListScreen() => 'inventory',
+        AlertsScreen() => 'alerts',
+        ShiftManagementScreen() => 'shifts',
+        ReturnScreen() => 'returns',
+        PurchaseOrderScreen() => 'suppliers',
+        ReportsScreen() => 'reports',
+        BackupScreen() => 'backup',
+        UserManagementScreen() => 'users',
+        _ => 'dashboard',
+      };
 }
 
 class HomeScreen extends ConsumerWidget {
@@ -175,52 +212,56 @@ class HomeScreen extends ConsumerWidget {
             AppBreakpoint.desktop;
 
     return Scaffold(
-      appBar: embedded ? null : AppBar(
-        title: Text(l10n.appTitle),
-        elevation: 0,
-        actions: [
-          // Language toggle
-          IconButton(
-            key: const Key('languageToggle'),
-            icon: const Icon(Icons.language),
-            tooltip: l10n.languageLabel,
-            onPressed: () => ref.read(localeProvider.notifier).toggleLocale(),
-          ),
-          // Branding (Admin only)
-          if (canManageBranding)
-            IconButton(
-              key: const Key('brandingButton'),
-              icon: const Icon(Icons.storefront),
-              tooltip: l10n.brandingTitle,
-              onPressed: () {
-                showDialog(
-                  context: context,
-                  builder: (_) => const PharmacyBrandingDialog(),
-                );
-              },
+      appBar: embedded
+          ? null
+          : AppBar(
+              title: Text(l10n.appTitle),
+              elevation: 0,
+              actions: [
+                // Language toggle
+                IconButton(
+                  key: const Key('languageToggle'),
+                  icon: const Icon(Icons.language),
+                  tooltip: l10n.languageLabel,
+                  onPressed: () =>
+                      ref.read(localeProvider.notifier).toggleLocale(),
+                ),
+                // Branding (Admin only)
+                if (canManageBranding)
+                  IconButton(
+                    key: const Key('brandingButton'),
+                    icon: const Icon(Icons.storefront),
+                    tooltip: l10n.brandingTitle,
+                    onPressed: () {
+                      showDialog(
+                        context: context,
+                        builder: (_) => const PharmacyBrandingDialog(),
+                      );
+                    },
+                  ),
+                // Help
+                IconButton(
+                  key: const Key('helpButton'),
+                  icon: const Icon(Icons.help_outline),
+                  tooltip: l10n.helpTitle,
+                  onPressed: () {
+                    showDialog(
+                      context: context,
+                      builder: (_) => const QuickGuideDialog(),
+                    );
+                  },
+                ),
+                // Logout
+                IconButton(
+                  key: const Key('logoutButton'),
+                  icon: const Icon(Icons.logout),
+                  tooltip: l10n.logoutButton,
+                  onPressed: () =>
+                      ref.read(authSessionProvider.notifier).logout(),
+                ),
+                const SizedBox(width: 8),
+              ],
             ),
-          // Help
-          IconButton(
-            key: const Key('helpButton'),
-            icon: const Icon(Icons.help_outline),
-            tooltip: l10n.helpTitle,
-            onPressed: () {
-              showDialog(
-                context: context,
-                builder: (_) => const QuickGuideDialog(),
-              );
-            },
-          ),
-          // Logout
-          IconButton(
-            key: const Key('logoutButton'),
-            icon: const Icon(Icons.logout),
-            tooltip: l10n.logoutButton,
-            onPressed: () => ref.read(authSessionProvider.notifier).logout(),
-          ),
-          const SizedBox(width: 8),
-        ],
-      ),
       body: LayoutBuilder(
         builder: (context, constraints) {
           final content = SingleChildScrollView(
@@ -268,11 +309,13 @@ class HomeScreen extends ConsumerWidget {
                                 width: 1.5,
                               ),
                             ),
-                            child: const Icon(
-                              Icons.person_rounded,
-                              color: Colors.white,
-                              size: 28,
-                            ),
+                            child: user?.photoPath != null &&
+                                    File(user!.photoPath!).existsSync()
+                                ? ClipOval(
+                                    child: Image.file(File(user.photoPath!),
+                                        fit: BoxFit.cover))
+                                : const Icon(Icons.person_rounded,
+                                    color: Colors.white, size: 28),
                           ),
                           const SizedBox(width: 16),
                           SizedBox(
@@ -592,6 +635,7 @@ class HomeScreen extends ConsumerWidget {
                 canManageSuppliers: canManageSuppliers,
                 canManageShifts: canManageShifts,
                 canManageReturns: canManageReturns,
+                photoPath: user?.photoPath,
                 selectedId: 'dashboard',
                 onNavigate: (screen) => _navigate(context, screen),
               ),
@@ -685,6 +729,7 @@ class _DesktopSidebar extends StatelessWidget {
     required this.canManageSuppliers,
     required this.canManageShifts,
     required this.canManageReturns,
+    required this.photoPath,
     required this.selectedId,
     required this.onNavigate,
   });
@@ -695,6 +740,7 @@ class _DesktopSidebar extends StatelessWidget {
   final bool canManageSuppliers;
   final bool canManageShifts;
   final bool canManageReturns;
+  final String? photoPath;
   final String selectedId;
   final ValueChanged<Widget> onNavigate;
 
@@ -754,6 +800,20 @@ class _DesktopSidebar extends StatelessWidget {
                       ),
                     ),
                   ],
+                ),
+              ),
+              const SizedBox(height: 20),
+              Center(
+                child: CircleAvatar(
+                  radius: 28,
+                  backgroundColor: Colors.white.withAlpha(30),
+                  backgroundImage:
+                      photoPath != null && File(photoPath!).existsSync()
+                          ? FileImage(File(photoPath!))
+                          : null,
+                  child: photoPath == null || !File(photoPath!).existsSync()
+                      ? const Icon(Icons.person, color: Colors.white)
+                      : null,
                 ),
               ),
               const SizedBox(height: 26),

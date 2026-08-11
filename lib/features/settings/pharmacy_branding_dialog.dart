@@ -1,23 +1,28 @@
 import 'dart:io';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../core/app_theme.dart';
 import '../../core/providers.dart';
 import '../../data/pharmacy_settings_service.dart';
+import '../../data/receipt_storage_service.dart';
 import '../../l10n/app_localizations.dart';
 
 class PharmacyBrandingDialog extends ConsumerStatefulWidget {
   const PharmacyBrandingDialog({super.key});
 
   @override
-  ConsumerState<PharmacyBrandingDialog> createState() => _PharmacyBrandingDialogState();
+  ConsumerState<PharmacyBrandingDialog> createState() =>
+      _PharmacyBrandingDialogState();
 }
 
-class _PharmacyBrandingDialogState extends ConsumerState<PharmacyBrandingDialog> {
+class _PharmacyBrandingDialogState
+    extends ConsumerState<PharmacyBrandingDialog> {
   final _nameController = TextEditingController();
   final _addressController = TextEditingController();
   final _phoneController = TextEditingController();
+  final _receiptDirController = TextEditingController();
   String? _logoPath;
   bool _isLoading = true;
 
@@ -30,11 +35,17 @@ class _PharmacyBrandingDialogState extends ConsumerState<PharmacyBrandingDialog>
   Future<void> _loadSettings() async {
     final service = ref.read(pharmacySettingsServiceProvider);
     final settings = await service.getSettings();
+    final receiptStorage = ref.read(receiptStorageServiceProvider);
+    final customReceiptDir = await receiptStorage.getCustomBaseDirectoryPath();
+
     setState(() {
       _nameController.text = settings.name;
       _addressController.text = settings.address;
       _phoneController.text = settings.phone;
       _logoPath = settings.logoPath;
+      if (customReceiptDir != null) {
+        _receiptDirController.text = customReceiptDir;
+      }
       _isLoading = false;
     });
   }
@@ -48,6 +59,7 @@ class _PharmacyBrandingDialogState extends ConsumerState<PharmacyBrandingDialog>
   }
 
   Future<void> _saveSettings() async {
+    final l10n = AppLocalizations.of(context)!;
     final service = ref.read(pharmacySettingsServiceProvider);
     await service.saveSettings(
       PharmacySettings(
@@ -58,11 +70,15 @@ class _PharmacyBrandingDialogState extends ConsumerState<PharmacyBrandingDialog>
       ),
     );
 
+    final receiptStorage = ref.read(receiptStorageServiceProvider);
+    await receiptStorage
+        .setCustomBaseDirectoryPath(_receiptDirController.text.trim());
+
     if (mounted) {
       Navigator.of(context).pop(true);
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Pharmacy branding and logo updated successfully!'),
+        SnackBar(
+          content: Text(l10n.brandingReceiptSaved),
           backgroundColor: AppTheme.successColor,
         ),
       );
@@ -76,7 +92,8 @@ class _PharmacyBrandingDialogState extends ConsumerState<PharmacyBrandingDialog>
     return AlertDialog(
       title: Text(l10n.brandingTitle),
       content: _isLoading
-          ? const SizedBox(height: 100, child: Center(child: CircularProgressIndicator()))
+          ? const SizedBox(
+              height: 100, child: Center(child: CircularProgressIndicator()))
           : SingleChildScrollView(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -89,19 +106,26 @@ class _PharmacyBrandingDialogState extends ConsumerState<PharmacyBrandingDialog>
                       decoration: BoxDecoration(
                         color: Colors.grey.shade100,
                         borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: Colors.grey.shade300, style: BorderStyle.solid),
+                        border: Border.all(
+                            color: Colors.grey.shade300,
+                            style: BorderStyle.solid),
                       ),
                       child: _logoPath != null && File(_logoPath!).existsSync()
                           ? ClipRRect(
                               borderRadius: BorderRadius.circular(12),
-                              child: Image.file(File(_logoPath!), fit: BoxFit.contain),
+                              child: Image.file(File(_logoPath!),
+                                  fit: BoxFit.contain),
                             )
                           : const Column(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                Icon(Icons.add_a_photo, size: 32, color: AppTheme.primaryColor),
+                                Icon(Icons.add_a_photo,
+                                    size: 32, color: AppTheme.primaryColor),
                                 SizedBox(height: 4),
-                                Text('Upload Pharmacy Logo', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+                                Text('Upload Pharmacy Logo',
+                                    style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 12)),
                               ],
                             ),
                     ),
@@ -110,19 +134,42 @@ class _PharmacyBrandingDialogState extends ConsumerState<PharmacyBrandingDialog>
                   TextField(
                     key: const Key('brandingNameInput'),
                     controller: _nameController,
-                    decoration: InputDecoration(labelText: l10n.pharmacyNameLabel),
+                    decoration:
+                        InputDecoration(labelText: l10n.pharmacyNameLabel),
                   ),
                   const SizedBox(height: 8),
                   TextField(
                     key: const Key('brandingAddressInput'),
                     controller: _addressController,
-                    decoration: InputDecoration(labelText: l10n.pharmacyAddressLabel),
+                    decoration:
+                        InputDecoration(labelText: l10n.pharmacyAddressLabel),
                   ),
                   const SizedBox(height: 8),
                   TextField(
                     key: const Key('brandingPhoneInput'),
                     controller: _phoneController,
-                    decoration: InputDecoration(labelText: l10n.pharmacyPhoneLabel),
+                    decoration:
+                        InputDecoration(labelText: l10n.pharmacyPhoneLabel),
+                  ),
+                  const SizedBox(height: 8),
+                  TextField(
+                    key: const Key('receiptDirInput'),
+                    controller: _receiptDirController,
+                    decoration: InputDecoration(
+                      labelText: l10n.receiptDirectoryLabel,
+                      hintText: l10n.receiptDirectoryHint,
+                      suffixIcon: IconButton(
+                        icon: const Icon(Icons.folder_open),
+                        onPressed: () async {
+                          final selectedDir =
+                              await FilePicker.platform.getDirectoryPath();
+                          if (selectedDir != null) {
+                            setState(
+                                () => _receiptDirController.text = selectedDir);
+                          }
+                        },
+                      ),
+                    ),
                   ),
                 ],
               ),

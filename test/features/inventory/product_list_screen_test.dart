@@ -31,6 +31,7 @@ void main() {
       category: 'Obat Bebas',
       createdBy: 'admin',
     );
+    final product = (await productRepo.listProducts()).single;
 
     final container = ProviderContainer(
       overrides: [databaseProvider.overrideWithValue(db)],
@@ -58,6 +59,20 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Tambah Produk Baru'), findsOneWidget);
+    await tester.tap(find.text('Batal'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(Key('editProdBtn_${product.id}')));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Edit Product Details'), findsOneWidget);
+    await tester.tap(find.text('Cancel'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(Key('addBatchBtn_${product.id}')));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Receive Stock: Paracetamol Syrup'), findsOneWidget);
   });
 
   testWidgets('debounces search and offers recovery from no results', (
