@@ -374,6 +374,13 @@
   "notesOptional": "Catatan (opsional)",
   "cashMovementSaved": "Arus kas berhasil dicatat.",
   "cashMovementFailed": "Arus kas tidak dapat dicatat. Coba lagi.",
-  "saveCashMovement": "Simpan arus kas"
+  "saveCashMovement": "Simpan arus kas",
+  "reviewShift": "Tinjau shift",
+  "reviewNoteOptional": "Catatan tinjauan (opsional)",
+  "reviewShiftButton": "Tandai sudah ditinjau",
+  "shiftReviewed": "Sudah ditinjau",
+  "shiftUnreviewed": "Perlu ditinjau",
+  "reviewSaved": "Tinjauan shift disimpan.",
+  "reviewFailed": "Tinjauan shift tidak dapat disimpan. Coba lagi."
 }
 

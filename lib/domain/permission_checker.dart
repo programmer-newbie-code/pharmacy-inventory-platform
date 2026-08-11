@@ -95,6 +95,8 @@ class PermissionChecker {
     return role == Role.admin || role == Role.kasir;
   }
 
+  bool canReviewShifts(String? roleStr) => parseRole(roleStr) == Role.admin;
+
   bool canManageReturns(String? roleStr) {
     final role = parseRole(roleStr);
     return role == Role.admin || role == Role.kasir;

@@ -24,6 +24,9 @@ void main() {
             role: 'kasir',
           ),
         );
+    await db.into(db.users).insert(
+          UsersCompanion.insert(id: const Value(2), username: 'admin', passwordHash: 'hash', role: 'admin'),
+        );
     await db.into(db.products).insert(
           ProductsCompanion.insert(
             id: const Value(10),
@@ -168,5 +171,15 @@ void main() {
     final closed = await shiftRepo.closeShift(shiftId: shift.id, actualCash: 70000);
     expect(closed.expectedCash, equals(70000));
     expect(closed.discrepancy, equals(0));
+  });
+
+  test('admin can review a closed shift but cashier cannot', () async {
+    final shift = await shiftRepo.openShift(cashierId: 1, openingBalance: 50000);
+    await shiftRepo.closeShift(shiftId: shift.id, actualCash: 50000);
+    await expectLater(shiftRepo.reviewShift(shiftId: shift.id, reviewedBy: 1), throwsStateError);
+    final reviewed = await shiftRepo.reviewShift(shiftId: shift.id, reviewedBy: 2, reviewNote: 'Verified');
+    expect(reviewed.reviewedBy, 2);
+    expect(reviewed.reviewedAt, isNotNull);
+    expect(reviewed.reviewNote, 'Verified');
   });
 }
