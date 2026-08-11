@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/providers.dart';
 import '../../data/database.dart';
 import '../../data/purchase_receiving_repository.dart';
+import '../auth/auth_session.dart';
 
 class PurchaseReceivingScreen extends ConsumerStatefulWidget {
   const PurchaseReceivingScreen({super.key, required this.purchaseOrderId});
@@ -15,10 +16,7 @@ class PurchaseReceivingScreen extends ConsumerStatefulWidget {
 }
 
 class _ReceivingLine {
-  _ReceivingLine({
-    required this.poItem,
-    required this.product,
-  });
+  _ReceivingLine({required this.poItem, required this.product});
 
   final PurchaseOrderItem poItem;
   final Product product;
@@ -86,9 +84,7 @@ class _PurchaseReceivingScreenState
       if (line.batchNoController.text.trim().isEmpty && line.qtyEntered > 0) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(
-              'Batch number required for ${line.product.name}',
-            ),
+            content: Text('Batch number required for ${line.product.name}'),
           ),
         );
         return;
@@ -128,7 +124,7 @@ class _PurchaseReceivingScreenState
       await receivingRepo.processReceiving(
         purchaseOrderId: widget.purchaseOrderId,
         items: items,
-        receivedByUserId: 1, // TODO: get current user from auth
+        receivedByUserId: ref.read(authSessionProvider)?.id ?? 1,
       );
 
       if (!mounted) return;
@@ -138,9 +134,9 @@ class _PurchaseReceivingScreenState
       Navigator.of(context).pop(true);
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: $e')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error: $e')));
     } finally {
       if (mounted) setState(() => _isProcessing = false);
     }
@@ -205,9 +201,7 @@ class _PurchaseReceivingScreenState
           // Line items
           if (_lines.isEmpty)
             const Expanded(
-              child: Center(
-                child: Text('All items have been received.'),
-              ),
+              child: Center(child: Text('All items have been received.')),
             )
           else
             Expanded(
@@ -233,9 +227,9 @@ class _PurchaseReceivingScreenState
             // Product name
             Text(
               line.product.name,
-              style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
+              style: Theme.of(
+                context,
+              ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 4),
             Text(
@@ -308,7 +302,11 @@ class _PurchaseReceivingScreenState
                   children: [
                     Row(
                       children: [
-                        Icon(Icons.warning_amber, color: Colors.orange.shade700, size: 16),
+                        Icon(
+                          Icons.warning_amber,
+                          color: Colors.orange.shade700,
+                          size: 16,
+                        ),
                         const SizedBox(width: 4),
                         Text(
                           'Discrepancy: Expected ${line.qtyRemaining}, received ${line.qtyEntered}',
