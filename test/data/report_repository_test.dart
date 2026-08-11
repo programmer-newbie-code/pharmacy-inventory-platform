@@ -378,7 +378,7 @@ void main() {
         excelReportService: excelService,
       );
 
-      const filter = BestSellingMedicinesFilter(
+      final filter = BestSellingMedicinesFilter(
         startDate: DateTime(2026, 8, 1),
         endDate: DateTime(2026, 8, 11),
         rankMode: BestSellingRankMode.netRevenue,

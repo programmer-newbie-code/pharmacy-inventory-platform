@@ -45,7 +45,7 @@ void main() {
   });
 
   group('generateBestSellingMedicinesReport', () {
-    const filter = BestSellingMedicinesFilter(
+    final filter = BestSellingMedicinesFilter(
       startDate: DateTime(2026, 8, 1),
       endDate: DateTime(2026, 8, 11),
       rankMode: BestSellingRankMode.netRevenue,
@@ -140,7 +140,7 @@ void main() {
     });
 
     test('writes a deterministic, descriptive filename into the target directory', () async {
-      const filter = BestSellingMedicinesFilter(
+      final filter = BestSellingMedicinesFilter(
         startDate: DateTime(2026, 8, 1),
         endDate: DateTime(2026, 8, 11),
         rankMode: BestSellingRankMode.netQuantity,
