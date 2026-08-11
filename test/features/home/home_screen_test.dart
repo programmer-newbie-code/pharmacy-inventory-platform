@@ -1,6 +1,3 @@
-import 'dart:convert';
-import 'dart:io';
-
 import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -152,7 +149,7 @@ void main() {
     expect(find.byKey(const Key('mobileShellNavigation')), findsOneWidget);
   });
 
-  testWidgets('shows an authenticated admin photo in the desktop shell',
+  testWidgets('shows authenticated admin navigation in the desktop shell',
       (tester) async {
     tester.view.physicalSize = const Size(1600, 1000);
     tester.view.devicePixelRatio = 1;
@@ -162,10 +159,6 @@ void main() {
     });
     final db = AppDatabase(NativeDatabase.memory());
     addTearDown(db.close);
-    final image = File('${Directory.systemTemp.path}/home_avatar_test.png');
-    await image.writeAsBytes(base64Decode(
-        'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIHWP4z8DwHwAFgAI/ScLZiwAAAABJRU5ErkJggg=='));
-    addTearDown(() => image.delete());
     final container = ProviderContainer(
       overrides: [databaseProvider.overrideWithValue(db)],
     );
@@ -175,7 +168,6 @@ void main() {
           username: 'owner',
           passwordHash: hash,
           role: 'admin',
-          photoPath: image.path,
         );
     await container
         .read(authSessionProvider.notifier)
@@ -194,5 +186,6 @@ void main() {
     expect(find.byKey(const Key('desktopNavUsers')), findsOneWidget);
     expect(find.byKey(const Key('desktopNavBackup')), findsOneWidget);
     expect(find.byType(CircleAvatar), findsWidgets);
+    container.read(authSessionProvider.notifier).logout();
   });
 }
