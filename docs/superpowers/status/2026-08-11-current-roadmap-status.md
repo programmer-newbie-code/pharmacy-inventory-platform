@@ -1,7 +1,7 @@
 # Pharmacy Platform Current Roadmap Status
 
-**Audit date:** 2026-08-11
-**Audited revision:** `2e07424` (`fix(scanner): stop camera when app backgrounds (#133)`)
+**Audit date:** 2026-08-12
+**Audited revision:** `d23ac8e` (`fix(receiving): attribute receipts to active user (#137)`)
 **Method:** implementation and test evidence in the current main branch, open-PR state, and current CI configuration. Historical plan checkboxes are not treated as completion evidence.
 
 ## Status vocabulary
@@ -16,11 +16,11 @@
 
 | Area | Status | Evidence | Remaining work |
 | --- | --- | --- | --- |
-| Branch, signed-commit, PR, CI workflow | Shipped | `AGENT.md`, `.github/workflows/ci.yml`, and PR #133: analyzer, coverage, Windows, Android, signatures, and secret scan all passed before merge; main run `31516784102` passed for `2e07424`. | Keep enforcing the workflow for every increment. |
+| Branch, signed-commit, PR, CI workflow | Shipped | `AGENT.md`, `.github/workflows/ci.yml`, and PR #137: analyzer, coverage, Windows, Android, signatures, and secret scan all passed before merge; main run `31526970321` passed for `d23ac8e`. | Keep enforcing the workflow for every increment. |
 | Release automation | Partial | CI builds Windows and Android artifacts and creates releases from signed `v*` tags. | Verify the next release tag only after all remaining roadmap increments land; keep a release smoke/rollback record. |
 | Current best-selling export increment | Shipped | PR #130 added `ExcelReportService.generateBestSellingMedicinesReport`/`exportAndSaveBestSellingMedicinesReport`, `ReportRepository.exportBestSellingMedicines` (audit-logged), an accessible export button on `SalesAnalyticsScreen`, and wired `reportRepositoryProvider` to actually inject `AuditLogger` (previously a no-op gap — see `docs/superpowers/specs/2026-08-11-best-selling-medicines-export.md`). | None outstanding for this increment; export/audit parity with other reports achieved. |
 
-| Current report-export audit status | Shipped for best-selling, procurement, and cash movement | PR #130 added best-selling Excel export/audit. PR #132 added filtered, deterministic procurement and cash-movement Excel exports, UI feedback, and save-before-audit records. This supersedes the earlier best-selling-only delivery row. | Audit the classic sales export, SIPNAP export, and prescription CSV paths separately; do not infer their parity from these increments. |
+| Current report-export audit status | Shipped for best-selling, procurement, cash movement, and classic sales | PR #130 added best-selling Excel export/audit. PR #132 added filtered, deterministic procurement and cash-movement Excel exports, UI feedback, and save-before-audit records. PR #135 added save-before-audit classic sales Excel exports. | SIPNAP currently ignores its selected period and receipt quantities; prescription CSV emits blank data rows. Both require a separate regulated-report design decision and implementation increment. |
 | Scanner lifecycle increment | Shipped in code | PR #133 groups `hidden`, `paused`, and `inactive` lifecycle states with `controller.stop()` and resumes only on `resumed`; focused scanner tests and all CI build/test gates passed before merge. | Physical Android camera and Windows keyboard-wedge smoke tests remain required. |
 
 ## Approved product workstreams
@@ -28,17 +28,17 @@
 | Workstream / approved item | Status | Current implementation evidence | Verified gap or next action |
 | --- | --- | --- | --- |
 | Offline-first Drift database, role/session foundation | Shipped | `lib/data/database.dart`, `lib/features/auth/`, role tests, migration tests. | Continue migration fixtures whenever schemas change. |
-| Inventory, batches, adjustments, suppliers, purchase receiving | Partial | Repositories and screens exist for products, batches, suppliers, purchase orders, stock adjustments, and receiving; workflow tests exist. | Audit the remaining acceptance rules in the completion roadmap: negative-stock protection, full receiving reconciliation, and reorder formula fixture coverage. |
+| Inventory, batches, adjustments, suppliers, purchase receiving | Partial | Repositories and screens exist for products, batches, suppliers, purchase orders, stock adjustments, and receiving; workflow tests exist. PR #137 now attributes receiving records and their audit trail to the active authenticated user rather than hard-coded user ID `1`. | Audit the remaining acceptance rules in the completion roadmap: negative-stock protection, full receiving reconciliation, and reorder formula fixture coverage. |
 | POS, returns, shifts, receipts, printer recovery | Partial | POS, return, shift, receipt PDF/storage, and targeted tests are present. | Verify price-below-cost authorization, printer-failure recovery, and close-shift supervisor review against their approved acceptance tests. |
-| Backup integrity and restore | Partial | `backup_service.dart`, backup UI/tests, restore preview, backup document validation, and database-health service exist. | Execute the backup-hardening plan against actual data fixtures: checksum/version/device metadata, atomic failure recovery, migration coverage, and real-device restore smoke test. |
-| Google Drive backup and desktop OAuth | Partial / external verification required | Desktop OAuth configuration, credential store, upload client, and tests exist; Windows now displays configuration guidance instead of a plugin exception. | Verify real Android and Windows OAuth with an authorized Google Cloud configuration and account; remove any remaining misleading success history if found. This needs external OAuth authority. |
+| Backup integrity and restore | Partial | `backup_service.dart`, backup UI/tests, restore preview, backup document validation, and database-health service exist. PR #136 adds SHA-256 backup-document integrity validation and logs failed restore attempts without modifying the live database. | Execute recovery and migration fixtures against production-sized data, then perform a real-device restore smoke test. |
+| Google Drive backup and desktop OAuth | Partial / external verification required | Desktop OAuth configuration, credential store, upload client, and tests exist; Windows now displays configuration guidance instead of a plugin exception. | Verify real Android and Windows OAuth with an authorized Google Cloud configuration and account. The automatic scheduler currently skips Drive upload silently after restart when no in-memory Google account exists; design and test an explicit failure/re-authentication path before representing Drive auto-backup as active. |
 | Android camera barcode scanning | Partial | `camera_scanner_dialog.dart`, Android camera-permission test, retryable permission state, scanner UI, and PR #133 lifecycle stop behavior exist. | Physical-device scan, permission denial/retry, cancellation, torch, lookup, duplicate suppression, and lifecycle smoke testing remain unproven. |
 | Windows keyboard-wedge barcode scanning | Shipped in code / physical verification pending | POS and add-product tests assert desktop scanner-field behavior and Windows guidance; PR #133 makes shared scanner lifecycle shutdown explicit. | Smoke-test USB/Bluetooth scanners for focus, Enter/tab completion, duplicates, and not-found recovery. |
 | Indonesian drug catalog, lookup, CSV import, history | Partial | Bundled `assets/data/indonesian_drugs.csv`, lookup/updater services, staged import dialog, provenance docs, and import-history tests exist. | Verify catalog freshness/attribution, downloaded-catalog fallback, large-file progress, conflict policy, and atomic rollback with production-sized fixtures. |
 | Desktop dashboard workspace | Shipped in code / UX review pending | Responsive shell, desktop sidebar, breadcrumb, role-first home, and accessibility tests exist. | Conduct visual/keyboard QA on a real Windows build; retain subjective design changes for product review. |
 | Android navigation and mobile usability | Partial | Responsive shell and bottom navigation are implemented and tested, including the More overflow sheet. | Revisit task frequency, one-handed use, POS/scanner flow, and real-device text scaling; decide whether navigation changes are warranted from evidence. |
 | Accessibility and localization | Partial | ARB files, semantic/key tests, responsive/accessibility workflow tests, and formatters exist. | Audit remaining hard-coded operational strings, screen-reader labels, focus traversal, contrast, and text-scale behavior feature-by-feature. |
-| Reports, financial exports, alerts | Shipped for best-selling; Partial overall | Sales summary, procurement, cash movement, SIPNAP, and best-selling export services exist with audit logging; `SalesAnalyticsScreen` has Today/Week/Month/custom presets, ranking modes, and export. | Other reports (procurement, cash movement) still lack the same export/audit parity check performed for best-selling in this increment — worth a follow-up audit pass. |
+| Reports, financial exports, alerts | Shipped for best-selling, procurement, cash movement, and classic sales; Partial overall | Sales summary, procurement, cash movement, SIPNAP, and best-selling export services exist; `SalesAnalyticsScreen` has Today/Week/Month/custom presets, ranking modes, and export. | Correct the proven SIPNAP and prescription-CSV defects only after the report is scoped against official SIPNAP fields and the application's available movement data. |
 | Patients, prescriptions, controlled drugs, compounding | Partial | Patient, prescription, SIPNAP, and compounding modules/tests exist. | Verify controlled-drug end-to-end policy enforcement and document the regulatory-retention decision before altering records or attachment deletion. |
 | Privacy and local-data transparency | Shipped in code | Privacy spec/screen and ARB strings document local storage and optional Drive. | Revalidate after any sync, telemetry, or retention change. |
 | GitHub Pages/docs-site responsive gallery | Partial | Docs-site responsive-image/layout plans and deployed `deploy-gh-pages` job exist. | Render and inspect the published page at desktop and mobile widths; fix only confirmed overlap/overflow. |
@@ -48,10 +48,10 @@
 
 ## Immediate ordered backlog
 
-1. Audit the classic sales export's missing audit record, then separately assess SIPNAP and prescription CSV paths; create a spec/plan only for proven gaps.
-2. Perform evidence-led Google Drive/backup and barcode audits. Implement reproducible code defects; request OAuth or physical-device access only where verification cannot be reproduced.
+1. Obtain a regulated-report decision, then correct the proven SIPNAP-period/receipt and prescription-CSV blank-row defects in a dedicated spec/plan and PR.
+2. Perform evidence-led Google Drive/backup and barcode audits. Implement reproducible code defects, including the auto-Drive silent-skip path; request OAuth or physical-device access only where verification cannot be reproduced.
 3. Audit each remaining partial workflow against explicit acceptance criteria and create a separate spec/plan per independent gap.
-4. Complete visual QA of Windows, Android, and GitHub Pages using published/release builds; keep subjective redesigns for user review.
+4. Complete visual QA of Windows, Android, and GitHub Pages using published/release builds; keep subjective redesigns for product review.
 5. After every green merged increment, repeat this status document with evidence and retire superseded backlog entries.
 
 ## Process note
