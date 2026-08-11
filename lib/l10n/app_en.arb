@@ -299,6 +299,8 @@
       "path": {}
     }
   },
+  "receiptSaveFailed": "Could not save the receipt. Check storage access and try again.",
+  "receiptPrintFailed": "Could not print the receipt. Check the printer and try again.",
   "receiptDirectoryLabel": "Receipt Folder Path (Optional)",
   "receiptDirectoryHint": "Default: Documents/PharmaLoka/Receipts/",
   "brandingReceiptSaved": "Pharmacy branding, logo, and receipt folder updated!",

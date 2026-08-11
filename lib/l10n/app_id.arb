@@ -299,6 +299,8 @@
       "path": {}
     }
   },
+  "receiptSaveFailed": "Struk tidak dapat disimpan. Periksa akses penyimpanan lalu coba lagi.",
+  "receiptPrintFailed": "Struk tidak dapat dicetak. Periksa printer lalu coba lagi.",
   "receiptDirectoryLabel": "Lokasi Folder Struk (Opsional)",
   "receiptDirectoryHint": "Default: Documents/PharmaLoka/Receipts/",
   "brandingReceiptSaved": "Branding apotek, logo, dan folder struk berhasil diperbarui!",
