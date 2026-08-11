@@ -92,7 +92,7 @@ void main() {
       expect(metadataRow, contains('Net Revenue'));
 
       final headerRow =
-          sheet.row(3).map((cell) => cell?.value?.toString() ?? '').toList();
+          sheet.row(2).map((cell) => cell?.value?.toString() ?? '').toList();
       expect(headerRow, [
         'Rank',
         'Product Name',
@@ -104,11 +104,11 @@ void main() {
         'Net Revenue',
       ]);
 
-      final firstDataRow = sheet.row(4);
+      final firstDataRow = sheet.row(3);
       expect(firstDataRow[0]?.value?.toString(), '1');
       expect(firstDataRow[1]?.value?.toString(), 'Paracetamol 500mg');
 
-      final secondDataRow = sheet.row(5);
+      final secondDataRow = sheet.row(4);
       expect(secondDataRow[0]?.value?.toString(), '2');
       expect(secondDataRow[1]?.value?.toString(), 'Amoxicillin 500mg');
     });
@@ -121,7 +121,7 @@ void main() {
 
       final excel = Excel.decodeBytes(bytes);
       final sheet = excel['Best-Selling Medicines'];
-      expect(sheet.maxRows, 4);
+      expect(sheet.maxRows, 3);
     });
   });
 

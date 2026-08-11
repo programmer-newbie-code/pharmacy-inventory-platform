@@ -144,7 +144,6 @@ class ExcelReportService {
       TextCellValue(
           'Period: ${dateFormat.format(filter.startDate)} to ${dateFormat.format(filter.endDate)} · Ranked by: $rankModeLabel'),
     ]);
-    sheet.appendRow([]);
     sheet.appendRow([
       TextCellValue('Rank'),
       TextCellValue('Product Name'),
