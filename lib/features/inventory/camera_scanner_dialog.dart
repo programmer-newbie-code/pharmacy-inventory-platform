@@ -57,11 +57,12 @@ class _CameraScannerDialogState extends State<CameraScannerDialog>
       case AppLifecycleState.detached:
       case AppLifecycleState.hidden:
       case AppLifecycleState.paused:
+      case AppLifecycleState.inactive:
+        unawaited(controller.stop());
         return;
       case AppLifecycleState.resumed:
         unawaited(controller.start());
-      case AppLifecycleState.inactive:
-        unawaited(controller.stop());
+        return;
     }
   }
 
