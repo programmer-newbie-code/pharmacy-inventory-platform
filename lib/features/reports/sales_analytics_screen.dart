@@ -2,10 +2,12 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../core/app_theme.dart';
 import '../../core/formatters.dart';
 import '../../core/providers.dart';
 import '../../data/report_repository.dart';
 import '../../l10n/app_localizations.dart';
+import '../auth/auth_session.dart';
 
 class CategorySalesData {
   CategorySalesData(
@@ -56,6 +58,7 @@ class _SalesAnalyticsScreenState extends ConsumerState<SalesAnalyticsScreen> {
   late DateTimeRange _dateRange;
   String _selectedPreset = 'This Month';
   BestSellingRankMode _rankBy = BestSellingRankMode.netQuantity;
+  bool _isExporting = false;
 
   @override
   void initState() {
@@ -101,6 +104,46 @@ class _SalesAnalyticsScreenState extends ConsumerState<SalesAnalyticsScreen> {
             23, 59, 59),
       );
     });
+  }
+
+  Future<void> _exportBestSelling(
+      List<BestSellingMedicineRow> rows) async {
+    final l10n = AppLocalizations.of(context)!;
+    setState(() => _isExporting = true);
+    try {
+      final currentUser = ref.read(authSessionProvider);
+      final repo = ref.read(reportRepositoryProvider);
+      final file = await repo.exportBestSellingMedicines(
+        filter: BestSellingMedicinesFilter(
+          startDate: _dateRange.start,
+          endDate: _dateRange.end,
+          rankMode: _rankBy,
+        ),
+        rows: rows,
+        userId: currentUser?.id ?? 1,
+      );
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(l10n.exportBestSellingSaved(file.path)),
+            backgroundColor: AppTheme.successColor,
+            duration: const Duration(seconds: 4),
+          ),
+        );
+      }
+    } catch (err) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(l10n.exportBestSellingFailed),
+            backgroundColor: AppTheme.dangerColor,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isExporting = false);
+    }
   }
 
   @override
@@ -258,10 +301,37 @@ class _SalesAnalyticsScreenState extends ConsumerState<SalesAnalyticsScreen> {
                         }),
                       const SizedBox(height: 24),
 
-                      Text(
-                        l10n.bestSellingMedicines,
-                        style: const TextStyle(
-                            fontWeight: FontWeight.bold, fontSize: 18),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            l10n.bestSellingMedicines,
+                            style: const TextStyle(
+                                fontWeight: FontWeight.bold, fontSize: 18),
+                          ),
+                          Tooltip(
+                            message: _isExporting
+                                ? l10n.exportingBestSelling
+                                : topProducts.isEmpty
+                                    ? l10n.exportBestSellingDisabledEmpty
+                                    : l10n.exportBestSellingButtonTooltip,
+                            child: OutlinedButton.icon(
+                              key: const Key('exportBestSellingBtn'),
+                              onPressed: topProducts.isEmpty || _isExporting
+                                  ? null
+                                  : () => _exportBestSelling(topProducts),
+                              icon: _isExporting
+                                  ? const SizedBox(
+                                      width: 16,
+                                      height: 16,
+                                      child: CircularProgressIndicator(
+                                          strokeWidth: 2),
+                                    )
+                                  : const Icon(Icons.file_download),
+                              label: Text(l10n.exportBestSellingButton),
+                            ),
+                          ),
+                        ],
                       ),
                       const SizedBox(height: 8),
                       SegmentedButton<BestSellingRankMode>(

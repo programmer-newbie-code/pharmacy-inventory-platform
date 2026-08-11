@@ -113,4 +113,90 @@ class ExcelReportService {
     await file.writeAsBytes(bytes);
     return file;
   }
+
+  /// Generates an Excel (.xlsx) file for the Best-Selling Medicines report.
+  ///
+  /// Rows are written in the exact order given (already ranked by the
+  /// repository) so the exported file matches what the user saw on screen —
+  /// this method never re-sorts.
+  List<int> generateBestSellingMedicinesReport({
+    required BestSellingMedicinesFilter filter,
+    required List<BestSellingMedicineRow> rows,
+  }) {
+    final excel = Excel.createExcel();
+
+    const sheetName = 'Best-Selling Medicines';
+    excel.rename('Sheet1', sheetName);
+    final sheet = excel[sheetName];
+
+    final currencyFormat =
+        NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0);
+    final dateFormat = DateFormat('yyyy-MM-dd');
+    final rankModeLabel = filter.rankMode == BestSellingRankMode.netQuantity
+        ? 'Net Quantity'
+        : 'Net Revenue';
+
+    sheet.appendRow([
+      TextCellValue(
+          'Pharmacy Inventory Platform — Best-Selling Medicines Report'),
+    ]);
+    sheet.appendRow([
+      TextCellValue(
+          'Period: ${dateFormat.format(filter.startDate)} to ${dateFormat.format(filter.endDate)} · Ranked by: $rankModeLabel'),
+    ]);
+    sheet.appendRow([
+      TextCellValue('Rank'),
+      TextCellValue('Product Name'),
+      TextCellValue('Gross Qty'),
+      TextCellValue('Returned Qty'),
+      TextCellValue('Net Qty'),
+      TextCellValue('Gross Revenue'),
+      TextCellValue('Refunded Revenue'),
+      TextCellValue('Net Revenue'),
+    ]);
+
+    for (var i = 0; i < rows.length; i++) {
+      final row = rows[i];
+      sheet.appendRow([
+        IntCellValue(i + 1),
+        TextCellValue(row.productName),
+        IntCellValue(row.grossQuantity),
+        IntCellValue(row.returnedQuantity),
+        IntCellValue(row.netQuantity),
+        TextCellValue(currencyFormat.format(row.grossRevenue)),
+        TextCellValue(currencyFormat.format(row.refundedRevenue)),
+        TextCellValue(currencyFormat.format(row.netRevenue)),
+      ]);
+    }
+
+    final bytes = excel.save();
+    return bytes ?? [];
+  }
+
+  /// Exports and saves the Best-Selling Medicines report.
+  ///
+  /// [baseDirectoryOverride] lets tests write into a temp directory instead of
+  /// the platform Documents directory (mirrors [ReceiptStorageService]).
+  Future<File> exportAndSaveBestSellingMedicinesReport({
+    required BestSellingMedicinesFilter filter,
+    required List<BestSellingMedicineRow> rows,
+    Directory? baseDirectoryOverride,
+  }) async {
+    final bytes = generateBestSellingMedicinesReport(filter: filter, rows: rows);
+    final baseDir =
+        baseDirectoryOverride ?? await getApplicationDocumentsDirectory();
+    final fileDateFormat = DateFormat('yyyy-MM-dd');
+    final timestamp = DateFormat('yyyyMMdd_HHmmss').format(DateTime.now());
+    final rankModeSlug = filter.rankMode == BestSellingRankMode.netQuantity
+        ? 'netQuantity'
+        : 'netRevenue';
+    final fileName = 'pharmacy_best_selling_medicines_'
+        '${fileDateFormat.format(filter.startDate)}_'
+        '${fileDateFormat.format(filter.endDate)}_'
+        '${rankModeSlug}_'
+        '$timestamp.xlsx';
+    final file = File(p.join(baseDir.path, fileName));
+    await file.writeAsBytes(bytes);
+    return file;
+  }
 }
