@@ -25,11 +25,17 @@ class _CashMovementDialogState extends ConsumerState<CashMovementDialog> {
 
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
+    final currentUser = ref.read(authSessionProvider);
+    if (currentUser == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(AppLocalizations.of(context)!.sessionRequired)),
+      );
+      return;
+    }
     setState(() => _isSubmitting = true);
 
     try {
       final amount = double.tryParse(_amountController.text.trim()) ?? 0.0;
-      final currentUser = ref.read(authSessionProvider);
       final repo = ref.read(cashierShiftRepositoryProvider);
 
       await repo.recordCashMovement(
@@ -37,28 +43,26 @@ class _CashMovementDialogState extends ConsumerState<CashMovementDialog> {
         movementType: _movementType,
         category: _category,
         amount: amount,
-        notes: _notesController.text.trim().isEmpty ? null : _notesController.text.trim(),
-        performedBy: currentUser?.id ?? 1,
+        notes: _notesController.text.trim().isEmpty
+            ? null
+            : _notesController.text.trim(),
+        performedBy: currentUser.id,
       );
 
       if (mounted) {
         Navigator.of(context).pop(true);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(
-              _movementType == 'cash_out'
-                  ? 'Pengambilan/Tarik Kas berhasil dicatat!'
-                  : 'Penambahan Kas berhasil dicatat!',
-            ),
+            content: Text(AppLocalizations.of(context)!.cashMovementSaved),
             backgroundColor: AppTheme.successColor,
           ),
         );
       }
-    } catch (err) {
+    } catch (_) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Gagal mencatat arus kas: $err'),
+            content: Text(AppLocalizations.of(context)!.cashMovementFailed),
             backgroundColor: AppTheme.dangerColor,
           ),
         );
@@ -77,12 +81,12 @@ class _CashMovementDialogState extends ConsumerState<CashMovementDialog> {
         children: [
           Icon(
             _movementType == 'cash_out' ? Icons.money_off : Icons.attach_money,
-            color: _movementType == 'cash_out' ? Colors.orange : AppTheme.successColor,
+            color: _movementType == 'cash_out'
+                ? Colors.orange
+                : AppTheme.successColor,
           ),
           const SizedBox(width: 8),
-          Flexible(
-            child: Text(l10n.cashMovementTitle),
-          ),
+          Flexible(child: Text(l10n.cashMovementTitle)),
         ],
       ),
       content: Form(
@@ -111,7 +115,8 @@ class _CashMovementDialogState extends ConsumerState<CashMovementDialog> {
                 onSelectionChanged: (set) {
                   setState(() {
                     _movementType = set.first;
-                    _category = _movementType == 'cash_out' ? 'owner_draw' : 'topup';
+                    _category =
+                        _movementType == 'cash_out' ? 'owner_draw' : 'topup';
                   });
                 },
               ),
@@ -121,9 +126,9 @@ class _CashMovementDialogState extends ConsumerState<CashMovementDialog> {
               DropdownButtonFormField<String>(
                 key: const Key('movementCategoryDropdown'),
                 initialValue: _category,
-                decoration: const InputDecoration(
-                  labelText: 'Kategori / Keperluan',
-                  border: OutlineInputBorder(),
+                decoration: InputDecoration(
+                  labelText: l10n.categoryLabel,
+                  border: const OutlineInputBorder(),
                 ),
                 items: _movementType == 'cash_out'
                     ? [
@@ -155,7 +160,9 @@ class _CashMovementDialogState extends ConsumerState<CashMovementDialog> {
                         ),
                       ],
                 onChanged: (val) {
-                  if (val != null) setState(() => _category = val);
+                  if (val != null) {
+                    setState(() => _category = val);
+                  }
                 },
               ),
               const SizedBox(height: 16),
@@ -165,15 +172,19 @@ class _CashMovementDialogState extends ConsumerState<CashMovementDialog> {
                 key: const Key('movementAmountInput'),
                 controller: _amountController,
                 keyboardType: TextInputType.number,
-                decoration: const InputDecoration(
-                  labelText: 'Jumlah Uang (Rp)',
+                decoration: InputDecoration(
+                  labelText: l10n.amountLabel,
                   prefixText: 'Rp ',
-                  border: OutlineInputBorder(),
+                  border: const OutlineInputBorder(),
                 ),
                 validator: (val) {
-                  if (val == null || val.trim().isEmpty) return 'Jumlah tidak boleh kosong';
+                  if (val == null || val.trim().isEmpty) {
+                    return l10n.amountRequired;
+                  }
                   final num = double.tryParse(val.trim());
-                  if (num == null || num <= 0) return 'Jumlah harus lebih besar dari 0';
+                  if (num == null || num <= 0) {
+                    return l10n.amountPositive;
+                  }
                   return null;
                 },
               ),
@@ -183,10 +194,9 @@ class _CashMovementDialogState extends ConsumerState<CashMovementDialog> {
               TextFormField(
                 key: const Key('movementNotesInput'),
                 controller: _notesController,
-                decoration: const InputDecoration(
-                  labelText: 'Catatan / Keterangan (Opsional)',
-                  hintText: 'mis. Ambil untung harian Rp 500.000',
-                  border: OutlineInputBorder(),
+                decoration: InputDecoration(
+                  labelText: l10n.notesOptional,
+                  border: const OutlineInputBorder(),
                 ),
               ),
             ],
@@ -196,22 +206,27 @@ class _CashMovementDialogState extends ConsumerState<CashMovementDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Batal'),
+          child: Text(l10n.cancelButton),
         ),
         ElevatedButton(
           key: const Key('submitCashMovementBtn'),
           onPressed: _isSubmitting ? null : _submit,
           style: ElevatedButton.styleFrom(
-            backgroundColor: _movementType == 'cash_out' ? Colors.orange : AppTheme.primaryColor,
+            backgroundColor: _movementType == 'cash_out'
+                ? Colors.orange
+                : AppTheme.primaryColor,
             foregroundColor: Colors.white,
           ),
           child: _isSubmitting
               ? const SizedBox(
                   width: 16,
                   height: 16,
-                  child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                  child: CircularProgressIndicator(
+                    color: Colors.white,
+                    strokeWidth: 2,
+                  ),
                 )
-              : const Text('Simpan Arus Kas'),
+              : Text(l10n.saveCashMovement),
         ),
       ],
     );

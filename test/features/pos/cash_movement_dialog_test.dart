@@ -1,27 +1,41 @@
 import 'package:drift/native.dart';
+import 'package:drift/drift.dart' show Value;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:pharmacy_inventory_platform/core/providers.dart';
 import 'package:pharmacy_inventory_platform/data/database.dart';
+import 'package:pharmacy_inventory_platform/features/auth/auth_session.dart';
 import 'package:pharmacy_inventory_platform/features/pos/cash_movement_dialog.dart';
 import 'package:pharmacy_inventory_platform/l10n/app_localizations.dart';
 
 void main() {
-  testWidgets('renders CashMovementDialog and submits cash withdrawal (owner draw)',
+  testWidgets(
+      'renders CashMovementDialog and submits cash withdrawal (owner draw)',
       (tester) async {
     final db = AppDatabase(NativeDatabase.memory());
     addTearDown(db.close);
 
+    await db.into(db.users).insert(
+          UsersCompanion.insert(
+            id: const Value(2),
+            username: 'cashier',
+            passwordHash: 'hash',
+            role: 'cashier',
+          ),
+        );
+    final user =
+        await (db.select(db.users)..where((u) => u.id.equals(2))).getSingle();
     final container = ProviderContainer(overrides: [
       databaseProvider.overrideWithValue(db),
+      authSessionProvider.overrideWith(() => _AuthenticatedSession(user)),
     ]);
     addTearDown(container.dispose);
 
     // Open a shift first
     final shift = await container
         .read(cashierShiftRepositoryProvider)
-        .openShift(cashierId: 1, openingBalance: 100000);
+        .openShift(cashierId: user.id, openingBalance: 100000);
 
     await tester.pumpWidget(
       UncontrolledProviderScope(
@@ -44,8 +58,8 @@ void main() {
 
     await tester.enterText(
         find.byKey(const Key('movementAmountInput')), '500000');
-    await tester.enterText(
-        find.byKey(const Key('movementNotesInput')), 'Tarik untung harian owner');
+    await tester.enterText(find.byKey(const Key('movementNotesInput')),
+        'Tarik untung harian owner');
 
     await tester.tap(find.byKey(const Key('submitCashMovementBtn')));
     await tester.pumpAndSettle();
@@ -58,5 +72,15 @@ void main() {
     expect(movements.first.amount, 500000);
     expect(movements.first.category, 'owner_draw');
     expect(movements.first.notes, 'Tarik untung harian owner');
+    expect(movements.first.performedBy, user.id);
   });
+}
+
+class _AuthenticatedSession extends AuthSession {
+  _AuthenticatedSession(this.user);
+
+  final User user;
+
+  @override
+  User build() => user;
 }

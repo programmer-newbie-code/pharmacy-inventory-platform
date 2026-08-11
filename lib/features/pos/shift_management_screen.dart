@@ -2,9 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/providers.dart';
 import '../../data/database.dart';
+import '../../l10n/app_localizations.dart';
+import '../auth/auth_session.dart';
 import 'cash_movement_dialog.dart';
 
-final shiftListFutureProvider = FutureProvider.autoDispose<List<CashierShift>>((ref) {
+final shiftListFutureProvider = FutureProvider.autoDispose<List<CashierShift>>((
+  ref,
+) {
   final repo = ref.watch(cashierShiftRepositoryProvider);
   return repo.listShifts();
 });
@@ -13,7 +17,8 @@ class ShiftManagementScreen extends ConsumerStatefulWidget {
   const ShiftManagementScreen({super.key});
 
   @override
-  ConsumerState<ShiftManagementScreen> createState() => _ShiftManagementScreenState();
+  ConsumerState<ShiftManagementScreen> createState() =>
+      _ShiftManagementScreenState();
 }
 
 class _ShiftManagementScreenState extends ConsumerState<ShiftManagementScreen> {
@@ -27,38 +32,53 @@ class _ShiftManagementScreenState extends ConsumerState<ShiftManagementScreen> {
   }
 
   Future<void> _loadActiveShift() async {
+    final currentUser = ref.read(authSessionProvider);
+    if (currentUser == null) {
+      if (mounted) setState(() => _isLoading = false);
+      return;
+    }
     final repo = ref.read(cashierShiftRepositoryProvider);
-    final active = await repo.getActiveShift(1); // default cashierId=1
+    final active = await repo.getActiveShift(currentUser.id);
     setState(() {
       _activeShift = active;
       _isLoading = false;
     });
   }
 
+  bool _requireSession() {
+    if (ref.read(authSessionProvider) != null) return true;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(AppLocalizations.of(context)!.sessionRequired)),
+    );
+    return false;
+  }
+
   Future<void> _handleOpenShift() async {
+    if (!_requireSession()) return;
+    final l10n = AppLocalizations.of(context)!;
     final openingController = TextEditingController(text: '100000');
     final amountStr = await showDialog<String>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Open Cashier Shift'),
+        title: Text(l10n.openCashierShift),
         content: TextField(
           key: const Key('openingBalanceInput'),
           controller: openingController,
           keyboardType: TextInputType.number,
-          decoration: const InputDecoration(
-            labelText: 'Opening Cash Drawer Balance (Rp)',
+          decoration: InputDecoration(
+            labelText: l10n.openingDrawerBalance,
             prefixText: 'Rp ',
           ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text('Cancel'),
+            child: Text(l10n.cancelButton),
           ),
           ElevatedButton(
             key: const Key('confirmOpenShiftBtn'),
             onPressed: () => Navigator.of(ctx).pop(openingController.text),
-            child: const Text('Open Shift'),
+            child: Text(l10n.openShift),
           ),
         ],
       ),
@@ -67,13 +87,17 @@ class _ShiftManagementScreenState extends ConsumerState<ShiftManagementScreen> {
     if (amountStr != null && amountStr.isNotEmpty) {
       final amount = double.tryParse(amountStr) ?? 0.0;
       final repo = ref.read(cashierShiftRepositoryProvider);
-      await repo.openShift(cashierId: 1, openingBalance: amount);
+      await repo.openShift(
+        cashierId: ref.read(authSessionProvider)!.id,
+        openingBalance: amount,
+      );
       _loadActiveShift();
       ref.invalidate(shiftListFutureProvider);
     }
   }
 
   Future<void> _handleCashMovement() async {
+    if (!_requireSession()) return;
     if (_activeShift == null) return;
     final updated = await showDialog<bool>(
       context: context,
@@ -86,25 +110,29 @@ class _ShiftManagementScreenState extends ConsumerState<ShiftManagementScreen> {
 
   Future<void> _handleCloseShift() async {
     if (_activeShift == null) return;
+    if (!_requireSession()) return;
+    final l10n = AppLocalizations.of(context)!;
     final actualController = TextEditingController();
     final reasonController = TextEditingController();
 
     final actualStr = await showDialog<String>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Close Shift & Reconcile Cash'),
+        title: Text(l10n.closeShiftReconcile),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Opening Balance: Rp ${_activeShift!.openingBalance.toStringAsFixed(0)}'),
+            Text(
+              '${l10n.openingCash}: Rp ${_activeShift!.openingBalance.toStringAsFixed(0)}',
+            ),
             const SizedBox(height: 8),
             TextField(
               key: const Key('actualCashInput'),
               controller: actualController,
               keyboardType: TextInputType.number,
-              decoration: const InputDecoration(
-                labelText: 'Counted Actual Cash in Drawer (Rp)',
+              decoration: InputDecoration(
+                labelText: l10n.countedDrawerCash,
                 prefixText: 'Rp ',
               ),
             ),
@@ -112,22 +140,23 @@ class _ShiftManagementScreenState extends ConsumerState<ShiftManagementScreen> {
             TextField(
               key: const Key('discrepancyReasonInput'),
               controller: reasonController,
-              decoration: const InputDecoration(
-                labelText: 'Reason required if cash is over or short',
-              ),
+              decoration: InputDecoration(labelText: l10n.discrepancyReason),
             ),
           ],
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text('Cancel'),
+            child: Text(l10n.cancelButton),
           ),
           ElevatedButton(
             key: const Key('confirmCloseShiftBtn'),
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.red, foregroundColor: Colors.white),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+              foregroundColor: Colors.white,
+            ),
             onPressed: () => Navigator.of(ctx).pop(actualController.text),
-            child: const Text('Reconcile & Close'),
+            child: Text(l10n.reconcileClose),
           ),
         ],
       ),
@@ -141,22 +170,24 @@ class _ShiftManagementScreenState extends ConsumerState<ShiftManagementScreen> {
         actualCash: actual,
         discrepancyReason: reasonController.text,
       );
-      
+
       _loadActiveShift();
       ref.invalidate(shiftListFutureProvider);
 
       if (mounted) {
         final disc = closed.discrepancy ?? 0.0;
         final message = disc == 0
-            ? 'Shift closed. Balanced perfectly!'
+            ? l10n.shiftClosedBalanced
             : disc > 0
-                ? 'Shift closed. Cash OVERAGE of Rp ${disc.toStringAsFixed(0)}'
-                : 'Shift closed. Cash SHORTAGE of Rp ${disc.abs().toStringAsFixed(0)}';
+                ? l10n.shiftClosedOverage(disc.toStringAsFixed(0))
+                : l10n.shiftClosedShortage(disc.abs().toStringAsFixed(0));
 
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(message),
-            backgroundColor: disc == 0 ? Colors.green : (disc > 0 ? Colors.blue : Colors.red),
+            backgroundColor: disc == 0
+                ? Colors.green
+                : (disc > 0 ? Colors.blue : Colors.red),
           ),
         );
       }
@@ -165,12 +196,11 @@ class _ShiftManagementScreenState extends ConsumerState<ShiftManagementScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final shiftListAsync = ref.watch(shiftListFutureProvider);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Cash Shift Reconciliation'),
-      ),
+      appBar: AppBar(title: Text(l10n.cashShiftTitle)),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : Padding(
@@ -179,7 +209,9 @@ class _ShiftManagementScreenState extends ConsumerState<ShiftManagementScreen> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   Card(
-                    color: _activeShift != null ? Colors.green.shade50 : Colors.amber.shade50,
+                    color: _activeShift != null
+                        ? Colors.green.shade50
+                        : Colors.amber.shade50,
                     child: Padding(
                       padding: const EdgeInsets.all(16.0),
                       child: Column(
@@ -188,13 +220,18 @@ class _ShiftManagementScreenState extends ConsumerState<ShiftManagementScreen> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                _activeShift != null ? 'Shift Active (Open)' : 'No Active Shift',
-                                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                                _activeShift != null
+                                    ? l10n.shiftActive
+                                    : l10n.noActiveShift,
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 16,
+                                ),
                               ),
                               if (_activeShift != null) ...[
                                 const SizedBox(height: 4),
                                 Text(
-                                  'Opened: ${_activeShift!.openedAt.toIso8601String().replaceAll('T', ' ').substring(0, 16)} • Rp ${_activeShift!.openingBalance.toStringAsFixed(0)}',
+                                  '${l10n.shiftOpened}: ${_activeShift!.openedAt.toIso8601String().replaceAll('T', ' ').substring(0, 16)} • Rp ${_activeShift!.openingBalance.toStringAsFixed(0)}',
                                 ),
                               ],
                               const SizedBox(height: 12),
@@ -202,7 +239,7 @@ class _ShiftManagementScreenState extends ConsumerState<ShiftManagementScreen> {
                                   ? ElevatedButton.icon(
                                       key: const Key('openShiftBtn'),
                                       icon: const Icon(Icons.play_arrow),
-                                      label: const Text('Open Shift'),
+                                      label: Text(l10n.openShift),
                                       onPressed: _handleOpenShift,
                                     )
                                   : Wrap(
@@ -216,7 +253,7 @@ class _ShiftManagementScreenState extends ConsumerState<ShiftManagementScreen> {
                                             foregroundColor: Colors.white,
                                           ),
                                           icon: const Icon(Icons.swap_horiz),
-                                          label: const Text('Tarik/Setor Kas (Prive)'),
+                                          label: Text(l10n.cashMovementButton),
                                           onPressed: _handleCashMovement,
                                         ),
                                         ElevatedButton.icon(
@@ -226,7 +263,7 @@ class _ShiftManagementScreenState extends ConsumerState<ShiftManagementScreen> {
                                             foregroundColor: Colors.white,
                                           ),
                                           icon: const Icon(Icons.stop),
-                                          label: const Text('Close & Reconcile'),
+                                          label: Text(l10n.closeShift),
                                           onPressed: _handleCloseShift,
                                         ),
                                       ],
@@ -239,7 +276,7 @@ class _ShiftManagementScreenState extends ConsumerState<ShiftManagementScreen> {
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    'Past Shifts Log',
+                    l10n.pastShifts,
                     style: Theme.of(context).textTheme.titleLarge,
                   ),
                   const SizedBox(height: 8),
@@ -247,7 +284,7 @@ class _ShiftManagementScreenState extends ConsumerState<ShiftManagementScreen> {
                     child: shiftListAsync.when(
                       data: (shifts) {
                         if (shifts.isEmpty) {
-                          return const Center(child: Text('No shifts recorded yet.'));
+                          return Center(child: Text(l10n.noShifts));
                         }
                         return ListView.builder(
                           itemCount: shifts.length,
@@ -261,37 +298,47 @@ class _ShiftManagementScreenState extends ConsumerState<ShiftManagementScreen> {
                                 isClosed
                                     ? (disc == 0
                                         ? Icons.check_circle
-                                        : (disc > 0 ? Icons.add_circle : Icons.warning))
+                                        : (disc > 0
+                                            ? Icons.add_circle
+                                            : Icons.warning))
                                     : Icons.access_time,
                                 color: isClosed
-                                    ? (disc == 0 ? Colors.green : (disc > 0 ? Colors.blue : Colors.red))
+                                    ? (disc == 0
+                                        ? Colors.green
+                                        : (disc > 0 ? Colors.blue : Colors.red))
                                     : Colors.orange,
                               ),
-                              title: Text('Shift #${s.id} (${s.status.toUpperCase()})'),
+                              title: Text(
+                                'Shift #${s.id} (${s.status.toUpperCase()})',
+                              ),
                               subtitle: Text(
-                                'Opened: ${s.openedAt.toIso8601String().replaceAll('T', ' ').substring(0, 16)}'
-                                '${isClosed ? '\nExpected: Rp ${(s.expectedCash ?? 0).toStringAsFixed(0)} | Actual: Rp ${(s.actualCash ?? 0).toStringAsFixed(0)}' : ''}',
+                                '${l10n.shiftOpened}: ${s.openedAt.toIso8601String().replaceAll('T', ' ').substring(0, 16)}'
+                                '${isClosed ? '\n${l10n.expectedCash}: Rp ${(s.expectedCash ?? 0).toStringAsFixed(0)} | ${l10n.actualCash}: Rp ${(s.actualCash ?? 0).toStringAsFixed(0)}' : ''}',
                               ),
                               trailing: isClosed
                                   ? Chip(
                                       label: Text(
                                         disc == 0
-                                            ? 'BALANCED'
+                                            ? l10n.shiftClosedBalanced
                                             : (disc > 0
                                                 ? '+Rp ${disc.toStringAsFixed(0)}'
                                                 : '-Rp ${disc.abs().toStringAsFixed(0)}'),
                                       ),
                                       backgroundColor: disc == 0
                                           ? Colors.green.shade100
-                                          : (disc > 0 ? Colors.blue.shade100 : Colors.red.shade100),
+                                          : (disc > 0
+                                              ? Colors.blue.shade100
+                                              : Colors.red.shade100),
                                     )
                                   : null,
                             );
                           },
                         );
                       },
-                      loading: () => const Center(child: CircularProgressIndicator()),
-                      error: (err, _) => Center(child: Text('Error: $err')),
+                      loading: () =>
+                          const Center(child: CircularProgressIndicator()),
+                      error: (_, __) =>
+                          Center(child: Text(l10n.analyticsLoadError)),
                     ),
                   ),
                 ],
