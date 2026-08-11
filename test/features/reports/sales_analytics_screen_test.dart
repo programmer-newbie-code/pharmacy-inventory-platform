@@ -7,6 +7,7 @@ import 'package:pharmacy_inventory_platform/core/providers.dart';
 import 'package:pharmacy_inventory_platform/data/database.dart';
 import 'package:pharmacy_inventory_platform/data/sale_repository.dart';
 import 'package:pharmacy_inventory_platform/features/reports/sales_analytics_screen.dart';
+import 'package:pharmacy_inventory_platform/l10n/app_localizations.dart';
 
 void main() {
   testWidgets(
@@ -82,6 +83,8 @@ void main() {
       UncontrolledProviderScope(
         container: container,
         child: const MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
           home: SalesAnalyticsScreen(),
         ),
       ),
@@ -90,14 +93,13 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Sales Analytics & Insights'), findsOneWidget);
-    expect(find.text('NET REVENUE'), findsOneWidget);
-    expect(find.text('GROSS REVENUE'), findsOneWidget);
-    expect(find.text('NET PROFIT'), findsOneWidget);
+    expect(find.text('Net revenue'), findsNWidgets(3));
+    expect(find.text('Gross revenue'), findsOneWidget);
+    expect(find.text('Net profit'), findsOneWidget);
     expect(find.text('Amoxicillin 500mg'), findsOneWidget);
-    expect(find.text('Sales by Product Category'), findsOneWidget);
-    expect(find.text('Best-Selling Medicines'), findsOneWidget);
+    expect(find.text('Sales by product category'), findsOneWidget);
+    expect(find.text('Best-selling medicines'), findsOneWidget);
     expect(find.text('Net units'), findsNWidgets(2));
-    expect(find.text('Net revenue'), findsNWidgets(2));
-    expect(find.text('Custom range'), findsOneWidget);
+    expect(find.text('Custom Date Range'), findsOneWidget);
   });
 }

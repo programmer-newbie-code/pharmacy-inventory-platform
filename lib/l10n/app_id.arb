@@ -312,6 +312,18 @@
   "@cartQuantityForUnit": {"placeholders": {"unit": {}}},
   "cartTotal": "Total: {quantity} {unit}",
   "@cartTotal": {"placeholders": {"quantity": {"type": "int"}, "unit": {}}},
-  "changePhotoTooltip": "Ubah foto"
+  "changePhotoTooltip": "Ubah foto",
+  "analyticsNetRevenue": "Pendapatan bersih",
+  "analyticsGrossRevenue": "Pendapatan kotor",
+  "analyticsNetProfit": "Laba bersih",
+  "analyticsTotalRefunds": "Total pengembalian",
+  "analyticsCategorySales": "Penjualan berdasarkan kategori produk",
+  "bestSellingMedicines": "Obat terlaris",
+  "rankByNetUnits": "Unit bersih",
+  "rankByNetRevenue": "Pendapatan bersih",
+  "reportProduct": "Obat",
+  "reportReturned": "Dikembalikan",
+  "reportPaymentBreakdown": "Rincian metode pembayaran",
+  "analyticsLoadError": "Analisis tidak dapat dimuat. Coba lagi."
 }
 
