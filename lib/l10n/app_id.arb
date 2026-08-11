@@ -324,6 +324,13 @@
   "reportProduct": "Obat",
   "reportReturned": "Dikembalikan",
   "reportPaymentBreakdown": "Rincian metode pembayaran",
-  "analyticsLoadError": "Analisis tidak dapat dimuat. Coba lagi."
+  "analyticsLoadError": "Analisis tidak dapat dimuat. Coba lagi.",
+  "exportBestSellingButton": "Ekspor Excel (.xlsx)",
+  "exportBestSellingButtonTooltip": "Ekspor laporan ini ke Excel",
+  "exportingBestSelling": "Mengekspor laporan obat terlaris...",
+  "exportBestSellingSaved": "Laporan obat terlaris disimpan: {path}",
+  "@exportBestSellingSaved": {"placeholders": {"path": {}}},
+  "exportBestSellingFailed": "Ekspor laporan gagal. Periksa akses penyimpanan lalu coba lagi.",
+  "exportBestSellingDisabledEmpty": "Tidak ada penjualan pada periode ini untuk diekspor."
 }
 

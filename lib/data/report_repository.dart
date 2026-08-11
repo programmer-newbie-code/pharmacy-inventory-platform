@@ -1,7 +1,10 @@
+import 'dart:io';
+
 import 'package:drift/drift.dart';
 
 import 'audit_logger.dart';
 import 'database.dart';
+import 'excel_report_service.dart';
 
 class ProcurementSummary {
   const ProcurementSummary({
@@ -99,11 +102,16 @@ class SalesAnalyticsData {
 }
 
 class ReportRepository {
-  ReportRepository(this._db, {AuditLogger? auditLogger})
-      : _auditLogger = auditLogger;
+  ReportRepository(
+    this._db, {
+    AuditLogger? auditLogger,
+    ExcelReportService? excelReportService,
+  })  : _auditLogger = auditLogger,
+        _excelReportService = excelReportService ?? ExcelReportService();
 
   final AppDatabase _db;
   final AuditLogger? _auditLogger;
+  final ExcelReportService _excelReportService;
 
   /// Generates sales summary report for a given date range.
   Future<SalesSummary> getSalesSummary({
@@ -363,6 +371,36 @@ class ReportRepository {
         newValue: details,
       );
     }
+  }
+
+  /// Exports the Best-Selling Medicines report to Excel and records the
+  /// export in the audit trail.
+  ///
+  /// [rows] must be the exact rows already rendered on screen (already
+  /// ranked by [getBestSellingMedicines]) so the exported file matches what
+  /// the user saw — this method never re-fetches or re-sorts.
+  Future<File> exportBestSellingMedicines({
+    required BestSellingMedicinesFilter filter,
+    required List<BestSellingMedicineRow> rows,
+    required int userId,
+    Directory? baseDirectoryOverride,
+  }) async {
+    final file = await _excelReportService.exportAndSaveBestSellingMedicinesReport(
+      filter: filter,
+      rows: rows,
+      baseDirectoryOverride: baseDirectoryOverride,
+    );
+    final rankModeLabel = filter.rankMode == BestSellingRankMode.netQuantity
+        ? 'netQuantity'
+        : 'netRevenue';
+    await logExport(
+      userId: userId,
+      exportType: 'best_selling_medicines',
+      details: 'Period: ${filter.startDate.toIso8601String()} to '
+          '${filter.endDate.toIso8601String()}, rankMode: $rankModeLabel, '
+          'rows: ${rows.length}',
+    );
+    return file;
   }
 
   /// Exports prescription sales log as CSV format for BPOM / Kemenkes compliance.

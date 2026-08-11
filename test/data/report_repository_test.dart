@@ -1,9 +1,12 @@
+import 'dart:io';
+
 import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:pharmacy_inventory_platform/data/audit_logger.dart';
 import 'package:pharmacy_inventory_platform/data/database.dart';
 import 'package:pharmacy_inventory_platform/data/cashier_shift_repository.dart';
+import 'package:pharmacy_inventory_platform/data/excel_report_service.dart';
 import 'package:pharmacy_inventory_platform/data/product_repository.dart';
 import 'package:pharmacy_inventory_platform/data/report_repository.dart';
 import 'package:pharmacy_inventory_platform/data/sale_repository.dart';
@@ -351,5 +354,63 @@ void main() {
     final logs = await db.select(db.auditLogs).get();
     expect(logs.length, equals(1));
     expect(logs.single.action, equals('export_excel_sales'));
+  });
+
+  group('exportBestSellingMedicines', () {
+    late Directory tempDir;
+
+    setUp(() async {
+      tempDir = await Directory.systemTemp
+          .createTemp('best_selling_repo_export_test_');
+    });
+
+    tearDown(() async {
+      if (await tempDir.exists()) {
+        await tempDir.delete(recursive: true);
+      }
+    });
+
+    test('writes the exact given rows to Excel and logs the export', () async {
+      final excelService = ExcelReportService();
+      final auditRepo = ReportRepository(
+        db,
+        auditLogger: AuditLogger(db),
+        excelReportService: excelService,
+      );
+
+      const filter = BestSellingMedicinesFilter(
+        startDate: DateTime(2026, 8, 1),
+        endDate: DateTime(2026, 8, 11),
+        rankMode: BestSellingRankMode.netRevenue,
+      );
+      const rows = [
+        BestSellingMedicineRow(
+          productId: 1,
+          productName: 'Zinc Tablet',
+          grossQuantity: 5,
+          returnedQuantity: 0,
+          grossRevenue: 25000,
+          refundedRevenue: 0,
+          netQuantity: 5,
+          netRevenue: 25000,
+        ),
+      ];
+
+      final file = await auditRepo.exportBestSellingMedicines(
+        filter: filter,
+        rows: rows,
+        userId: 1,
+        baseDirectoryOverride: tempDir,
+      );
+
+      expect(await file.exists(), isTrue);
+      expect(await file.readAsBytes(), isNotEmpty);
+
+      final logs = await db.select(db.auditLogs).get();
+      expect(logs.length, equals(1));
+      expect(logs.single.action, equals('export_best_selling_medicines'));
+      expect(logs.single.userId, equals(1));
+      expect(logs.single.newValue, contains('netRevenue'));
+    });
   });
 }
