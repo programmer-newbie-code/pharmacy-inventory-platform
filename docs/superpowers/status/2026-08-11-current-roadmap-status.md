@@ -1,7 +1,7 @@
 # Pharmacy Platform Current Roadmap Status
 
 **Audit date:** 2026-08-11
-**Audited revision:** `25a99f8` (`feat(reports): export best-selling medicines to Excel with audit trail (#130)`)
+**Audited revision:** `2e07424` (`fix(scanner): stop camera when app backgrounds (#133)`)
 **Method:** implementation and test evidence in the current main branch, open-PR state, and current CI configuration. Historical plan checkboxes are not treated as completion evidence.
 
 ## Status vocabulary
@@ -16,9 +16,12 @@
 
 | Area | Status | Evidence | Remaining work |
 | --- | --- | --- | --- |
-| Branch, signed-commit, PR, CI workflow | Shipped | `AGENT.md`, `.github/workflows/ci.yml`, and PR #130: analyzer, coverage, Windows, Android, signatures, and secret scan all passed before merge; main run `31482927954` passed for `25a99f8`. | Keep enforcing the workflow for every increment. |
+| Branch, signed-commit, PR, CI workflow | Shipped | `AGENT.md`, `.github/workflows/ci.yml`, and PR #133: analyzer, coverage, Windows, Android, signatures, and secret scan all passed before merge; main run `31516784102` passed for `2e07424`. | Keep enforcing the workflow for every increment. |
 | Release automation | Partial | CI builds Windows and Android artifacts and creates releases from signed `v*` tags. | Verify the next release tag only after all remaining roadmap increments land; keep a release smoke/rollback record. |
 | Current best-selling export increment | Shipped | PR #130 added `ExcelReportService.generateBestSellingMedicinesReport`/`exportAndSaveBestSellingMedicinesReport`, `ReportRepository.exportBestSellingMedicines` (audit-logged), an accessible export button on `SalesAnalyticsScreen`, and wired `reportRepositoryProvider` to actually inject `AuditLogger` (previously a no-op gap — see `docs/superpowers/specs/2026-08-11-best-selling-medicines-export.md`). | None outstanding for this increment; export/audit parity with other reports achieved. |
+
+| Current report-export audit status | Shipped for best-selling, procurement, and cash movement | PR #130 added best-selling Excel export/audit. PR #132 added filtered, deterministic procurement and cash-movement Excel exports, UI feedback, and save-before-audit records. This supersedes the earlier best-selling-only delivery row. | Audit the classic sales export, SIPNAP export, and prescription CSV paths separately; do not infer their parity from these increments. |
+| Scanner lifecycle increment | Shipped in code | PR #133 groups `hidden`, `paused`, and `inactive` lifecycle states with `controller.stop()` and resumes only on `resumed`; focused scanner tests and all CI build/test gates passed before merge. | Physical Android camera and Windows keyboard-wedge smoke tests remain required. |
 
 ## Approved product workstreams
 
@@ -29,8 +32,8 @@
 | POS, returns, shifts, receipts, printer recovery | Partial | POS, return, shift, receipt PDF/storage, and targeted tests are present. | Verify price-below-cost authorization, printer-failure recovery, and close-shift supervisor review against their approved acceptance tests. |
 | Backup integrity and restore | Partial | `backup_service.dart`, backup UI/tests, restore preview, backup document validation, and database-health service exist. | Execute the backup-hardening plan against actual data fixtures: checksum/version/device metadata, atomic failure recovery, migration coverage, and real-device restore smoke test. |
 | Google Drive backup and desktop OAuth | Partial / external verification required | Desktop OAuth configuration, credential store, upload client, and tests exist; Windows now displays configuration guidance instead of a plugin exception. | Verify real Android and Windows OAuth with an authorized Google Cloud configuration and account; remove any remaining misleading success history if found. This needs external OAuth authority. |
-| Android camera barcode scanning | Partial | `camera_scanner_dialog.dart`, Android camera-permission test, retryable permission state, and scanner UI exist. | Physical-device scan, permission denial/retry, cancellation, torch, lookup, and lifecycle smoke testing remain unproven. |
-| Windows keyboard-wedge barcode scanning | Shipped in code / physical verification pending | POS and add-product tests assert desktop scanner-field behavior and Windows guidance. | Smoke-test USB/Bluetooth scanners for focus, Enter/tab completion, duplicates, and not-found recovery. |
+| Android camera barcode scanning | Partial | `camera_scanner_dialog.dart`, Android camera-permission test, retryable permission state, scanner UI, and PR #133 lifecycle stop behavior exist. | Physical-device scan, permission denial/retry, cancellation, torch, lookup, duplicate suppression, and lifecycle smoke testing remain unproven. |
+| Windows keyboard-wedge barcode scanning | Shipped in code / physical verification pending | POS and add-product tests assert desktop scanner-field behavior and Windows guidance; PR #133 makes shared scanner lifecycle shutdown explicit. | Smoke-test USB/Bluetooth scanners for focus, Enter/tab completion, duplicates, and not-found recovery. |
 | Indonesian drug catalog, lookup, CSV import, history | Partial | Bundled `assets/data/indonesian_drugs.csv`, lookup/updater services, staged import dialog, provenance docs, and import-history tests exist. | Verify catalog freshness/attribution, downloaded-catalog fallback, large-file progress, conflict policy, and atomic rollback with production-sized fixtures. |
 | Desktop dashboard workspace | Shipped in code / UX review pending | Responsive shell, desktop sidebar, breadcrumb, role-first home, and accessibility tests exist. | Conduct visual/keyboard QA on a real Windows build; retain subjective design changes for product review. |
 | Android navigation and mobile usability | Partial | Responsive shell and bottom navigation are implemented and tested, including the More overflow sheet. | Revisit task frequency, one-handed use, POS/scanner flow, and real-device text scaling; decide whether navigation changes are warranted from evidence. |
@@ -45,9 +48,9 @@
 
 ## Immediate ordered backlog
 
-1. Evidence-led Google Drive backup and barcode audits. Implement only reproducible code defects; request external OAuth or physical-device access only when required.
-2. Audit each partial workflow against its explicit acceptance criteria and create a separate spec/plan per independent gap.
-3. Consider an export/audit-parity pass on the procurement and cash-movement reports, mirroring the best-selling increment (PR #130).
+1. Audit the classic sales export's missing audit record, then separately assess SIPNAP and prescription CSV paths; create a spec/plan only for proven gaps.
+2. Perform evidence-led Google Drive/backup and barcode audits. Implement reproducible code defects; request OAuth or physical-device access only where verification cannot be reproduced.
+3. Audit each remaining partial workflow against explicit acceptance criteria and create a separate spec/plan per independent gap.
 4. Complete visual QA of Windows, Android, and GitHub Pages using published/release builds; keep subjective redesigns for user review.
 5. After every green merged increment, repeat this status document with evidence and retire superseded backlog entries.
 
