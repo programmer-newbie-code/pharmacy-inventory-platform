@@ -1,7 +1,7 @@
 # Pharmacy Platform Current Roadmap Status
 
-**Audit date:** 2026-08-11  
-**Audited revision:** `a393dab` (`feat(media): add configurable receipts and editable photos (#125)`)  
+**Audit date:** 2026-08-11
+**Audited revision:** `25a99f8` (`feat(reports): export best-selling medicines to Excel with audit trail (#130)`)
 **Method:** implementation and test evidence in the current main branch, open-PR state, and current CI configuration. Historical plan checkboxes are not treated as completion evidence.
 
 ## Status vocabulary
@@ -16,9 +16,9 @@
 
 | Area | Status | Evidence | Remaining work |
 | --- | --- | --- | --- |
-| Branch, signed-commit, PR, CI workflow | Shipped | `AGENT.md`, `.github/workflows/ci.yml`, and PR #125: analyzer, coverage, Windows, Android, signatures, and secret scan all passed before merge; main run `31448914950` passed for `a393dab`. | Keep enforcing the workflow for every increment. |
+| Branch, signed-commit, PR, CI workflow | Shipped | `AGENT.md`, `.github/workflows/ci.yml`, and PR #130: analyzer, coverage, Windows, Android, signatures, and secret scan all passed before merge; main run `31482927954` passed for `25a99f8`. | Keep enforcing the workflow for every increment. |
 | Release automation | Partial | CI builds Windows and Android artifacts and creates releases from signed `v*` tags. | Verify the next release tag only after all remaining roadmap increments land; keep a release smoke/rollback record. |
-| Current media/receipt increment | Shipped | PR #125 added schema v10 nullable image paths, app-owned media copies, receipt-folder preference, POS quantity editing, migration and workflow tests. | User-visible deletion/retention of replaced photos remains a separate policy decision. |
+| Current best-selling export increment | Shipped | PR #130 added `ExcelReportService.generateBestSellingMedicinesReport`/`exportAndSaveBestSellingMedicinesReport`, `ReportRepository.exportBestSellingMedicines` (audit-logged), an accessible export button on `SalesAnalyticsScreen`, and wired `reportRepositoryProvider` to actually inject `AuditLogger` (previously a no-op gap — see `docs/superpowers/specs/2026-08-11-best-selling-medicines-export.md`). | None outstanding for this increment; export/audit parity with other reports achieved. |
 
 ## Approved product workstreams
 
@@ -35,7 +35,7 @@
 | Desktop dashboard workspace | Shipped in code / UX review pending | Responsive shell, desktop sidebar, breadcrumb, role-first home, and accessibility tests exist. | Conduct visual/keyboard QA on a real Windows build; retain subjective design changes for product review. |
 | Android navigation and mobile usability | Partial | Responsive shell and bottom navigation are implemented and tested, including the More overflow sheet. | Revisit task frequency, one-handed use, POS/scanner flow, and real-device text scaling; decide whether navigation changes are warranted from evidence. |
 | Accessibility and localization | Partial | ARB files, semantic/key tests, responsive/accessibility workflow tests, and formatters exist. | Audit remaining hard-coded operational strings, screen-reader labels, focus traversal, contrast, and text-scale behavior feature-by-feature. |
-| Reports, financial exports, alerts | Partial | Sales summary, procurement, cash movement, SIPNAP, export services, alerts, and report tests exist. `SalesAnalyticsScreen` has Today/Week/Month presets and a top-five table. | Implement the approved Best-Selling Medicines report increment: custom date range, localized filters, quantity/net-revenue ranking, return-aware metrics, export parity, empty state, and repository-level efficient aggregation. |
+| Reports, financial exports, alerts | Shipped for best-selling; Partial overall | Sales summary, procurement, cash movement, SIPNAP, and best-selling export services exist with audit logging; `SalesAnalyticsScreen` has Today/Week/Month/custom presets, ranking modes, and export. | Other reports (procurement, cash movement) still lack the same export/audit parity check performed for best-selling in this increment — worth a follow-up audit pass. |
 | Patients, prescriptions, controlled drugs, compounding | Partial | Patient, prescription, SIPNAP, and compounding modules/tests exist. | Verify controlled-drug end-to-end policy enforcement and document the regulatory-retention decision before altering records or attachment deletion. |
 | Privacy and local-data transparency | Shipped in code | Privacy spec/screen and ARB strings document local storage and optional Drive. | Revalidate after any sync, telemetry, or retention change. |
 | GitHub Pages/docs-site responsive gallery | Partial | Docs-site responsive-image/layout plans and deployed `deploy-gh-pages` job exist. | Render and inspect the published page at desktop and mobile widths; fix only confirmed overlap/overflow. |
@@ -45,11 +45,20 @@
 
 ## Immediate ordered backlog
 
-1. Implement the Best-Selling Medicines reporting increment described in the accompanying spec and plan.
-2. Perform evidence-led Google Drive backup and barcode audits. Implement only reproducible code defects; request external OAuth or physical-device access only when required.
-3. Audit each partial workflow against its explicit acceptance criteria and create a separate spec/plan per independent gap.
+1. Evidence-led Google Drive backup and barcode audits. Implement only reproducible code defects; request external OAuth or physical-device access only when required.
+2. Audit each partial workflow against its explicit acceptance criteria and create a separate spec/plan per independent gap.
+3. Consider an export/audit-parity pass on the procurement and cash-movement reports, mirroring the best-selling increment (PR #130).
 4. Complete visual QA of Windows, Android, and GitHub Pages using published/release builds; keep subjective redesigns for user review.
 5. After every green merged increment, repeat this status document with evidence and retire superseded backlog entries.
+
+## Process note
+
+Starting with this increment, every new feature/fix gets a spec
+(`docs/superpowers/specs/`) and a bite-sized implementation plan
+(`docs/superpowers/plans/`) written *before* implementation, not just for
+large features. See `2026-08-11-best-selling-medicines-export.md` for the
+first spec+plan pair written this way (retroactively, after two avoidable
+CI fix-forward cycles motivated the change).
 
 ## Explicitly deferred decisions
 
