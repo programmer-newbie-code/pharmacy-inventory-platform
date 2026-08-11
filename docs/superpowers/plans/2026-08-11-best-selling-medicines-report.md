@@ -10,6 +10,17 @@
 
 ---
 
+## Implementation audit (2026-08-11)
+
+The initial implementation merged in PR #127 supplies a return-aware repository
+method, ranking controls, and a custom range picker. It does **not** yet meet
+this plan's complete contract: row metrics and typed filter are incomplete,
+the screen still has hard-coded strings and widget-level N+1 work, and export
+parity/audit feedback are absent. Treat the task checkboxes below as remaining
+work unless later evidence explicitly records the corresponding verification.
+
+---
+
 ## File map
 
 - Modify: `lib/data/report_repository.dart` — typed filter/result models and efficient aggregation method.
