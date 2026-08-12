@@ -28,7 +28,9 @@ class ExcelReportService {
 
     // Header Title
     summarySheet.appendRow([
-      TextCellValue('PharmaLoka — Sales & Financial Report'),
+      TextCellValue(
+        'PharmaLoka — Pharmacy Inventory Platform — Sales & Financial Report',
+      ),
     ]);
     summarySheet.appendRow([
       TextCellValue(
@@ -143,7 +145,9 @@ class ExcelReportService {
         : 'Net Revenue';
 
     sheet.appendRow([
-      TextCellValue('PharmaLoka — Best-Selling Medicines Report'),
+      TextCellValue(
+        'PharmaLoka — Pharmacy Inventory Platform — Best-Selling Medicines Report',
+      ),
     ]);
     sheet.appendRow([
       TextCellValue(
@@ -220,7 +224,9 @@ class ExcelReportService {
     final dateFormat = DateFormat('yyyy-MM-dd');
 
     sheet.appendRow([
-      TextCellValue('PharmaLoka — Procurement Report'),
+      TextCellValue(
+        'PharmaLoka — Pharmacy Inventory Platform — Procurement Report',
+      ),
     ]);
     sheet.appendRow([
       TextCellValue(
@@ -306,7 +312,9 @@ class ExcelReportService {
     }
 
     sheet.appendRow([
-      TextCellValue('PharmaLoka — Cash Movement Report'),
+      TextCellValue(
+        'PharmaLoka — Pharmacy Inventory Platform — Cash Movement Report',
+      ),
     ]);
     sheet.appendRow([
       TextCellValue(

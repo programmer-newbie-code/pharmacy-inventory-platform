@@ -4,8 +4,11 @@
 
 ## Decision
 
-The product display name is **PharmaLoka** and the publisher brand is
-**ProgrammerNewbie Studio**. Package identifiers, executable names, repository
+The short product name is **PharmaLoka**, the full product title is
+**PharmaLoka — Pharmacy Inventory Platform**, and the publisher brand is
+**ProgrammerNewbie Studio**. Launcher labels use the short name to avoid
+truncation; window, store, report, web, and documentation surfaces use the full
+title. Package identifiers, executable names, repository
 names, and database paths remain unchanged to preserve upgrades and external
 configuration.
 
@@ -56,8 +59,9 @@ downsampling, and keep opaque corners where platform masking requires them.
 
 ## Display-brand integration
 
-Update user-visible product names in Flutter localization, Android app label,
-Windows window/version metadata, MSIX display metadata, web manifest/title,
+Use the short product name in the Android app label and compact in-app chrome.
+Use the full product title in descriptive Flutter strings, reports, Windows
+window/version metadata, MSIX display metadata, web manifest/title,
 README, installation/user guides, and published GitHub Pages. Use
 “PharmaLoka” for the product and “ProgrammerNewbie Studio” for the publisher.
 

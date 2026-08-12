@@ -1,6 +1,6 @@
 ---
 layout: default
-title: Documentation & User Manual — PharmaLoka
+title: Documentation & User Manual — PharmaLoka — Pharmacy Inventory Platform
 ---
 
 ### 📱 Multi-Platform Interface Overview

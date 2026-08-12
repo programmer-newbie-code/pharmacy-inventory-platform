@@ -1,5 +1,5 @@
 name: pharmacy_inventory_platform
-description: PharmaLoka offline-first inventory and POS platform for small pharmacies.
+description: PharmaLoka — Pharmacy Inventory Platform for offline-first inventory and POS.
 publish_to: 'none'
 version: 1.7.0+11
 
@@ -50,7 +50,7 @@ flutter:
     - assets/branding/app_icon.png
 
 msix_config:
-  display_name: PharmaLoka
+  display_name: PharmaLoka - Pharmacy Inventory Platform
   publisher_display_name: ProgrammerNewbie Studio
   identity_name: com.programmernewbiecode.pharmacyinventory
   logo_path: assets/branding/app_icon.png

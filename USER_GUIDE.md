@@ -1,6 +1,6 @@
-# 📖 PharmaLoka — User Guide & Manual
+# 📖 PharmaLoka — Pharmacy Inventory Platform — User Guide & Manual
 
-Welcome to **PharmaLoka**! This application is an offline-first inventory management and Point-of-Sale (POS) counter system designed specifically for pharmacies, clinics, and drugstores.
+Welcome to **PharmaLoka — Pharmacy Inventory Platform**! This application is an offline-first inventory management and Point-of-Sale (POS) counter system designed specifically for pharmacies, clinics, and drugstores.
 
 ---
 

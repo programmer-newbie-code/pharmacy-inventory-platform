@@ -1,4 +1,4 @@
-# PharmaLoka
+# PharmaLoka — Pharmacy Inventory Platform
 
 <p align="center"><img src="docs_site/assets/images/pharmaloka-icon.svg" width="128" alt="PharmaLoka icon"></p>
 

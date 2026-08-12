@@ -99,7 +99,7 @@ void main() {
 
     final webManifest =
         jsonDecode(_text('web/manifest.json')) as Map<String, dynamic>;
-    expect(webManifest['name'], 'PharmaLoka');
+    expect(webManifest['name'], 'PharmaLoka — Pharmacy Inventory Platform');
     expect(webManifest['short_name'], 'PharmaLoka');
   });
 
@@ -134,6 +134,29 @@ void main() {
     expect(
       _text('docs_site/_layouts/default.html'),
       contains('ProgrammerNewbie Studio'),
+    );
+
+    const fullTitle = 'PharmaLoka — Pharmacy Inventory Platform';
+    for (final path in [
+      'lib/main.dart',
+      'lib/data/excel_report_service.dart',
+      'web/manifest.json',
+      'web/index.html',
+      'docs_site/_config.yml',
+      'docs_site/_layouts/default.html',
+      'README.md',
+      'USER_GUIDE.md',
+      'docs/INSTALLATION.md',
+    ]) {
+      expect(_text(path), contains(fullTitle), reason: path);
+    }
+    expect(
+      _text('android/app/src/main/AndroidManifest.xml'),
+      contains('android:label="PharmaLoka"'),
+    );
+    expect(
+      jsonDecode(_text('web/manifest.json'))['short_name'],
+      'PharmaLoka',
     );
   });
 
