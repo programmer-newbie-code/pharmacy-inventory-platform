@@ -2,17 +2,21 @@
 
 **Last updated:** 2026-08-12
 
-**Verified main:** `3dee9e9` (`fix(home): make the shell correct at both width tiers (#151)`)
+**Verified main:** `6655179` (`localize(app): fix strings shown in the wrong language (#154)`)
 
-**Verified main CI:** run `31572670200`, completed successfully
+**Verified main CI:** run `31585762040` passed for tree `cc7b2d2`, which is
+byte-identical to the squashed merge commit (verified with `git diff`). GitHub
+did not emit a separate post-merge push run for `6655179`; the last main push run
+is `31578339421` for `9c44120`.
 
 **Open PR at audit:** none
 
-**Next increment:** Priority 2/3 visual modernization (collapsible sidebar, top
-context bar, density, theme tokens) is the remaining shell work, and it needs
-rendered before/after comparison plus owner approval before implementation.
-Priority 1 brand/icon still blocks on owner visual selection. Shell
-*correctness* is now closed by #151.
+**Next increment:** Localization sweep slice 2 (`features/suppliers`, 62
+strings) per the plan in
+`docs/superpowers/plans/2026-08-12-feature-localization-sweep.md`. Slice 1
+(mixed-language strings) shipped in #154. Priority 2/3 visual modernization and
+Priority 1 brand/icon still block on owner visual selection and rendered
+comparison.
 
 This is the stable handoff file. Update it after every merged increment. Current
 GitHub and implementation evidence overrides this file if it becomes stale.
@@ -42,6 +46,7 @@ GitHub and implementation evidence overrides this file if it becomes stale.
 
 | PR | Shipped outcome |
 | --- | --- |
+| #153-#154 | Localization sweep: spec, plan, and `scripts/audit_hardcoded_strings.py`, then slice 1 fixing all 23 strings that rendered Indonesian to English users. Total hardcoded strings 198 to 169. Drug-classification stored values pinned by test; `lib/data/` still imports no localization. |
 | #150-#151 | Adaptive shell correctness. Restored logout/language/help/branding, which were unreachable in production because they lived in a `HomeScreen` `AppBar` that never rendered; deleted ~250 lines of unreachable shell; fixed the no-op sidebar Dashboard item, the split navigation model, and mobile selected-index; made the two-tier width split explicit; localized the last shell strings. 255 tests, coverage 80.8%. |
 | #148 | Purchase receiving now requires an active session (no more `?? 1` fallback) and is fully localized (en/id). Closes the Priority 6 critical-correctness item from the modernization spec. |
 | #147 | Roadmap evidence recorded for the cross-agent handoff increment. |
@@ -64,7 +69,7 @@ GitHub and implementation evidence overrides this file if it becomes stale.
 | 1 | ProgrammerNewbie Studio branding and icon | Partial / externally blocked | Platform icon files exist. Owner selection among the proposed visual directions is required before concept rendering and integration. |
 | 2 | Windows desktop modernization | Correctness shipped (#151); visual refinement pending | Sidebar chrome now owns navigation and global actions, with tests at 1366x768, 1920x1080, and the 1023/1024 boundary, plus `Tab` traversal and 2.0 text scale. Remaining: collapsible sidebar, top context bar, density, theme tokens — all need rendered comparison and owner approval. |
 | 3 | Android mobile modernization | Correctness shipped (#151); flow review pending | Bottom bar and More sheet now report selection correctly and expose the global actions. Remaining: task-frequency, one-handed reach, high-frequency POS/scanner flow, and real-device text-scale review. |
-| 4 | Accessibility/localization/docs | Partial | ARB and accessibility foundations exist; affected-flow audit and published docs responsive verification remain. |
+| 4 | Accessibility/localization/docs | In progress (slice 1 of 7 shipped) | #153 added the audit scan and sliced plan; #154 closed the mixed-language defect. 169 hardcoded strings remain: suppliers 53, inventory 34, pos 24, patients 19, compounding 18, users 10, reports 4, data 3, alerts 2, settings 1, main 1. Screen-reader, contrast, focus, and text-scale auditing plus docs-site responsive verification remain separate concerns. |
 | 5 | Google Play readiness | Partial / externally blocked | Application ID and release CI exist; final identity/signing/store/policy package remains. Owner account verification and publication are external. |
 | 6 | Critical correctness | Shipped (this instance); monitor for new evidence | PR #148 fixed the `purchase_receiving_screen.dart` `authSessionProvider?.id ?? 1` fallback and localized the screen. No other confirmed critical-correctness item is open — reopen this priority only if new evidence reproduces a defect. |
 
@@ -75,6 +80,10 @@ integrity, receipt recovery, shift supervisor review, purchase-receiving
 session/localization, shell global-action reachability, the single in-shell
 navigation model, negative-stock protection, price safeguards, or scanner
 lifecycle handling without a reproduced gap in current main.
+
+Drug-classification dropdown values (`Obat Bebas`, `Obat Bebas Terbatas`,
+`Obat Keras`) are persisted regulatory categories. Only their labels are
+localized, and a test pins the stored values. Do not "localize" the values.
 
 The shell deliberately implements **two** width tiers, not three: tablet
 portrait (600-1023px) shares the bottom bar with phones because there is no
