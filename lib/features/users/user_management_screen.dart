@@ -84,13 +84,15 @@ class _UserManagementScreenState extends ConsumerState<UserManagementScreen> {
                 DropdownButtonFormField<String>(
                   initialValue: selectedRole,
                   decoration: InputDecoration(labelText: l10n.roleLabel),
-                  items: const [
-                    DropdownMenuItem(value: 'admin', child: Text('Admin')),
-                    DropdownMenuItem(
+                  items: [
+                    const DropdownMenuItem(
+                        value: 'admin', child: Text('Admin')),
+                    const DropdownMenuItem(
                         value: 'inventory', child: Text('Inventory')),
                     DropdownMenuItem(
                         value: 'kasir', child: Text(l10n.roleCashier)),
-                    DropdownMenuItem(value: 'audit', child: Text('Auditor')),
+                    const DropdownMenuItem(
+                        value: 'audit', child: Text('Auditor')),
                   ],
                   onChanged: (val) {
                     if (val != null) {
@@ -185,11 +187,12 @@ class _UserManagementScreenState extends ConsumerState<UserManagementScreen> {
           content: DropdownButtonFormField<String>(
             initialValue: newRole,
             decoration: InputDecoration(labelText: l10n.roleLabel),
-            items: const [
-              DropdownMenuItem(value: 'admin', child: Text('Admin')),
-              DropdownMenuItem(value: 'inventory', child: Text('Inventory')),
+            items: [
+              const DropdownMenuItem(value: 'admin', child: Text('Admin')),
+              const DropdownMenuItem(
+                  value: 'inventory', child: Text('Inventory')),
               DropdownMenuItem(value: 'kasir', child: Text(l10n.roleCashier)),
-              DropdownMenuItem(value: 'audit', child: Text('Auditor')),
+              const DropdownMenuItem(value: 'audit', child: Text('Auditor')),
             ],
             onChanged: (val) {
               if (val != null) {
