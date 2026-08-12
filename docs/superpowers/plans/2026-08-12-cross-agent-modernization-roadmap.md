@@ -37,8 +37,8 @@ high-impact defect. They still use a child spec/plan and the full delivery gates
 - [x] Record the verified baseline and superseded priorities in the live status.
 - [x] Add the startup/handoff routing section to `AGENT.md`.
 - [x] Run link/path, placeholder, contradiction, and `git diff --check` reviews.
-- [ ] Commit with a signed `docs(roadmap): establish cross-agent handoff` commit.
-- [ ] Create a complete PR, wait for every required check, squash-merge, and
+- [x] Commit with a signed `docs(roadmap): establish cross-agent handoff` commit.
+- [x] Create a complete PR, wait for every required check, squash-merge, and
   verify the exact post-merge main CI before Task 1.
 
 ### Task 1: Create and approve the brand direction

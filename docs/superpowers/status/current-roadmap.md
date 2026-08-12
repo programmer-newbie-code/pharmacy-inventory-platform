@@ -2,12 +2,15 @@
 
 **Last updated:** 2026-08-12
 
-**Verified main:** `be43c59` (`feat(pos): add supervisor shift review (#145)`)
+**Verified main:** `fc30bd4` (`docs(roadmap): establish cross-agent handoff (#146)`)
 
-**Verified main CI:** run `31547201220`, completed successfully
+**Verified main CI:** run `31555388676`, completed successfully
 
 **Open PR at audit:** none
-**Next increment:** Priority 0 cross-agent context PR, then professional brand/icon exploration
+
+**Next increment:** Priority 1 professional brand/icon direction; owner visual
+approval is required before asset integration. Confirmed receiving correctness
+work may proceed independently while that decision is pending.
 
 This is the stable handoff file. Update it after every merged increment. Current
 GitHub and implementation evidence overrides this file if it becomes stale.
@@ -30,13 +33,14 @@ GitHub and implementation evidence overrides this file if it becomes stale.
 | Item | Status | Evidence / next action |
 | --- | --- | --- |
 | Branch/PR/CI workflow | Shipped | `AGENT.md`; PR #145 and main run `31547201220` are green. Continue enforcing it. |
-| Cross-agent handoff | In progress | Current branch creates canonical spec, plan, status, and startup routing. |
+| Cross-agent handoff | Shipped | PR #146 added the canonical spec, plan, live status, and startup routing; main run `31555388676` is green. |
 | Release automation | Partial | Signed `v*` tags create Windows/Android artifacts; final roadmap release remains pending. |
 
 ## Recently shipped evidence
 
 | PR | Shipped outcome |
 | --- | --- |
+| #146 | Canonical cross-agent startup, umbrella spec, detailed roadmap, and live status. |
 | #145 | Closed-shift administrator review and schema migration. |
 | #143-#144 | Active-session attribution/localization for shift cash operations and roadmap evidence. |
 | #141-#142 | Automatic Drive backup records missing OAuth session instead of silently skipping. |
@@ -51,8 +55,8 @@ GitHub and implementation evidence overrides this file if it becomes stale.
 
 | Priority | Workstream | Status | Current evidence / next action |
 | --- | --- | --- | --- |
-| 0 | Durable cross-agent context | In progress | Merge canonical context PR and verify main CI before feature work. |
-| 1 | ProgrammerNewbie Studio branding and icon | Partial | Platform icon files exist, but professional visual direction and owner approval are missing. Create alternatives first. |
+| 0 | Durable cross-agent context | Shipped | PR #146 merged; post-merge main run `31555388676` is green. |
+| 1 | ProgrammerNewbie Studio branding and icon | Partial / externally blocked | Platform icon files exist. Owner selection among the proposed visual directions is required before concept rendering and integration. |
 | 2 | Windows desktop modernization | Partial | Responsive shell/sidebar/breadcrumb implementation exists in `home_screen.dart`; visual and keyboard QA plus approved refinement remain. |
 | 3 | Android mobile modernization | Partial | Bottom/More navigation exists; task-frequency, one-handed, high-frequency flow, real-device, and text-scale review remain. |
 | 4 | Accessibility/localization/docs | Partial | ARB and accessibility foundations exist; affected-flow audit and published docs responsive verification remain. |
