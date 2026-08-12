@@ -211,7 +211,7 @@ class _AddProductDialogState extends ConsumerState<AddProductDialog> {
     final isWindows = Platform.isWindows;
 
     return AlertDialog(
-      title: const Text('Tambah Produk Baru'),
+      title: Text(l10n.addProductTitle),
       contentPadding: const EdgeInsets.fromLTRB(24, 16, 24, 0),
       content: SizedBox(
         width: 480,
@@ -288,12 +288,12 @@ class _AddProductDialogState extends ConsumerState<AddProductDialog> {
                 TextFormField(
                   key: const Key('productNameInput'),
                   controller: _nameController,
-                  decoration: const InputDecoration(
-                    labelText: 'Nama Produk *',
-                    prefixIcon: Icon(Icons.medication),
+                  decoration: InputDecoration(
+                    labelText: l10n.productNameRequired,
+                    prefixIcon: const Icon(Icons.medication),
                   ),
                   validator: (v) =>
-                      (v == null || v.isEmpty) ? 'Wajib diisi' : null,
+                      (v == null || v.isEmpty) ? l10n.fieldRequired : null,
                 ),
                 const SizedBox(height: 8),
 
@@ -363,18 +363,21 @@ class _AddProductDialogState extends ConsumerState<AddProductDialog> {
                       ? 'Obat Bebas'
                       : _categoryController.text,
                   isExpanded: true,
-                  decoration: const InputDecoration(
-                    labelText: 'Golongan Obat',
-                    prefixIcon: Icon(Icons.category),
+                  decoration: InputDecoration(
+                    labelText: l10n.drugClassLabel,
+                    prefixIcon: const Icon(Icons.category),
                   ),
-                  items: const [
+                  // Only the label is localized. The `value` is persisted and
+                  // is a regulatory category, so it must not change.
+                  items: [
                     DropdownMenuItem(
-                        value: 'Obat Bebas', child: Text('Obat Bebas (Hijau)')),
+                        value: 'Obat Bebas', child: Text(l10n.drugClassOtc)),
                     DropdownMenuItem(
                         value: 'Obat Bebas Terbatas',
-                        child: Text('Obat Bebas Terbatas (Biru)')),
+                        child: Text(l10n.drugClassOtcLimited)),
                     DropdownMenuItem(
-                        value: 'Obat Keras', child: Text('Obat Keras (Merah)')),
+                        value: 'Obat Keras',
+                        child: Text(l10n.drugClassPrescription)),
                     DropdownMenuItem(
                         value: 'Psikotropika', child: Text('Psikotropika')),
                     DropdownMenuItem(
@@ -545,9 +548,9 @@ class _AddProductDialogState extends ConsumerState<AddProductDialog> {
                     Expanded(
                       child: TextFormField(
                         controller: _reorderThresholdController,
-                        decoration: const InputDecoration(
-                          labelText: 'Minimum Stok',
-                          border: OutlineInputBorder(),
+                        decoration: InputDecoration(
+                          labelText: l10n.minStockLabel,
+                          border: const OutlineInputBorder(),
                         ),
                         keyboardType: TextInputType.number,
                       ),
@@ -579,10 +582,9 @@ class _AddProductDialogState extends ConsumerState<AddProductDialog> {
                 // ── Controlled toggle ─────────────────────────────────────────
                 CheckboxListTile(
                   key: const Key('isControlledCheckbox'),
-                  title: const Text('Obat Keras / Perlu Resep Dokter'),
-                  subtitle: _isControlled
-                      ? const Text('Penjualan akan dicatat dengan kode resep')
-                      : null,
+                  title: Text(l10n.controlledToggleTitle),
+                  subtitle:
+                      _isControlled ? Text(l10n.controlledToggleNote) : null,
                   secondary: Icon(
                     Icons.lock_outline,
                     color: _isControlled ? cs.error : cs.outline,
@@ -606,12 +608,12 @@ class _AddProductDialogState extends ConsumerState<AddProductDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(false),
-          child: const Text('Batal'),
+          child: Text(l10n.cancelButton),
         ),
         FilledButton.icon(
           key: const Key('saveProductButton'),
           icon: const Icon(Icons.save_outlined, size: 18),
-          label: const Text('Simpan Produk'),
+          label: Text(l10n.saveProductButton),
           onPressed: _save,
         ),
       ],

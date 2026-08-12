@@ -89,7 +89,7 @@ class _UserManagementScreenState extends ConsumerState<UserManagementScreen> {
                     DropdownMenuItem(
                         value: 'inventory', child: Text('Inventory')),
                     DropdownMenuItem(
-                        value: 'kasir', child: Text('Cashier (Kasir)')),
+                        value: 'kasir', child: Text(l10n.roleCashier)),
                     DropdownMenuItem(value: 'audit', child: Text('Auditor')),
                   ],
                   onChanged: (val) {
@@ -188,7 +188,7 @@ class _UserManagementScreenState extends ConsumerState<UserManagementScreen> {
             items: const [
               DropdownMenuItem(value: 'admin', child: Text('Admin')),
               DropdownMenuItem(value: 'inventory', child: Text('Inventory')),
-              DropdownMenuItem(value: 'kasir', child: Text('Cashier (Kasir)')),
+              DropdownMenuItem(value: 'kasir', child: Text(l10n.roleCashier)),
               DropdownMenuItem(value: 'audit', child: Text('Auditor')),
             ],
             onChanged: (val) {
