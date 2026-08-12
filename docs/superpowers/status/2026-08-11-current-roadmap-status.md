@@ -1,5 +1,9 @@
 # Pharmacy Platform Current Roadmap Status
 
+> Historical snapshot. The stable live handoff is
+> [`current-roadmap.md`](current-roadmap.md); implementation and current GitHub
+> evidence override this dated document.
+
 **Audit date:** 2026-08-12
 **Audited revision:** `8d4da0e` (`fix(pos): attribute cash operations to active user (#143)`)
 **Method:** implementation and test evidence in the current main branch, open-PR state, and current CI configuration. Historical plan checkboxes are not treated as completion evidence.
