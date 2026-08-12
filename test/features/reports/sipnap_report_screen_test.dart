@@ -6,6 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:pharmacy_inventory_platform/core/providers.dart';
 import 'package:pharmacy_inventory_platform/data/database.dart';
 import 'package:pharmacy_inventory_platform/features/reports/sipnap_report_screen.dart';
+import 'package:pharmacy_inventory_platform/l10n/app_localizations.dart';
 
 void main() {
   testWidgets('renders SipnapReportScreen, displays data, and triggers export',
@@ -43,7 +44,12 @@ void main() {
     await tester.pumpWidget(
       UncontrolledProviderScope(
         container: container,
+        // The screen now reads localized column headers, so the delegates are
+        // required. Locale is pinned to en to match the assertions below.
         child: const MaterialApp(
+          locale: Locale('en'),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
           home: SipnapReportScreen(),
         ),
       ),
