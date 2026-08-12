@@ -6,15 +6,19 @@
 
 **Spec:** [`2026-08-12-adaptive-shell-correctness.md`](../specs/2026-08-12-adaptive-shell-correctness.md)
 
-**Goal:** Make the shell correct at all three breakpoints — global actions
-reachable, one navigation model, working tablet tier, no dead shell code, no
-hard-coded strings — without changing appearance beyond adding the tablet rail.
+**Goal:** Make the shell correct at both width tiers — global actions reachable,
+one navigation model, an honest breakpoint abstraction, no dead shell code, no
+hard-coded strings — without changing appearance.
 
 **Architecture:** `PharmacyShell` becomes the single owner of shell chrome and
-workspace state. It selects chrome by breakpoint (bottom bar / rail / sidebar)
-while all tiers share one destination list, one permission-gated filter, and one
-shell-swap navigation callback. `HomeScreen` is reduced to dashboard content and
-receives the shell's navigation callback instead of calling `Navigator.push`.
+workspace state. It selects chrome by **viewport width only** — never by host
+platform — while both tiers share one destination list, one permission-gated
+filter, and one shell-swap navigation callback. Below 1024 px: bottom
+`NavigationBar` plus More sheet. At or above 1024 px: the existing 248 px
+sidebar. Windows launches at 1280x720 (`windows/runner/main.cpp:29`) so it lands
+on the sidebar tier by default, and the split stays live as the window is
+resized. `HomeScreen` is reduced to dashboard content and receives the shell's
+navigation callback instead of calling `Navigator.push`.
 
 **Tech Stack:** Flutter, Riverpod, ARB localization, `flutter_test`.
 
@@ -32,13 +36,21 @@ Two CI failures in PR #130 came from exactly that mistake.
 ## File map
 
 - Modify: `lib/features/home/home_screen.dart` — the whole increment centers here.
-- Modify: `lib/core/responsive_layout.dart` — only if a helper is genuinely needed
-  by two or more call sites; do not add speculative abstractions.
+- Modify: `lib/core/responsive_layout.dart` — retire or make explicit the unused
+  `tablet` tier (Task 5). Do not add speculative abstractions.
+- Modify: `test/core/responsive_layout_test.dart` — only if the enum changes.
 - Modify: `lib/l10n/app_en.arb`, `lib/l10n/app_id.arb` — finding-6 strings.
 - Modify: `lib/features/auth/login_screen.dart`,
   `lib/data/receipt_pdf_service.dart` — `Powered by Programmer Newbie` string.
 - Modify: `test/features/home/home_screen_test.dart` — retarget at `PharmacyShell`.
 - Modify: `test/features/accessibility_workflow_test.dart` — real keyboard test.
+
+## Out of scope
+
+- A `NavigationRail` for the 600-1023 px band. Speculative until real
+  tablet-portrait usage is confirmed; tablet portrait deliberately gets the
+  bottom bar and Task 5 pins that with a test.
+- Any branch on host platform instead of viewport width.
 
 ---
 
@@ -112,42 +124,49 @@ pass; update only their navigation expectation, not their business assertions.
 
 **Step 5:** Commit — `fix(home): keep shell visible for primary destinations`.
 
-### Task 5: Add the tablet NavigationRail (finding 8)
+### Task 5: Make the two-tier width split explicit (finding 8)
 
 **Step 1: Write the failing tests.**
-- 800x1280: `NavigationRail` present, `Key('mobileShellNavigation')` absent,
-  `Key('desktopSidebar')` absent.
-- 768x1024: same.
-- 390x844: rail absent, bottom bar present.
-- 1366x768: rail absent, sidebar present.
+- 1023x768: bottom `NavigationBar` present, `Key('desktopSidebar')` absent.
+- 1024x768: sidebar present, bottom bar absent.
+- 768x1024: bottom bar present — this documents the **deliberate** decision that
+  tablet portrait uses the bottom bar, so a future agent does not "fix" it.
+- 390x844: bottom bar present.
+- 1920x1080: sidebar present, `tester.takeException()` is null.
 
-**Step 2:** Run. Expected: FAIL — tablet currently renders the bottom bar.
+**Step 2:** Run. Expected: the boundary tests may already pass, since the shell
+happens to behave this way today; they exist to lock the contract. The 1023 px
+case in particular guards against someone reintroducing a middle tier by
+accident.
 
-**Step 3:** Add a `tablet` branch in `_PharmacyShellState.build` rendering a
-`NavigationRail` fed by the Task 1 destination list, with
-`labelType: NavigationRailLabelType.all` so labels stay visible. Reuse the same
-`_select` callback. **Verify `NavigationRail`'s required parameters and
-`selectedIndex` null-handling against the Flutter API before asserting on it** —
-`selectedIndex` may be null when the current destination is not in the rail.
+**Step 3:** Remove the dishonest abstraction. `AppBreakpoint` currently
+advertises three tiers while the shell implements two. Either:
+- delete the unused `tablet` value and update
+  `test/core/responsive_layout_test.dart`, or
+- keep the enum and express the shell branch as a single explicit predicate
+  (for example a `bool get usesSidebar => this == AppBreakpoint.desktop`).
 
-**Step 4:** Run. Expected: PASS.
+Prefer whichever leaves the smaller diff. Do **not** add a `NavigationRail`
+branch — explicitly out of scope per the spec.
 
-**Step 5:** Commit — `feat(home): add tablet navigation rail`.
+**Step 4:** Run the full suite. Expected: PASS.
+
+**Step 5:** Commit — `refactor(core): make shell width tiers explicit`.
 
 ### Task 6: Restore the global actions (finding 1)
 
-**Step 1: Write the failing tests.** For each of 1366x768, 800x1280, 390x844:
-- `Key('logoutButton')` is reachable (on phone, after opening the More sheet)
-  and tapping it clears the session.
+**Step 1: Write the failing tests.** At 1366x768 and 390x844:
+- `Key('logoutButton')` is reachable (below 1024 px, after opening the More
+  sheet) and tapping it clears the session.
 - `Key('languageToggle')` and `Key('helpButton')` are reachable.
 - `Key('brandingButton')` is present for `admin`, absent for `kasir`.
 
 **Step 2:** Run. Expected: FAIL — none are reachable today.
 
 **Step 3:** Move the four actions out of `HomeScreen`'s dead `AppBar` into shell
-chrome: desktop sidebar footer and tablet rail trailing area; phone More sheet.
-Keep the existing keys so intent is traceable. Preserve each action's current
-behavior and permission check exactly.
+chrome: the sidebar at >= 1024 px, the More sheet below 1024 px. Keep the
+existing keys so intent stays traceable. Preserve each action's current behavior
+and permission check exactly.
 
 **Step 4:** Run. Expected: PASS.
 

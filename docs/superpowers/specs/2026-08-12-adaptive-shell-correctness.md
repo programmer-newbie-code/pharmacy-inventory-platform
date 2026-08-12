@@ -84,28 +84,21 @@ and no verified focus indicator against the dark `0xFF073F3B` surface.
 `AppBreakpoint.tablet` exists in `lib/core/responsive_layout.dart` and
 `test/core/responsive_layout_test.dart` asserts `fromWidth(800) ==
 AppBreakpoint.tablet`, but the shell only ever compares `== AppBreakpoint.desktop`
-(lines 94-96 and 211-212). Every 600-1023 px viewport therefore falls through to
-the phone branch:
+(lines 94-96 and 211-212). The enum therefore lies about what the shell does:
+it advertises three tiers while the shell implements two.
 
-| Width | `fromWidth` result | Shell actually renders |
-| --- | --- | --- |
-| < 600 | phone | bottom `NavigationBar` (correct) |
-| 600-1023 | tablet | bottom `NavigationBar` (**wrong**) |
-| >= 1024 | desktop | 248 px sidebar (correct) |
-
-iPad portrait (768), iPad Air (820), and common 10-inch Android tablets (800)
-all receive the four-destination phone bar plus a More sheet while more than
-700 px of horizontal space goes unused.
+Everything from 600 to 1023 px falls through to the phone branch. The defect is
+the dishonest abstraction, not the absence of a third layout — see the
+two-tier decision below.
 
 ## Required behavior
 
 ### Global actions
 
 - Logout, language toggle, help, and branding (branding subject to the existing
-  `canManageBranding` permission) are reachable from the shell at every
-  breakpoint.
-- Desktop and tablet expose them in shell chrome. Phone exposes them in the
-  existing More bottom sheet, keeping the bottom bar at four destinations.
+  `canManageBranding` permission) are reachable from the shell at every width.
+- At >= 1024 px they live in the sidebar. Below 1024 px they live in the existing
+  More bottom sheet, keeping the bottom bar at four destinations.
 - Behavior of each action is unchanged; only reachability changes.
 
 ### Navigation model
@@ -121,19 +114,44 @@ all receive the four-destination phone bar plus a More sheet while more than
 
 ### Adaptive chrome
 
-Three tiers, one navigation model, differing only in how the destination picker
-renders:
+**Two tiers, split on width at 1024 px, one navigation model.** Layout branches
+on viewport width only — never on host platform — because a 1280 px Windows
+window and an Android tablet in landscape are the same layout problem, and
+branching on OS would hand an Android tablet a phone UI purely for being
+Android.
 
-| Breakpoint | Chrome | Rationale |
+| Width | Chrome | Devices that land here |
 | --- | --- | --- |
-| phone (< 600) | bottom `NavigationBar`, 4 destinations + More sheet | thumb reach; no room for persistent navigation |
-| tablet (600-1023) | `NavigationRail` showing all permitted destinations | persistent visibility without spending 248 px |
-| desktop (>= 1024) | existing 248 px `_DesktopSidebar` | unchanged |
+| < 1024 | bottom `NavigationBar`, 4 destinations + More sheet | Android phones (360-430); Android tablet portrait (768-820); a Windows window deliberately shrunk below 1024 |
+| >= 1024 | existing 248 px `_DesktopSidebar` | Windows at its 1280x720 default launch size (`windows/runner/main.cpp:29`) and above; Android tablet landscape |
 
-- Selected state is correct for every destination on every tier, including
+Rationale for two tiers rather than three: the product design spec describes
+"one Android tablet/phone" under a single-active-device model, and no evidence
+exists of tablet use today. A third `NavigationRail` chrome for the
+600-1023 px band would serve a hypothetical device while adding a third chrome
+variant, a third test matrix, and a third thing to keep in sync. `AGENT.md`
+forbids exactly that: "No unrequested abstractions... The smallest diff that
+correctly solves the actual requirement wins." Tablet portrait therefore gets
+the bottom bar — not ideal use of width, but usable, thumb-reachable, and
+consistent — and rotating to landscape promotes it to the sidebar
+automatically.
+
+Finding 8 is still fixed, honestly: the shell's two-tier intent becomes
+explicit rather than being contradicted by a three-value enum. Either retire the
+unused `tablet` value or keep the enum and express the branch as
+"`>= desktop` gets the sidebar, everything else gets the bottom bar."
+
+Resizing is live. The shell reads `MediaQuery.sizeOf(context).width` during
+build, so dragging the Windows window across 1024 px swaps chrome immediately
+with no restart, and Android rotation is handled by the same code path. A
+narrow Windows window showing the bottom bar is correct responsive behaviour,
+not a regression; a 248 px sidebar cannot coexist with usable content at
+~700 px.
+
+- Selected state is correct for every destination on both tiers, including
   destinations reached through the More sheet.
 - Permission gating (`canManageUsers`, `canManageBackup`, `canManageSuppliers`,
-  `canManageShifts`, `canManageReturns`) applies identically on all three tiers.
+  `canManageShifts`, `canManageReturns`) applies identically on both tiers.
 
 ### Code health
 
@@ -148,6 +166,10 @@ renders:
 - Collapsible sidebar, top context bar, density changes, theme-token migration,
   and any other subjective visual change. These require rendered comparison and
   owner approval, and belong to the follow-up visual increment.
+- A dedicated `NavigationRail` chrome for the 600-1023 px band. Deliberately
+  excluded as speculative until real tablet-portrait usage is confirmed; revisit
+  only with evidence.
+- Any layout branch on host platform rather than viewport width.
 - Redesigning dashboard content, stats, or nav-card visuals.
 - Changing permissions, business logic, repositories, schema, or routes other
   than the shell/workspace mechanism described above.
@@ -156,25 +178,28 @@ renders:
 ## Acceptance criteria
 
 1. A widget test proves logout is reachable and invokes logout from
-   `PharmacyShell` at desktop, tablet, and phone widths.
-2. A widget test proves language toggle, help, and branding are reachable at all
-   three widths, with branding still hidden for non-admin roles.
-3. A widget test at 800x1280 proves a `NavigationRail` renders and no bottom
-   `NavigationBar` is present.
-4. A widget test at 1366x768 proves the sidebar renders and no rail is present;
-   a test at 390x844 proves the bottom bar renders and no rail is present.
+   `PharmacyShell` both above and below 1024 px.
+2. A widget test proves language toggle, help, and branding are reachable at both
+   tiers, with branding still hidden for non-admin roles.
+3. A widget test at 1366x768 proves the sidebar renders and no bottom
+   `NavigationBar` is present; a test at 390x844 proves the bottom bar renders and
+   no sidebar is present.
+4. A widget test proves the 1024 px boundary behaves as specified: 1023 px gets
+   the bottom bar and 1024 px gets the sidebar. A test at 768x1024 documents that
+   tablet portrait deliberately receives the bottom bar.
 5. Selecting Dashboard after navigating away returns to the dashboard workspace.
 6. Selecting any destination, including Alerts and Reports via the More sheet,
    reports that destination as selected rather than defaulting to Dashboard.
 7. Navigating to a primary destination from a dashboard nav-card keeps the shell
-   chrome visible for that breakpoint.
+   chrome visible for that width.
 8. A test asserts `Tab` traversal reaches the primary navigation items in visual
    order and that the focused item is distinguishable from the unfocused state.
 9. No test constructs the removed non-embedded `HomeScreen` shell; suites assert
    against `PharmacyShell`.
 10. No hard-coded user-facing string from finding 6 remains; en and id ARB keys
     stay at parity and generated localization is clean.
-11. `flutter analyze` is clean, the full suite passes, CI-filtered coverage stays
+11. `AppBreakpoint` no longer advertises a tier the shell does not implement.
+12. `flutter analyze` is clean, the full suite passes, CI-filtered coverage stays
     at or above 80 percent, PR CI is green on all required checks, and post-merge
     main CI is green.
 
@@ -186,20 +211,24 @@ breakpoint.
 
 ## Verification strategy
 
-Widget tests at 390x844 (phone), 768x1024 and 800x1280 (tablet), and 1366x768
-and 1920x1080 (desktop), plus a text-scale case at 2.0 to catch shell overflow.
-Rendered Windows/Android confirmation stays a follow-up because no local Flutter
-toolchain or device is available in the implementation environment; CI builds
-plus the widget matrix are the gate for this increment.
+Widget tests at 390x844 (phone), 768x1024 (tablet portrait, documenting the
+deliberate bottom-bar choice), 1023x768 and 1024x768 (the boundary), and
+1366x768 and 1920x1080 (desktop), plus a text-scale case at 2.0 to catch shell
+overflow. Rendered Windows/Android confirmation stays a follow-up because no
+local Flutter toolchain or device is available in the implementation
+environment; CI builds plus the widget matrix are the gate for this increment.
 
 ## Risks and controls
 
-- **Shell regression:** every breakpoint gets explicit chrome-presence tests
-  rather than a single desktop assertion.
+- **Shell regression:** both tiers and the 1024 px boundary get explicit
+  chrome-presence tests rather than a single desktop assertion.
 - **Test churn from removing dead code:** retarget existing `HomeScreen()` tests
   at `PharmacyShell` in the same commit that deletes the branch, so no window
   exists where behavior is untested.
-- **Scope creep into visuals:** any change that alters appearance beyond adding
-  the rail and relocating existing actions is out of scope and deferred.
+- **Scope creep into visuals:** any change that alters appearance beyond
+  relocating existing actions into reachable chrome is out of scope and deferred.
 - **Unverified keyboard claims:** finding 7 is treated as unverified until the
   new traversal test passes; the existing misleading test name is corrected.
+- **Tablet-portrait ergonomics:** accepted as a known trade-off, recorded here so
+  a future agent does not treat it as an undiscovered bug. Revisit only if real
+  tablet usage is confirmed.
