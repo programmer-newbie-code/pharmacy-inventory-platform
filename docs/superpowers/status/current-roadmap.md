@@ -2,15 +2,18 @@
 
 **Last updated:** 2026-08-12
 
-**Verified main:** `fc30bd4` (`docs(roadmap): establish cross-agent handoff (#146)`)
+**Verified main:** `3864fc8` (`fix(receiving): require active session and localize flow (#148)`)
 
-**Verified main CI:** run `31555388676`, completed successfully
+**Verified main CI:** run `31558283106`, completed successfully
 
 **Open PR at audit:** none
 
 **Next increment:** Priority 1 professional brand/icon direction; owner visual
-approval is required before asset integration. Confirmed receiving correctness
-work may proceed independently while that decision is pending.
+approval is required before asset integration. With the receiving
+session/localization gap now closed (#148), no other confirmed critical-
+correctness item is open — next code-only work should come from Priority 2/3
+(desktop/Android modernization audits) or a newly reproduced defect, not
+speculative cleanup.
 
 This is the stable handoff file. Update it after every merged increment. Current
 GitHub and implementation evidence overrides this file if it becomes stale.
@@ -32,7 +35,7 @@ GitHub and implementation evidence overrides this file if it becomes stale.
 
 | Item | Status | Evidence / next action |
 | --- | --- | --- |
-| Branch/PR/CI workflow | Shipped | `AGENT.md`; PR #145 and main run `31547201220` are green. Continue enforcing it. |
+| Branch/PR/CI workflow | Shipped | `AGENT.md`; PR #148 and main run `31558283106` are green. Continue enforcing it. |
 | Cross-agent handoff | Shipped | PR #146 added the canonical spec, plan, live status, and startup routing; main run `31555388676` is green. |
 | Release automation | Partial | Signed `v*` tags create Windows/Android artifacts; final roadmap release remains pending. |
 
@@ -40,6 +43,8 @@ GitHub and implementation evidence overrides this file if it becomes stale.
 
 | PR | Shipped outcome |
 | --- | --- |
+| #148 | Purchase receiving now requires an active session (no more `?? 1` fallback) and is fully localized (en/id). Closes the Priority 6 critical-correctness item from the modernization spec. |
+| #147 | Roadmap evidence recorded for the cross-agent handoff increment. |
 | #146 | Canonical cross-agent startup, umbrella spec, detailed roadmap, and live status. |
 | #145 | Closed-shift administrator review and schema migration. |
 | #143-#144 | Active-session attribution/localization for shift cash operations and roadmap evidence. |
@@ -61,14 +66,14 @@ GitHub and implementation evidence overrides this file if it becomes stale.
 | 3 | Android mobile modernization | Partial | Bottom/More navigation exists; task-frequency, one-handed, high-frequency flow, real-device, and text-scale review remain. |
 | 4 | Accessibility/localization/docs | Partial | ARB and accessibility foundations exist; affected-flow audit and published docs responsive verification remain. |
 | 5 | Google Play readiness | Partial / externally blocked | Application ID and release CI exist; final identity/signing/store/policy package remains. Owner account verification and publication are external. |
-| 6 | Critical correctness | Broken item confirmed | `purchase_receiving_screen.dart` uses `authSessionProvider?.id ?? 1` and hard-coded strings. Create focused child spec/plan after Priority 0. |
+| 6 | Critical correctness | Shipped (this instance); monitor for new evidence | PR #148 fixed the `purchase_receiving_screen.dart` `authSessionProvider?.id ?? 1` fallback and localized the screen. No other confirmed critical-correctness item is open — reopen this priority only if new evidence reproduces a defect. |
 
 ## Preserved shipped capabilities
 
 Do not reimplement report/export parity, Drive missing-session recovery, backup
-integrity, receipt recovery, shift supervisor review, negative-stock protection,
-price safeguards, or scanner lifecycle handling without a reproduced gap in
-current main.
+integrity, receipt recovery, shift supervisor review, purchase-receiving
+session/localization, negative-stock protection, price safeguards, or scanner
+lifecycle handling without a reproduced gap in current main.
 
 ## External and owner-only actions
 
@@ -82,6 +87,7 @@ current main.
 ## Superseded priorities
 
 Historical plans or status entries that list procurement/cash export parity,
-Drive silent-skip recovery, receipt recovery, or shift supervisor review as next
-work are superseded by PRs #132, #141, #139, and #145 respectively. Their files
-remain historical evidence, not an instruction to duplicate work.
+Drive silent-skip recovery, receipt recovery, shift supervisor review, or the
+purchase-receiving session/localization gap as next work are superseded by
+PRs #132, #141, #139, #145, and #148 respectively. Their files remain
+historical evidence, not an instruction to duplicate work.
