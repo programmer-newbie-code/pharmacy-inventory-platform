@@ -226,24 +226,24 @@ class _PosScreenState extends ConsumerState<PosScreen> {
   }
 
   Future<bool> _promptOpenShiftModal() async {
+    final l10n = AppLocalizations.of(context)!;
     final openingController = TextEditingController(text: '100000');
     final result = await showDialog<String>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Input Modal Kasir (Opening Cash)'),
+        title: Text(l10n.posOpenShiftTitle),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-                'Belum ada shift kasir yang aktif. Silakan masukkan modal awal kasir untuk membuka shift:'),
+            Text(l10n.posOpenShiftPrompt),
             const SizedBox(height: 12),
             TextField(
               key: const Key('posOpeningBalanceInput'),
               controller: openingController,
               keyboardType: TextInputType.number,
-              decoration: const InputDecoration(
-                labelText: 'Modal Awal Kasir / Drawer (Rp)',
+              decoration: InputDecoration(
+                labelText: l10n.posOpeningBalanceLabel,
                 prefixText: 'Rp ',
               ),
             ),
@@ -252,12 +252,12 @@ class _PosScreenState extends ConsumerState<PosScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text('Batal'),
+            child: Text(l10n.cancelButton),
           ),
           ElevatedButton(
             key: const Key('confirmPosOpenShiftBtn'),
             onPressed: () => Navigator.of(ctx).pop(openingController.text),
-            child: const Text('Buka Shift'),
+            child: Text(l10n.openShift),
           ),
         ],
       ),
@@ -375,7 +375,7 @@ class _PosScreenState extends ConsumerState<PosScreen> {
           IconButton(
             key: const Key('posCashMovementBtn'),
             icon: const Icon(Icons.swap_horiz),
-            tooltip: 'Tarik/Setor Kas (Prive Owner)',
+            tooltip: l10n.cashMovementButton,
             onPressed: _handlePosCashMovement,
           ),
         ],

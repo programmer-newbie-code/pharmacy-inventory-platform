@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/providers.dart';
 import '../../data/sipnap_export_service.dart';
+import '../../l10n/app_localizations.dart';
 
 class SipnapReportScreen extends ConsumerStatefulWidget {
   const SipnapReportScreen({super.key});
@@ -40,6 +41,7 @@ class _SipnapReportScreenState extends ConsumerState<SipnapReportScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
         title: const Text('SIPNAP Monthly Report (Kemenkes RI)'),
@@ -137,14 +139,16 @@ class _SipnapReportScreenState extends ConsumerState<SipnapReportScreen> {
                     : SingleChildScrollView(
                         scrollDirection: Axis.horizontal,
                         child: DataTable(
-                          columns: const [
-                            DataColumn(label: Text('No')),
-                            DataColumn(label: Text('Nama Obat')),
-                            DataColumn(label: Text('Kategori')),
-                            DataColumn(label: Text('Stok Awal')),
-                            DataColumn(label: Text('Pengeluaran')),
-                            DataColumn(label: Text('Stok Akhir')),
-                            DataColumn(label: Text('Satuan')),
+                          columns: [
+                            DataColumn(label: Text(l10n.sipnapColNo)),
+                            DataColumn(label: Text(l10n.sipnapColDrugName)),
+                            DataColumn(label: Text(l10n.sipnapColCategory)),
+                            DataColumn(
+                                label: Text(l10n.sipnapColOpeningStock)),
+                            DataColumn(label: Text(l10n.sipnapColDispensed)),
+                            DataColumn(
+                                label: Text(l10n.sipnapColClosingStock)),
+                            DataColumn(label: Text(l10n.sipnapColUnit)),
                           ],
                           rows: _reportRows
                               .asMap()

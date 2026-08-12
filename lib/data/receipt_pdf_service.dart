@@ -16,6 +16,8 @@ class ReceiptPdfService {
     // Passed in by the caller: this is lib/data/, which must not import
     // localization (see the layering rule in AGENT.md).
     String poweredByAttribution = 'Powered by Programmer Newbie',
+    String priceColumnLabel = 'Harga',
+    String totalColumnLabel = 'Total',
   }) async {
     final pdf = pw.Document();
 
@@ -83,8 +85,8 @@ class ReceiptPdfService {
                     children: [
                       pw.Text('Item', style: pw.TextStyle(fontSize: 8, fontWeight: pw.FontWeight.bold)),
                       pw.Text('Qty', style: pw.TextStyle(fontSize: 8, fontWeight: pw.FontWeight.bold)),
-                      pw.Text('Harga', style: pw.TextStyle(fontSize: 8, fontWeight: pw.FontWeight.bold)),
-                      pw.Text('Total', style: pw.TextStyle(fontSize: 8, fontWeight: pw.FontWeight.bold)),
+                      pw.Text(priceColumnLabel, style: pw.TextStyle(fontSize: 8, fontWeight: pw.FontWeight.bold)),
+                      pw.Text(totalColumnLabel, style: pw.TextStyle(fontSize: 8, fontWeight: pw.FontWeight.bold)),
                     ],
                   ),
                   for (final item in items)

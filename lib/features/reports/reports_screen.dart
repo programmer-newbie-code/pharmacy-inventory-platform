@@ -312,7 +312,7 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
                         foregroundColor: Colors.white,
                       ),
                       icon: const Icon(Icons.swap_horiz),
-                      label: const Text('Laporan Arus Kas & Prive Owner'),
+                      label: Text(l10n.cashMovementReportTitle),
                       onPressed: () {
                         Navigator.of(context).push(
                           MaterialPageRoute(
