@@ -404,6 +404,7 @@
   "receivingDiscrepancyReasonRequired": "Alasan selisih wajib diisi untuk {product}",
   "@receivingDiscrepancyReasonRequired": {"placeholders": {"product": {}}},
   "receivingSuccess": "Penerimaan berhasil diselesaikan!",
-  "receivingFailed": "Penerimaan tidak dapat diselesaikan. Coba lagi."
+  "receivingFailed": "Penerimaan tidak dapat diselesaikan. Coba lagi.",
+  "brandingSubtitle": "Identitas & header struk",
+  "poweredByAttribution": "Didukung oleh Programmer Newbie"
 }
-

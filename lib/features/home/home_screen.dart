@@ -67,6 +67,46 @@ class _TodayStats {
   });
 }
 
+/// A primary shell destination.
+///
+/// Primary destinations swap the workspace *inside* the shell so the chrome
+/// stays visible. Only drill-down flows use `Navigator.push`.
+class _ShellDestination {
+  const _ShellDestination({
+    required this.id,
+    required this.navKey,
+    required this.group,
+    required this.icon,
+    required this.label,
+    required this.build,
+    IconData? barIcon,
+    IconData? barSelectedIcon,
+    String? barLabel,
+  })  : _barIcon = barIcon,
+        _barSelectedIcon = barSelectedIcon,
+        _barLabel = barLabel;
+
+  final String id;
+  final Key navKey;
+  final _ShellGroup group;
+  final IconData icon;
+  final String label;
+  final Widget Function() build;
+
+  final IconData? _barIcon;
+  final IconData? _barSelectedIcon;
+  final String? _barLabel;
+
+  IconData get barIcon => _barIcon ?? icon;
+  IconData get barSelectedIcon => _barSelectedIcon ?? barIcon;
+
+  /// Bottom-bar labels are shorter than sidebar labels for the few
+  /// destinations where the long form would wrap.
+  String get barLabel => _barLabel ?? label;
+}
+
+enum _ShellGroup { dashboard, operations, management }
+
 class PharmacyShell extends ConsumerStatefulWidget {
   const PharmacyShell({super.key});
 
@@ -75,8 +115,13 @@ class PharmacyShell extends ConsumerStatefulWidget {
 }
 
 class _PharmacyShellState extends ConsumerState<PharmacyShell> {
-  Widget _workspace = const HomeScreen(embedded: true);
+  Widget? _workspace;
   String _selected = 'dashboard';
+
+  /// Built lazily so the dashboard receives [_select], letting its nav-cards
+  /// swap the workspace inside the shell instead of pushing over it.
+  Widget get _currentWorkspace =>
+      _workspace ??= HomeScreen(onSelectDestination: _select);
 
   void _select(String id, Widget screen) {
     setState(() {
@@ -85,110 +130,331 @@ class _PharmacyShellState extends ConsumerState<PharmacyShell> {
     });
   }
 
+  /// The destinations the current role may reach, in shell order.
+  List<_ShellDestination> _destinationsFor(
+    AppLocalizations l10n,
+    PermissionChecker permission,
+    String? role,
+  ) {
+    return [
+      _ShellDestination(
+        id: 'dashboard',
+        navKey: const Key('desktopNavDashboard'),
+        group: _ShellGroup.dashboard,
+        icon: Icons.dashboard_rounded,
+        label: l10n.dashboardTitle,
+        barIcon: Icons.dashboard_outlined,
+        barSelectedIcon: Icons.dashboard,
+        barLabel: l10n.dashboardNav,
+        build: () => HomeScreen(onSelectDestination: _select),
+      ),
+      _ShellDestination(
+        id: 'pos',
+        navKey: const Key('desktopNavPos'),
+        group: _ShellGroup.operations,
+        icon: Icons.point_of_sale_rounded,
+        label: l10n.posTitle,
+        barIcon: Icons.point_of_sale_outlined,
+        barSelectedIcon: Icons.point_of_sale,
+        build: () => const PosScreen(),
+      ),
+      _ShellDestination(
+        id: 'inventory',
+        navKey: const Key('desktopNavInventory'),
+        group: _ShellGroup.operations,
+        icon: Icons.inventory_2_rounded,
+        label: l10n.inventoryTitle,
+        barIcon: Icons.inventory_2_outlined,
+        barSelectedIcon: Icons.inventory_2,
+        build: () => const ProductListScreen(),
+      ),
+      _ShellDestination(
+        id: 'alerts',
+        navKey: const Key('desktopNavAlerts'),
+        group: _ShellGroup.operations,
+        icon: Icons.warning_amber_rounded,
+        label: l10n.alertsTitle,
+        build: () => const AlertsScreen(),
+      ),
+      if (permission.canManageShifts(role))
+        _ShellDestination(
+          id: 'shifts',
+          navKey: const Key('desktopNavShifts'),
+          group: _ShellGroup.operations,
+          icon: Icons.account_balance_wallet_rounded,
+          label: l10n.shiftTitle,
+          build: () => const ShiftManagementScreen(),
+        ),
+      if (permission.canManageReturns(role))
+        _ShellDestination(
+          id: 'returns',
+          navKey: const Key('desktopNavReturns'),
+          group: _ShellGroup.operations,
+          icon: Icons.assignment_return_rounded,
+          label: l10n.returnsTitle,
+          build: () => const ReturnScreen(),
+        ),
+      if (permission.canManageSuppliers(role))
+        _ShellDestination(
+          id: 'suppliers',
+          navKey: const Key('desktopNavSuppliers'),
+          group: _ShellGroup.management,
+          icon: Icons.local_shipping_rounded,
+          label: l10n.suppliersTitle,
+          build: () => const PurchaseOrderScreen(),
+        ),
+      _ShellDestination(
+        id: 'reports',
+        navKey: const Key('desktopNavReports'),
+        group: _ShellGroup.management,
+        icon: Icons.bar_chart_rounded,
+        label: l10n.reportsTitle,
+        build: () => const ReportsScreen(),
+      ),
+      if (permission.canManageBackup(role))
+        _ShellDestination(
+          id: 'backup',
+          navKey: const Key('desktopNavBackup'),
+          group: _ShellGroup.management,
+          icon: Icons.backup_rounded,
+          label: l10n.backupTitle,
+          build: () => const BackupScreen(),
+        ),
+      if (permission.canManageUsers(role))
+        _ShellDestination(
+          id: 'users',
+          navKey: const Key('desktopNavUsers'),
+          group: _ShellGroup.management,
+          icon: Icons.people_alt_rounded,
+          label: l10n.userManagementTitle,
+          build: () => const UserManagementScreen(),
+        ),
+    ];
+  }
+
+  /// Destinations that get a dedicated bottom-bar slot. The rest live behind
+  /// the More sheet, which keeps the bar at four slots.
+  static const _barDestinationIds = ['dashboard', 'pos', 'inventory'];
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final permission = ref.watch(permissionCheckerProvider);
     final role = ref.watch(authSessionProvider)?.role;
     final photoPath = ref.watch(authSessionProvider)?.photoPath;
-    final desktop =
-        AppBreakpointWidth.fromWidth(MediaQuery.sizeOf(context).width) ==
-            AppBreakpoint.desktop;
-    final destinations = <(String, Widget)>[
-      ('dashboard', const HomeScreen(embedded: true)),
-      ('pos', const PosScreen()),
-      ('inventory', const ProductListScreen()),
-      ('alerts', const AlertsScreen()),
-    ];
-    if (desktop) {
+    final destinations = _destinationsFor(l10n, permission, role);
+    final actions = _ShellActions(
+      l10n: l10n,
+      canManageBranding: permission.canManageBranding(role),
+      onToggleLocale: () => ref.read(localeProvider.notifier).toggleLocale(),
+      onLogout: () => ref.read(authSessionProvider.notifier).logout(),
+    );
+
+    // Layout branches on viewport width only, never on host platform: a
+    // 1280px Windows window and an Android tablet in landscape are the same
+    // layout problem. Windows launches at 1280x720 so it lands on the sidebar.
+    final usesSidebar =
+        AppBreakpointWidth.fromWidth(MediaQuery.sizeOf(context).width)
+            .usesSidebar;
+
+    if (usesSidebar) {
       return Scaffold(
         body: Row(children: [
           _DesktopSidebar(
             l10n: l10n,
-            canManageUsers: permission.canManageUsers(role),
-            canManageBackup: permission.canManageBackup(role),
-            canManageSuppliers: permission.canManageSuppliers(role),
-            canManageShifts: permission.canManageShifts(role),
-            canManageReturns: permission.canManageReturns(role),
+            destinations: destinations,
+            actions: actions,
             photoPath: photoPath,
             selectedId: _selected,
-            onNavigate: (screen) => _select(_idFor(screen), screen),
+            onSelect: _select,
           ),
-          Expanded(child: _workspace),
+          Expanded(child: _currentWorkspace),
         ]),
       );
     }
+
+    final barDestinations = destinations
+        .where((d) => _barDestinationIds.contains(d.id))
+        .toList();
+    final overflowDestinations = destinations
+        .where((d) => !_barDestinationIds.contains(d.id))
+        .toList();
+    final selectedBarIndex =
+        barDestinations.indexWhere((d) => d.id == _selected);
+
     return Scaffold(
-      body: _workspace,
+      body: _currentWorkspace,
       bottomNavigationBar: NavigationBar(
         key: const Key('mobileShellNavigation'),
-        selectedIndex: _selected == 'pos'
-            ? 1
-            : _selected == 'inventory'
-                ? 2
-                : 0,
+        // A destination reached through the More sheet keeps More highlighted
+        // rather than falsely reporting Dashboard as selected.
+        selectedIndex:
+            selectedBarIndex >= 0 ? selectedBarIndex : barDestinations.length,
         onDestinationSelected: (index) {
-          if (index == 3) {
-            showModalBottomSheet<void>(
-              context: context,
-              builder: (context) => ListView(shrinkWrap: true, children: [
-                ListTile(
-                    title: Text(l10n.alertsTitle),
-                    onTap: () {
-                      Navigator.pop(context);
-                      _select('alerts', const AlertsScreen());
-                    }),
-                ListTile(
-                    title: Text(l10n.reportsTitle),
-                    onTap: () {
-                      Navigator.pop(context);
-                      _select('reports', const ReportsScreen());
-                    }),
-              ]),
-            );
+          if (index == barDestinations.length) {
+            _showMoreSheet(overflowDestinations, actions);
             return;
           }
-          final destination = destinations[index];
-          _select(destination.$1, destination.$2);
+          final destination = barDestinations[index];
+          _select(destination.id, destination.build());
         },
         destinations: [
+          for (final destination in barDestinations)
+            NavigationDestination(
+              icon: Icon(destination.barIcon),
+              selectedIcon: Icon(destination.barSelectedIcon),
+              label: destination.barLabel,
+            ),
           NavigationDestination(
-              icon: const Icon(Icons.dashboard_outlined),
-              selectedIcon: const Icon(Icons.dashboard),
-              label: l10n.dashboardNav),
-          NavigationDestination(
-              icon: const Icon(Icons.point_of_sale_outlined),
-              selectedIcon: const Icon(Icons.point_of_sale),
-              label: l10n.posTitle),
-          NavigationDestination(
-              icon: const Icon(Icons.inventory_2_outlined),
-              selectedIcon: const Icon(Icons.inventory_2),
-              label: l10n.inventoryTitle),
-          NavigationDestination(
-              icon: const Icon(Icons.more_horiz), label: l10n.moreNav),
+            icon: const Icon(Icons.more_horiz),
+            label: l10n.moreNav,
+          ),
         ],
       ),
     );
   }
 
-  String _idFor(Widget screen) => switch (screen) {
-        PosScreen() => 'pos',
-        ProductListScreen() => 'inventory',
-        AlertsScreen() => 'alerts',
-        ShiftManagementScreen() => 'shifts',
-        ReturnScreen() => 'returns',
-        PurchaseOrderScreen() => 'suppliers',
-        ReportsScreen() => 'reports',
-        BackupScreen() => 'backup',
-        UserManagementScreen() => 'users',
-        _ => 'dashboard',
-      };
+  void _showMoreSheet(
+    List<_ShellDestination> overflow,
+    _ShellActions actions,
+  ) {
+    showModalBottomSheet<void>(
+      context: context,
+      builder: (sheetContext) => SafeArea(
+        child: ListView(
+          shrinkWrap: true,
+          children: [
+            for (final destination in overflow)
+              ListTile(
+                key: Key('moreNav_${destination.id}'),
+                leading: Icon(destination.icon),
+                title: Text(destination.label),
+                onTap: () {
+                  Navigator.pop(sheetContext);
+                  _select(destination.id, destination.build());
+                },
+              ),
+            const Divider(),
+            // Global actions have no bottom-bar slot, so the More sheet is
+            // where they stay reachable below the sidebar breakpoint.
+            ...actions.asListTiles(sheetContext, context),
+          ],
+        ),
+      ),
+    );
+  }
 }
 
-class HomeScreen extends ConsumerWidget {
-  const HomeScreen({super.key, this.embedded = false});
+/// The shell-wide actions that are not destinations: language, help, branding,
+/// and logout. Rendered as icons in the sidebar and as rows in the More sheet.
+class _ShellActions {
+  const _ShellActions({
+    required this.l10n,
+    required this.canManageBranding,
+    required this.onToggleLocale,
+    required this.onLogout,
+  });
 
-  final bool embedded;
+  final AppLocalizations l10n;
+  final bool canManageBranding;
+  final VoidCallback onToggleLocale;
+  final VoidCallback onLogout;
+
+  void _openBranding(BuildContext context) => showDialog(
+        context: context,
+        builder: (_) => const PharmacyBrandingDialog(),
+      );
+
+  void _openHelp(BuildContext context) => showDialog(
+        context: context,
+        builder: (_) => const QuickGuideDialog(),
+      );
+
+  List<Widget> asIconButtons(BuildContext context) => [
+        IconButton(
+          key: const Key('languageToggle'),
+          icon: const Icon(Icons.language),
+          tooltip: l10n.languageLabel,
+          onPressed: onToggleLocale,
+        ),
+        if (canManageBranding)
+          IconButton(
+            key: const Key('brandingButton'),
+            icon: const Icon(Icons.storefront),
+            tooltip: l10n.brandingTitle,
+            onPressed: () => _openBranding(context),
+          ),
+        IconButton(
+          key: const Key('helpButton'),
+          icon: const Icon(Icons.help_outline),
+          tooltip: l10n.helpTitle,
+          onPressed: () => _openHelp(context),
+        ),
+        IconButton(
+          key: const Key('logoutButton'),
+          icon: const Icon(Icons.logout),
+          tooltip: l10n.logoutButton,
+          onPressed: onLogout,
+        ),
+      ];
+
+  /// [sheetContext] is the bottom sheet's own context and is popped before each
+  /// action runs. [hostContext] outlives the sheet, so dialogs are opened from
+  /// it — opening a dialog from a popped context would throw.
+  List<Widget> asListTiles(
+    BuildContext sheetContext,
+    BuildContext hostContext,
+  ) =>
+      [
+        ListTile(
+          key: const Key('languageToggle'),
+          leading: const Icon(Icons.language),
+          title: Text(l10n.languageLabel),
+          onTap: () {
+            Navigator.pop(sheetContext);
+            onToggleLocale();
+          },
+        ),
+        if (canManageBranding)
+          ListTile(
+            key: const Key('brandingButton'),
+            leading: const Icon(Icons.storefront),
+            title: Text(l10n.brandingTitle),
+            onTap: () {
+              Navigator.pop(sheetContext);
+              _openBranding(hostContext);
+            },
+          ),
+        ListTile(
+          key: const Key('helpButton'),
+          leading: const Icon(Icons.help_outline),
+          title: Text(l10n.helpTitle),
+          onTap: () {
+            Navigator.pop(sheetContext);
+            _openHelp(hostContext);
+          },
+        ),
+        ListTile(
+          key: const Key('logoutButton'),
+          leading: const Icon(Icons.logout),
+          title: Text(l10n.logoutButton),
+          onTap: () {
+            Navigator.pop(sheetContext);
+            onLogout();
+          },
+        ),
+      ];
+}
+
+/// Dashboard content. The surrounding chrome (navigation, global actions) is
+/// owned by [PharmacyShell]; this widget never builds shell chrome itself.
+class HomeScreen extends ConsumerWidget {
+  const HomeScreen({super.key, this.onSelectDestination});
+
+  /// Supplied by [PharmacyShell] so a nav-card swaps the workspace inside the
+  /// shell instead of pushing a route over it. Null in tests that render the
+  /// dashboard standalone, which then falls back to [Navigator.push].
+  final void Function(String id, Widget screen)? onSelectDestination;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -207,61 +473,11 @@ class HomeScreen extends ConsumerWidget {
     final canManageShifts = permChecker.canManageShifts(roleStr);
     final canManageReturns = permChecker.canManageReturns(roleStr);
 
-    final isDesktop = !embedded &&
-        AppBreakpointWidth.fromWidth(MediaQuery.sizeOf(context).width) ==
-            AppBreakpoint.desktop;
+    final isDesktop =
+        AppBreakpointWidth.fromWidth(MediaQuery.sizeOf(context).width)
+            .usesSidebar;
 
     return Scaffold(
-      appBar: embedded
-          ? null
-          : AppBar(
-              title: Text(l10n.appTitle),
-              elevation: 0,
-              actions: [
-                // Language toggle
-                IconButton(
-                  key: const Key('languageToggle'),
-                  icon: const Icon(Icons.language),
-                  tooltip: l10n.languageLabel,
-                  onPressed: () =>
-                      ref.read(localeProvider.notifier).toggleLocale(),
-                ),
-                // Branding (Admin only)
-                if (canManageBranding)
-                  IconButton(
-                    key: const Key('brandingButton'),
-                    icon: const Icon(Icons.storefront),
-                    tooltip: l10n.brandingTitle,
-                    onPressed: () {
-                      showDialog(
-                        context: context,
-                        builder: (_) => const PharmacyBrandingDialog(),
-                      );
-                    },
-                  ),
-                // Help
-                IconButton(
-                  key: const Key('helpButton'),
-                  icon: const Icon(Icons.help_outline),
-                  tooltip: l10n.helpTitle,
-                  onPressed: () {
-                    showDialog(
-                      context: context,
-                      builder: (_) => const QuickGuideDialog(),
-                    );
-                  },
-                ),
-                // Logout
-                IconButton(
-                  key: const Key('logoutButton'),
-                  icon: const Icon(Icons.logout),
-                  tooltip: l10n.logoutButton,
-                  onPressed: () =>
-                      ref.read(authSessionProvider.notifier).logout(),
-                ),
-                const SizedBox(width: 8),
-              ],
-            ),
       body: LayoutBuilder(
         builder: (context, constraints) {
           final content = SingleChildScrollView(
@@ -398,9 +614,10 @@ class HomeScreen extends ConsumerWidget {
                                 role: permChecker.parseRole(roleStr),
                                 l10n: l10n,
                                 onStartSale: () =>
-                                    _navigate(context, const PosScreen()),
+                                    _navigate(context, 'pos', const PosScreen()),
                                 onReceiveStock: () => _navigate(
                                   context,
+                                  'suppliers',
                                   const PurchaseOrderScreen(),
                                 ),
                               ),
@@ -507,7 +724,7 @@ class HomeScreen extends ConsumerWidget {
                               subtitle: l10n.posSubtitle,
                               isEnabled: true,
                               onTap: () =>
-                                  _navigate(context, const PosScreen()),
+                                  _navigate(context, 'pos', const PosScreen()),
                             ),
                             _NavCard(
                               key: const Key('navShiftsBtn'),
@@ -519,6 +736,7 @@ class HomeScreen extends ConsumerWidget {
                               restrictionTooltip: l10n.adminCashierRestriction,
                               onTap: () => _navigate(
                                 context,
+                                'shifts',
                                 const ShiftManagementScreen(),
                               ),
                             ),
@@ -531,7 +749,7 @@ class HomeScreen extends ConsumerWidget {
                               isEnabled: canManageReturns,
                               restrictionTooltip: l10n.adminCashierRestriction,
                               onTap: () =>
-                                  _navigate(context, const ReturnScreen()),
+                                  _navigate(context, 'returns', const ReturnScreen()),
                             ),
                             _NavCard(
                               key: const Key('navSuppliersBtn'),
@@ -544,6 +762,7 @@ class HomeScreen extends ConsumerWidget {
                                   l10n.adminInventoryRestriction,
                               onTap: () => _navigate(
                                 context,
+                                'suppliers',
                                 const PurchaseOrderScreen(),
                               ),
                             ),
@@ -555,7 +774,7 @@ class HomeScreen extends ConsumerWidget {
                               subtitle: l10n.inventorySubtitle,
                               isEnabled: true,
                               onTap: () =>
-                                  _navigate(context, const ProductListScreen()),
+                                  _navigate(context, 'inventory', const ProductListScreen()),
                             ),
                             _NavCard(
                               key: const Key('navAlertsBtn'),
@@ -565,7 +784,7 @@ class HomeScreen extends ConsumerWidget {
                               subtitle: l10n.alertsSubtitle,
                               isEnabled: true,
                               onTap: () =>
-                                  _navigate(context, const AlertsScreen()),
+                                  _navigate(context, 'alerts', const AlertsScreen()),
                             ),
                             _NavCard(
                               key: const Key('navReportsBtn'),
@@ -575,7 +794,7 @@ class HomeScreen extends ConsumerWidget {
                               subtitle: l10n.reportsSubtitle,
                               isEnabled: true,
                               onTap: () =>
-                                  _navigate(context, const ReportsScreen()),
+                                  _navigate(context, 'reports', const ReportsScreen()),
                             ),
                             _NavCard(
                               key: const Key('navBackupBtn'),
@@ -586,7 +805,7 @@ class HomeScreen extends ConsumerWidget {
                               isEnabled: canManageBackup,
                               restrictionTooltip: l10n.adminOnlyRestriction,
                               onTap: () =>
-                                  _navigate(context, const BackupScreen()),
+                                  _navigate(context, 'backup', const BackupScreen()),
                             ),
                             _NavCard(
                               key: const Key('navUsersBtn'),
@@ -598,6 +817,7 @@ class HomeScreen extends ConsumerWidget {
                               restrictionTooltip: l10n.adminOnlyRestriction,
                               onTap: () => _navigate(
                                 context,
+                                'users',
                                 const UserManagementScreen(),
                               ),
                             ),
@@ -606,7 +826,7 @@ class HomeScreen extends ConsumerWidget {
                               icon: Icons.storefront_rounded,
                               color: Colors.teal,
                               title: l10n.brandingTitle,
-                              subtitle: 'Identitas & Header Struk',
+                              subtitle: l10n.brandingSubtitle,
                               isEnabled: canManageBranding,
                               restrictionTooltip: l10n.adminOnlyRestriction,
                               onTap: () => showDialog(
@@ -624,67 +844,23 @@ class HomeScreen extends ConsumerWidget {
               ),
             ),
           );
-          if (!isDesktop) return content;
-          return Row(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              _DesktopSidebar(
-                l10n: l10n,
-                canManageUsers: canManageUsers,
-                canManageBackup: canManageBackup,
-                canManageSuppliers: canManageSuppliers,
-                canManageShifts: canManageShifts,
-                canManageReturns: canManageReturns,
-                photoPath: user?.photoPath,
-                selectedId: 'dashboard',
-                onNavigate: (screen) => _navigate(context, screen),
-              ),
-              Expanded(child: content),
-            ],
-          );
+          return content;
         },
       ),
-      bottomNavigationBar: embedded || isDesktop
-          ? null
-          : NavigationBar(
-              key: const Key('mobileHomeNavigation'),
-              selectedIndex: 0,
-              onDestinationSelected: (index) {
-                final screens = <Widget>[
-                  const HomeScreen(),
-                  const PosScreen(),
-                  const ProductListScreen(),
-                  const AlertsScreen(),
-                ];
-                if (index > 0) _navigate(context, screens[index]);
-              },
-              destinations: [
-                NavigationDestination(
-                  icon: const Icon(Icons.dashboard_outlined),
-                  selectedIcon: const Icon(Icons.dashboard),
-                  label: l10n.dashboardNav,
-                ),
-                NavigationDestination(
-                  icon: const Icon(Icons.point_of_sale_outlined),
-                  selectedIcon: const Icon(Icons.point_of_sale),
-                  label: l10n.posTitle,
-                ),
-                NavigationDestination(
-                  icon: const Icon(Icons.inventory_2_outlined),
-                  selectedIcon: const Icon(Icons.inventory_2),
-                  label: l10n.inventoryTitle,
-                ),
-                NavigationDestination(
-                  icon: const Icon(Icons.warning_amber_outlined),
-                  selectedIcon: const Icon(Icons.warning_amber),
-                  label: l10n.moreNav,
-                ),
-              ],
-            ),
     );
   }
 
-  void _navigate(BuildContext context, Widget screen) {
+  /// Navigates to a primary destination.
+  ///
+  /// Inside the shell this swaps the workspace so the sidebar or bottom bar
+  /// stays visible. Standalone (no shell above us) it falls back to pushing a
+  /// route. Drill-down flows should call [Navigator.push] directly instead.
+  void _navigate(BuildContext context, String id, Widget screen) {
+    final select = onSelectDestination;
+    if (select != null) {
+      select(id, screen);
+      return;
+    }
     Navigator.of(context).push(MaterialPageRoute(builder: (_) => screen));
   }
 }
@@ -724,25 +900,19 @@ class _DesktopBreadcrumb extends StatelessWidget {
 class _DesktopSidebar extends StatelessWidget {
   const _DesktopSidebar({
     required this.l10n,
-    required this.canManageUsers,
-    required this.canManageBackup,
-    required this.canManageSuppliers,
-    required this.canManageShifts,
-    required this.canManageReturns,
+    required this.destinations,
+    required this.actions,
     required this.photoPath,
     required this.selectedId,
-    required this.onNavigate,
+    required this.onSelect,
   });
 
   final AppLocalizations l10n;
-  final bool canManageUsers;
-  final bool canManageBackup;
-  final bool canManageSuppliers;
-  final bool canManageShifts;
-  final bool canManageReturns;
+  final List<_ShellDestination> destinations;
+  final _ShellActions actions;
   final String? photoPath;
   final String selectedId;
-  final ValueChanged<Widget> onNavigate;
+  final void Function(String id, Widget screen) onSelect;
 
   @override
   Widget build(BuildContext context) {
@@ -754,163 +924,101 @@ class _DesktopSidebar extends StatelessWidget {
         border: Border(right: BorderSide(color: Colors.white.withAlpha(18))),
       ),
       child: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(14, 18, 14, 20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 10),
-                child: Row(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.fromLTRB(14, 18, 14, 8),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(12),
-                      child: Image.asset(
-                        'assets/branding/app_icon.png',
-                        width: 42,
-                        height: 42,
-                      ),
-                    ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 10),
+                      child: Row(
                         children: [
-                          Text(
-                            l10n.appTitle,
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.w800,
-                              fontSize: 14,
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(12),
+                            child: Image.asset(
+                              'assets/branding/app_icon.png',
+                              width: 42,
+                              height: 42,
                             ),
                           ),
-                          const SizedBox(height: 3),
-                          Text(
-                            l10n.sidebarTagline,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              color: Colors.white.withAlpha(165),
-                              fontSize: 10,
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  l10n.appTitle,
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w800,
+                                    fontSize: 14,
+                                  ),
+                                ),
+                                const SizedBox(height: 3),
+                                Text(
+                                  l10n.sidebarTagline,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(
+                                    color: Colors.white.withAlpha(165),
+                                    fontSize: 10,
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                         ],
                       ),
                     ),
+                    const SizedBox(height: 20),
+                    Center(
+                      child: CircleAvatar(
+                        radius: 28,
+                        backgroundColor: Colors.white.withAlpha(30),
+                        backgroundImage:
+                            photoPath != null && File(photoPath!).existsSync()
+                                ? FileImage(File(photoPath!))
+                                : null,
+                        child: photoPath == null ||
+                                !File(photoPath!).existsSync()
+                            ? const Icon(Icons.person, color: Colors.white)
+                            : null,
+                      ),
+                    ),
+                    const SizedBox(height: 26),
+                    ..._groupedItems(context),
                   ],
                 ),
               ),
-              const SizedBox(height: 20),
-              Center(
-                child: CircleAvatar(
-                  radius: 28,
-                  backgroundColor: Colors.white.withAlpha(30),
-                  backgroundImage:
-                      photoPath != null && File(photoPath!).existsSync()
-                          ? FileImage(File(photoPath!))
-                          : null,
-                  child: photoPath == null || !File(photoPath!).existsSync()
-                      ? const Icon(Icons.person, color: Colors.white)
-                      : null,
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 6),
+              child: Divider(color: Colors.white.withAlpha(30), height: 1),
+            ),
+            // Global actions live here so they are reachable from the shell
+            // users actually get. They previously sat in an AppBar that never
+            // rendered.
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+              child: IconTheme(
+                data: IconThemeData(color: Colors.white.withAlpha(210)),
+                child: Wrap(
+                  alignment: WrapAlignment.center,
+                  children: actions.asIconButtons(context),
                 ),
               ),
-              const SizedBox(height: 26),
-              _sectionLabel(l10n.dashboardNav),
-              _item(
-                context,
-                key: const Key('desktopNavDashboard'),
-                icon: Icons.dashboard_rounded,
-                label: l10n.dashboardTitle,
-                selected: selectedId == 'dashboard',
-                onTap: () {},
-              ),
-              const SizedBox(height: 14),
-              _sectionLabel(l10n.operationsNav),
-              _item(
-                context,
-                key: const Key('desktopNavPos'),
-                icon: Icons.point_of_sale_rounded,
-                label: l10n.posTitle,
-                selected: selectedId == 'pos',
-                onTap: () => onNavigate(const PosScreen()),
-              ),
-              _item(
-                context,
-                key: const Key('desktopNavInventory'),
-                icon: Icons.inventory_2_rounded,
-                label: l10n.inventoryTitle,
-                selected: selectedId == 'inventory',
-                onTap: () => onNavigate(const ProductListScreen()),
-              ),
-              _item(
-                context,
-                key: const Key('desktopNavAlerts'),
-                icon: Icons.warning_amber_rounded,
-                label: l10n.alertsTitle,
-                selected: selectedId == 'alerts',
-                onTap: () => onNavigate(const AlertsScreen()),
-              ),
-              if (canManageShifts)
-                _item(
-                  context,
-                  key: const Key('desktopNavShifts'),
-                  icon: Icons.account_balance_wallet_rounded,
-                  label: l10n.shiftTitle,
-                  selected: selectedId == 'shifts',
-                  onTap: () => onNavigate(const ShiftManagementScreen()),
-                ),
-              if (canManageReturns)
-                _item(
-                  context,
-                  key: const Key('desktopNavReturns'),
-                  icon: Icons.assignment_return_rounded,
-                  label: l10n.returnsTitle,
-                  selected: selectedId == 'returns',
-                  onTap: () => onNavigate(const ReturnScreen()),
-                ),
-              const SizedBox(height: 14),
-              _sectionLabel(l10n.managementNav),
-              if (canManageSuppliers)
-                _item(
-                  context,
-                  key: const Key('desktopNavSuppliers'),
-                  icon: Icons.local_shipping_rounded,
-                  label: l10n.suppliersTitle,
-                  selected: selectedId == 'suppliers',
-                  onTap: () => onNavigate(const PurchaseOrderScreen()),
-                ),
-              _item(
-                context,
-                key: const Key('desktopNavReports'),
-                icon: Icons.bar_chart_rounded,
-                label: l10n.reportsTitle,
-                selected: selectedId == 'reports',
-                onTap: () => onNavigate(const ReportsScreen()),
-              ),
-              if (canManageBackup)
-                _item(
-                  context,
-                  key: const Key('desktopNavBackup'),
-                  icon: Icons.backup_rounded,
-                  label: l10n.backupTitle,
-                  selected: selectedId == 'backup',
-                  onTap: () => onNavigate(const BackupScreen()),
-                ),
-              if (canManageUsers)
-                _item(
-                  context,
-                  key: const Key('desktopNavUsers'),
-                  icon: Icons.people_alt_rounded,
-                  label: l10n.userManagementTitle,
-                  selected: selectedId == 'users',
-                  onTap: () => onNavigate(const UserManagementScreen()),
-                ),
-              const SizedBox(height: 24),
-              Center(
+            ),
+            Padding(
+              padding: const EdgeInsets.only(bottom: 10),
+              child: Center(
                 child: Text(
-                  'Powered by Programmer Newbie',
+                  l10n.poweredByAttribution,
                   style: TextStyle(
                     color: Colors.white.withAlpha(120),
                     fontSize: 10,
@@ -918,11 +1026,32 @@ class _DesktopSidebar extends StatelessWidget {
                   ),
                 ),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
+  }
+
+  /// Renders destinations grouped by section, with a localized section label
+  /// before each group that has at least one permitted destination.
+  List<Widget> _groupedItems(BuildContext context) {
+    final labels = <_ShellGroup, String>{
+      _ShellGroup.dashboard: l10n.dashboardNav,
+      _ShellGroup.operations: l10n.operationsNav,
+      _ShellGroup.management: l10n.managementNav,
+    };
+    final widgets = <Widget>[];
+    for (final group in _ShellGroup.values) {
+      final items = destinations.where((d) => d.group == group).toList();
+      if (items.isEmpty) continue;
+      if (widgets.isNotEmpty) widgets.add(const SizedBox(height: 14));
+      widgets.add(_sectionLabel(labels[group]!));
+      for (final destination in items) {
+        widgets.add(_item(context, destination));
+      }
+    }
+    return widgets;
   }
 
   Widget _sectionLabel(String label) => Padding(
@@ -938,35 +1067,30 @@ class _DesktopSidebar extends StatelessWidget {
         ),
       );
 
-  Widget _item(
-    BuildContext context, {
-    required Key key,
-    required IconData icon,
-    required String label,
-    required VoidCallback onTap,
-    bool selected = false,
-  }) {
+  Widget _item(BuildContext context, _ShellDestination destination) {
+    final selected = destination.id == selectedId;
     return Semantics(
       button: true,
-      label: label,
+      selected: selected,
+      label: destination.label,
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 2),
         child: Material(
           color: Colors.transparent,
           child: ListTile(
-            key: key,
+            key: destination.navKey,
             dense: true,
             selected: selected,
-            onTap: onTap,
+            onTap: () => onSelect(destination.id, destination.build()),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12),
             ),
             selectedTileColor: AppTheme.accentColor.withAlpha(220),
             iconColor: selected ? Colors.white : Colors.white.withAlpha(185),
             textColor: selected ? Colors.white : Colors.white.withAlpha(210),
-            leading: Icon(icon, size: 20),
+            leading: Icon(destination.icon, size: 20),
             title: Text(
-              label,
+              destination.label,
               style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
             ),
             trailing: selected

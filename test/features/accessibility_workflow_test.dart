@@ -9,7 +9,7 @@ import 'package:pharmacy_inventory_platform/l10n/app_localizations.dart';
 
 void main() {
   testWidgets(
-    'desktop workspace navigation is labelled, touch-sized, and keyboard operable',
+    'desktop workspace navigation is labelled and touch-sized',
     (tester) async {
       tester.view.physicalSize = const Size(1366, 768);
       tester.view.devicePixelRatio = 1;
@@ -37,6 +37,9 @@ void main() {
       );
       await tester.pumpAndSettle();
 
+      // Keyboard traversal itself is asserted in
+      // test/features/home/home_screen_test.dart; this test covers semantics
+      // and touch target only, which is what its name now claims.
       final inventory = find.byKey(const Key('desktopNavInventory'));
       expect(tester.getSemantics(inventory).label, 'Inventory Catalog');
       expect(tester.getSize(inventory).height, greaterThanOrEqualTo(48));

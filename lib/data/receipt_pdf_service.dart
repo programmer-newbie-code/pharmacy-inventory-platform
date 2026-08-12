@@ -13,6 +13,9 @@ class ReceiptPdfService {
     String pharmacyAddress = 'Jl. Merdeka No. 45, Jakarta',
     String cashierName = 'Kasir Staff',
     Uint8List? logoBytes,
+    // Passed in by the caller: this is lib/data/, which must not import
+    // localization (see the layering rule in AGENT.md).
+    String poweredByAttribution = 'Powered by Programmer Newbie',
   }) async {
     final pdf = pw.Document();
 
@@ -124,7 +127,7 @@ class ReceiptPdfService {
               pw.SizedBox(height: 3),
               pw.Center(
                 child: pw.Text(
-                  'Powered by Programmer Newbie',
+                  poweredByAttribution,
                   style: const pw.TextStyle(fontSize: 6, color: PdfColors.grey700),
                 ),
               ),

@@ -41,6 +41,7 @@ class _ReceiptDialogState extends ConsumerState<ReceiptDialog> {
       transaction: widget.transaction,
       items: widget.items,
       productsMap: widget.productsMap,
+      poweredByAttribution: AppLocalizations.of(context)!.poweredByAttribution,
     );
     final storageService = ref.read(receiptStorageServiceProvider);
     final savedFile = await storageService.saveReceiptPdf(
@@ -58,6 +59,7 @@ class _ReceiptDialogState extends ConsumerState<ReceiptDialog> {
       transaction: widget.transaction,
       items: widget.items,
       productsMap: widget.productsMap,
+      poweredByAttribution: AppLocalizations.of(context)!.poweredByAttribution,
     );
     await Printing.layoutPdf(
       onLayout: (_) => pdfBytes,

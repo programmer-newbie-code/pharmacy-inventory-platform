@@ -404,6 +404,7 @@
   "receivingDiscrepancyReasonRequired": "Discrepancy reason required for {product}",
   "@receivingDiscrepancyReasonRequired": {"placeholders": {"product": {}}},
   "receivingSuccess": "Receiving completed successfully!",
-  "receivingFailed": "Could not complete receiving. Try again."
+  "receivingFailed": "Could not complete receiving. Try again.",
+  "brandingSubtitle": "Identity & receipt header",
+  "poweredByAttribution": "Powered by Programmer Newbie"
 }
-
