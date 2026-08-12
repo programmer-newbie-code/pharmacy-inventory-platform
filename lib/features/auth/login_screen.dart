@@ -246,7 +246,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                   ),
                   const SizedBox(height: 12),
                   Text(
-                    'Powered by Programmer Newbie',
+                    l10n.poweredByAttribution,
                     style: TextStyle(
                       fontSize: 11,
                       color: Colors.grey.shade500,
