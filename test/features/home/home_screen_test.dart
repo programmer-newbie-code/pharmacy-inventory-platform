@@ -45,12 +45,14 @@ void main() {
     await container
         .read(authSessionProvider.notifier)
         .login(username, 'secret123');
-    // login() arms a 15-minute inactivity Timer, and the test framework fails
-    // any test that ends with a pending timer. logout() cancels it, so every
-    // logging-in test must tear the session down even if it never signs out
-    // through the UI.
-    addTearDown(() => container.read(authSessionProvider.notifier).logout());
   }
+
+  /// login() arms a 15-minute inactivity Timer. The framework asserts no timer
+  /// is pending at the end of the *test body*, before tearDowns run, so a
+  /// tearDown cannot satisfy it. Tests that log in without signing out through
+  /// the UI must call this before finishing.
+  void endSession() =>
+      container.read(authSessionProvider.notifier).logout();
 
   Future<void> pumpShell(
     WidgetTester tester, {
@@ -182,6 +184,7 @@ void main() {
       await login('owner', 'admin');
       await pumpShell(tester);
       expect(find.byKey(const Key('brandingButton')), findsOneWidget);
+      endSession();
     });
 
     testWidgets('branding is hidden from a cashier in the sidebar',
@@ -191,6 +194,7 @@ void main() {
       await login('budi', 'kasir');
       await pumpShell(tester);
       expect(find.byKey(const Key('brandingButton')), findsNothing);
+      endSession();
     });
   });
 
@@ -268,6 +272,7 @@ void main() {
 
       expect(find.byKey(const Key('desktopNavUsers')), findsOneWidget);
       expect(find.byKey(const Key('desktopNavBackup')), findsOneWidget);
+      endSession();
     });
 
     testWidgets('cashier does not see user or backup destinations',
@@ -279,6 +284,7 @@ void main() {
 
       expect(find.byKey(const Key('desktopNavUsers')), findsNothing);
       expect(find.byKey(const Key('desktopNavBackup')), findsNothing);
+      endSession();
     });
   });
 
@@ -302,6 +308,7 @@ void main() {
       // The English build must not show the previously hard-coded Indonesian.
       expect(find.text('Identitas & Header Struk'), findsNothing);
       expect(find.text('Identity & receipt header'), findsOneWidget);
+      endSession();
     });
 
     testWidgets('sidebar destinations are labelled and touch-sized',
