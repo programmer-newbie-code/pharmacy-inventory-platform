@@ -34,8 +34,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Mulai cepat dan privasi'), findsOneWidget);
-    expect(find.text('Selamat datang di Platform Inventaris Apotek v1.2.0'),
-        findsOneWidget);
+    expect(find.text('Selamat datang di PharmaLoka v1.2.0'), findsOneWidget);
     expect(find.text('Kasir'), findsOneWidget);
     expect(find.text('Katalog inventaris'), findsOneWidget);
 

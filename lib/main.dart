@@ -27,7 +27,7 @@ class PharmacyInventoryApp extends ConsumerWidget {
     return Listener(
       onPointerDown: (_) => ref.read(authSessionProvider.notifier).recordActivity(),
       child: MaterialApp(
-        title: 'Pharmacy Inventory Platform',
+        title: 'PharmaLoka',
         theme: AppTheme.lightTheme,
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,

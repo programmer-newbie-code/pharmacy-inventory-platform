@@ -1,4 +1,6 @@
-# Pharmacy Inventory Platform
+# PharmaLoka
+
+<p align="center"><img src="docs_site/assets/images/pharmaloka-icon.svg" width="128" alt="PharmaLoka icon"></p>
 
 Offline-first inventory and point-of-sale app for small pharmacies. Single Flutter
 codebase, installable on Windows (desktop `.exe`) and Android.

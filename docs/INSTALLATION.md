@@ -1,6 +1,6 @@
 # Installation & Troubleshooting Guide
 
-This document describes how to install, update, and troubleshoot the **Pharmacy Inventory Platform** on Windows Desktop and Android devices.
+This document describes how to install, update, and troubleshoot **PharmaLoka** on Windows Desktop and Android devices.
 
 ---
 

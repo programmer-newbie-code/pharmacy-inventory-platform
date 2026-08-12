@@ -1,22 +1,17 @@
 # Current Pharmacy Platform Roadmap
 
-**Last updated:** 2026-08-12
+**Last updated:** 2026-08-13
 
-**Verified main:** `6655179` (`localize(app): fix strings shown in the wrong language (#154)`)
+**Verified main:** `e727840` (`docs(roadmap): record localization sweep slice 1 (#154) (#155)`)
 
-**Verified main CI:** run `31585762040` passed for tree `cc7b2d2`, which is
-byte-identical to the squashed merge commit (verified with `git diff`). GitHub
-did not emit a separate post-merge push run for `6655179`; the last main push run
-is `31578339421` for `9c44120`.
+**Verified main CI:** run `31587615490` passed for `e727840`.
 
 **Open PR at audit:** none
 
-**Next increment:** Localization sweep slice 2 (`features/suppliers`, 62
-strings) per the plan in
-`docs/superpowers/plans/2026-08-12-feature-localization-sweep.md`. Slice 1
-(mixed-language strings) shipped in #154. Priority 2/3 visual modernization and
-Priority 1 brand/icon still block on owner visual selection and rendered
-comparison.
+**Next increment:** PharmaLoka professional branding and icon integration is in
+progress on `feat/pharmaloka-branding`. The owner approved Option A (Loka Bloom);
+final deterministic renders still require approval before merge. Localization
+sweep slice 2 (`features/suppliers`) resumes afterward.
 
 This is the stable handoff file. Update it after every merged increment. Current
 GitHub and implementation evidence overrides this file if it becomes stale.
@@ -66,7 +61,7 @@ GitHub and implementation evidence overrides this file if it becomes stale.
 | Priority | Workstream | Status | Current evidence / next action |
 | --- | --- | --- | --- |
 | 0 | Durable cross-agent context | Shipped | PR #146 merged; post-merge main run `31555388676` is green. |
-| 1 | ProgrammerNewbie Studio branding and icon | Partial / externally blocked | Platform icon files exist. Owner selection among the proposed visual directions is required before concept rendering and integration. |
+| 1 | ProgrammerNewbie Studio branding and icon | In progress | Option A is owner-approved. `feat/pharmaloka-branding` adds the canonical SVG, reproducible exports, PharmaLoka display branding, platform assets, and final rendered proof. |
 | 2 | Windows desktop modernization | Correctness shipped (#151); visual refinement pending | Sidebar chrome now owns navigation and global actions, with tests at 1366x768, 1920x1080, and the 1023/1024 boundary, plus `Tab` traversal and 2.0 text scale. Remaining: collapsible sidebar, top context bar, density, theme tokens — all need rendered comparison and owner approval. |
 | 3 | Android mobile modernization | Correctness shipped (#151); flow review pending | Bottom bar and More sheet now report selection correctly and expose the global actions. Remaining: task-frequency, one-handed reach, high-frequency POS/scanner flow, and real-device text-scale review. |
 | 4 | Accessibility/localization/docs | In progress (slice 1 of 7 shipped) | #153 added the audit scan and sliced plan; #154 closed the mixed-language defect. 169 hardcoded strings remain: suppliers 53, inventory 34, pos 24, patients 19, compounding 18, users 10, reports 4, data 3, alerts 2, settings 1, main 1. Screen-reader, contrast, focus, and text-scale auditing plus docs-site responsive verification remain separate concerns. |
@@ -92,7 +87,7 @@ add a `NavigationRail` tier without confirmed tablet usage.
 
 ## External and owner-only actions
 
-- Approve subjective icon and Windows/Android visual directions.
+- Approve the final deterministic PharmaLoka icon proof and the later Windows/Android visual directions.
 - Complete Google Play identity/payment/contact verification and agreements.
 - Decide package-ID/signing-key custody before irreversible publication setup.
 - Select real testers and submit Play declarations/production access.
