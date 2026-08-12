@@ -11,6 +11,24 @@ installable on Windows (desktop) and Android. Full product context:
 [`docs/superpowers/specs/2026-07-08-pharmacy-inventory-platform-design.md`](docs/superpowers/specs/2026-07-08-pharmacy-inventory-platform-design.md).
 Read specs/plans on demand, not up front — token discipline.
 
+## Mandatory session startup and handoff
+
+Before changing the repository, every agent must:
+
+1. Fetch `origin` and inspect `origin/main`, open PRs, recently merged PRs, and
+   current/recent GitHub Actions runs.
+2. Read [`docs/superpowers/status/current-roadmap.md`](docs/superpowers/status/current-roadmap.md)
+   and the spec/plan linked for the next active increment.
+3. Resume an in-flight PR or post-merge main verification before starting
+   dependent work. Do not infer completion from stale plan checkboxes.
+4. Use implementation, tests, rendered behavior, PR state, and CI as evidence;
+   update the live roadmap after every merged increment.
+
+The approved product direction is defined by the
+[`cross-agent modernization spec`](docs/superpowers/specs/2026-08-12-cross-agent-modernization-roadmap.md)
+and its [`implementation roadmap`](docs/superpowers/plans/2026-08-12-cross-agent-modernization-roadmap.md).
+Detailed requirements belong there, not in this file.
+
 ## Stack
 
 Flutter (stable) · `drift` (SQLite) · `flutter_riverpod` · ARB-based i18n
