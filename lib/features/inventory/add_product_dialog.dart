@@ -378,11 +378,11 @@ class _AddProductDialogState extends ConsumerState<AddProductDialog> {
                     DropdownMenuItem(
                         value: 'Obat Keras',
                         child: Text(l10n.drugClassPrescription)),
-                    DropdownMenuItem(
+                    const DropdownMenuItem(
                         value: 'Psikotropika', child: Text('Psikotropika')),
-                    DropdownMenuItem(
+                    const DropdownMenuItem(
                         value: 'Narkotika', child: Text('Narkotika')),
-                    DropdownMenuItem(
+                    const DropdownMenuItem(
                         value: 'Herbal / Jamu', child: Text('Herbal / Jamu')),
                   ],
                   onChanged: (val) {
