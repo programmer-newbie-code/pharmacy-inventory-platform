@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/providers.dart';
 import '../../data/database.dart';
 import '../../data/purchase_receiving_repository.dart';
+import '../../l10n/app_localizations.dart';
 import '../auth/auth_session.dart';
 
 class PurchaseReceivingScreen extends ConsumerStatefulWidget {
@@ -79,12 +80,21 @@ class _PurchaseReceivingScreenState
   }
 
   Future<void> _processReceiving() async {
+    final l10n = AppLocalizations.of(context)!;
+    final currentUser = ref.read(authSessionProvider);
+    if (currentUser == null) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(l10n.sessionRequired)));
+      return;
+    }
+
     // Validate all lines have batch numbers
     for (final line in _lines) {
       if (line.batchNoController.text.trim().isEmpty && line.qtyEntered > 0) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Batch number required for ${line.product.name}'),
+            content: Text(l10n.receivingBatchRequired(line.product.name)),
           ),
         );
         return;
@@ -93,7 +103,7 @@ class _PurchaseReceivingScreenState
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              'Discrepancy reason required for ${line.product.name}',
+              l10n.receivingDiscrepancyReasonRequired(line.product.name),
             ),
           ),
         );
@@ -124,19 +134,19 @@ class _PurchaseReceivingScreenState
       await receivingRepo.processReceiving(
         purchaseOrderId: widget.purchaseOrderId,
         items: items,
-        receivedByUserId: ref.read(authSessionProvider)?.id ?? 1,
+        receivedByUserId: currentUser.id,
       );
 
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Receiving completed successfully!')),
+        SnackBar(content: Text(l10n.receivingSuccess)),
       );
       Navigator.of(context).pop(true);
-    } catch (e) {
+    } catch (_) {
       if (!mounted) return;
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(SnackBar(content: Text('Error: $e')));
+      ).showSnackBar(SnackBar(content: Text(l10n.receivingFailed)));
     } finally {
       if (mounted) setState(() => _isProcessing = false);
     }
@@ -156,21 +166,22 @@ class _PurchaseReceivingScreenState
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     if (_isLoading) {
       return Scaffold(
-        appBar: AppBar(title: const Text('Receive Purchase Order')),
+        appBar: AppBar(title: Text(l10n.receivingLoadingTitle)),
         body: const Center(child: CircularProgressIndicator()),
       );
     }
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Receive ${_po?.poNumber ?? ""}'),
+        title: Text(l10n.receivingTitle(_po?.poNumber ?? '')),
         actions: [
           FilledButton.icon(
             key: const Key('completeReceivingBtn'),
             icon: const Icon(Icons.check),
-            label: const Text('Complete'),
+            label: Text(l10n.receivingComplete),
             onPressed: _isProcessing ? null : _processReceiving,
           ),
           const SizedBox(width: 8),
@@ -187,12 +198,12 @@ class _PurchaseReceivingScreenState
                 const Icon(Icons.local_shipping),
                 const SizedBox(width: 8),
                 Text(
-                  'Supplier: ${_supplier?.name ?? "-"}',
+                  l10n.receivingSupplier(_supplier?.name ?? '-'),
                   style: Theme.of(context).textTheme.titleMedium,
                 ),
                 const Spacer(),
                 Text(
-                  '${_lines.length} items to receive',
+                  l10n.receivingItemsCount(_lines.length),
                   style: Theme.of(context).textTheme.bodySmall,
                 ),
               ],
@@ -200,8 +211,8 @@ class _PurchaseReceivingScreenState
           ),
           // Line items
           if (_lines.isEmpty)
-            const Expanded(
-              child: Center(child: Text('All items have been received.')),
+            Expanded(
+              child: Center(child: Text(l10n.receivingAllItemsReceived)),
             )
           else
             Expanded(
@@ -218,6 +229,7 @@ class _PurchaseReceivingScreenState
   }
 
   Widget _buildLineItem(_ReceivingLine line) {
+    final l10n = AppLocalizations.of(context)!;
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(12),
@@ -233,8 +245,11 @@ class _PurchaseReceivingScreenState
             ),
             const SizedBox(height: 4),
             Text(
-              'Ordered: ${line.qtyRemaining} ${line.product.baseUnit} • '
-              'Cost: Rp ${line.costPricePerBaseUnit.toStringAsFixed(0)}/${line.product.baseUnit}',
+              l10n.receivingLineSummary(
+                line.qtyRemaining,
+                line.product.baseUnit,
+                line.costPricePerBaseUnit.toStringAsFixed(0),
+              ),
               style: Theme.of(context).textTheme.bodySmall,
             ),
             const SizedBox(height: 12),
@@ -246,7 +261,7 @@ class _PurchaseReceivingScreenState
                   child: TextField(
                     controller: line.qtyController,
                     decoration: InputDecoration(
-                      labelText: 'Qty Received',
+                      labelText: l10n.receivingQuantityLabel,
                       suffixText: line.product.baseUnit,
                       border: const OutlineInputBorder(),
                       isDense: true,
@@ -260,9 +275,9 @@ class _PurchaseReceivingScreenState
                   flex: 3,
                   child: TextField(
                     controller: line.batchNoController,
-                    decoration: const InputDecoration(
-                      labelText: 'Batch No *',
-                      border: OutlineInputBorder(),
+                    decoration: InputDecoration(
+                      labelText: l10n.receivingBatchLabel,
+                      border: const OutlineInputBorder(),
                       isDense: true,
                     ),
                   ),
@@ -273,9 +288,9 @@ class _PurchaseReceivingScreenState
                   child: InkWell(
                     onTap: () => _pickExpiryDate(line),
                     child: InputDecorator(
-                      decoration: const InputDecoration(
-                        labelText: 'Expiry',
-                        border: OutlineInputBorder(),
+                      decoration: InputDecoration(
+                        labelText: l10n.receivingExpiryLabel,
+                        border: const OutlineInputBorder(),
                         isDense: true,
                       ),
                       child: Text(
@@ -309,7 +324,10 @@ class _PurchaseReceivingScreenState
                         ),
                         const SizedBox(width: 4),
                         Text(
-                          'Discrepancy: Expected ${line.qtyRemaining}, received ${line.qtyEntered}',
+                          l10n.receivingDiscrepancy(
+                            line.qtyRemaining,
+                            line.qtyEntered,
+                          ),
                           style: TextStyle(
                             color: Colors.orange.shade700,
                             fontWeight: FontWeight.w600,
@@ -321,9 +339,9 @@ class _PurchaseReceivingScreenState
                     const SizedBox(height: 4),
                     TextField(
                       controller: line.reasonController,
-                      decoration: const InputDecoration(
-                        hintText: 'Reason for discrepancy *',
-                        border: OutlineInputBorder(),
+                      decoration: InputDecoration(
+                        hintText: l10n.receivingDiscrepancyReasonHint,
+                        border: const OutlineInputBorder(),
                         isDense: true,
                       ),
                       style: const TextStyle(fontSize: 13),
