@@ -10,6 +10,12 @@ import 'package:pharmacy_inventory_platform/l10n/app_localizations.dart';
 
 import '../../support/layout_harness.dart';
 
+// The longest name in the bundled catalog
+// (assets/data/indonesian_drugs.csv) is 'Polymyxin B + Neomycin Tetes Mata'
+// at 33 characters, so that is the realistic worst case for this app rather
+// than an invented longer string.
+const _longProductName = 'Polymyxin B + Neomycin Tetes Mata';
+
 void main() {
   testWidgets('renders product list screen and opens add product dialog', (
     tester,
@@ -140,11 +146,10 @@ void main() {
     final productRepo = ProductRepository(db);
     // Long enough to have needed ~175dp+ against the ~179dp the row used to
     // leave once the 'Obat Keras' badge and edit icon took their share.
-    const longName = 'Amoxicillin 500mg Kapsul Forte Extra Kuat';
     await productRepo.createProduct(
       barcode: '8990000000099',
       internalCode: 'AMX-500',
-      name: longName,
+      name: _longProductName,
       activeIngredient: 'Amoxicillin',
       ingredientPct: 100.0,
       baseUnit: 'kapsul',
@@ -177,7 +182,7 @@ void main() {
 
     expectNoOverflow(tester);
 
-    final nameFinder = find.text(longName);
+    final nameFinder = find.text(_longProductName);
     expect(nameFinder, findsOneWidget);
     expectNotTruncated(tester, nameFinder);
   });
@@ -193,7 +198,7 @@ void main() {
     await productRepo.createProduct(
       barcode: '8990000000098',
       internalCode: 'AMX-501',
-      name: 'Amoxicillin 500mg Kapsul Forte Extra Kuat',
+      name: _longProductName,
       activeIngredient: 'Amoxicillin',
       ingredientPct: 100.0,
       baseUnit: 'kapsul',
