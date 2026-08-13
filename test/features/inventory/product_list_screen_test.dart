@@ -133,6 +133,17 @@ void main() {
       'a long controlled-drug name wraps instead of truncating on the owner phone',
       (tester) async {
     useSurface(tester, kOwnerPhone);
+    // DIAGNOSTIC ONLY: capture the full FlutterError.onError dump, which
+    // includes the overflowing widget and its constraints. takeException()
+    // only exposes a one-line summary.
+    final originalOnError = FlutterError.onError;
+    FlutterError.onError = (details) {
+      debugPrint('=== FULL FlutterError.onError DUMP ===');
+      debugPrint(details.toString());
+      debugPrint('=== END DUMP ===');
+      originalOnError?.call(details);
+    };
+    addTearDown(() => FlutterError.onError = originalOnError);
 
     final db = AppDatabase(NativeDatabase.memory());
     addTearDown(db.close);
