@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/providers.dart';
 import '../../data/database.dart';
+import '../../l10n/app_localizations.dart';
 import 'formula_editor_screen.dart';
 
 final formulaListFutureProvider =
@@ -28,16 +29,17 @@ class _FormulaListScreenState extends ConsumerState<FormulaListScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final formulaListAsync = ref.watch(formulaListFutureProvider);
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Compounding Formulas (Racikan)'),
+        title: Text(l10n.compoundingFormulasTitle),
         actions: [
           IconButton(
             key: const Key('addFormulaBtn'),
             icon: const Icon(Icons.add),
-            tooltip: 'Add Formula',
+            tooltip: l10n.addFormulaButton,
             onPressed: () async {
               await Navigator.of(context).push(
                 MaterialPageRoute(builder: (_) => const FormulaEditorScreen()),
@@ -55,7 +57,7 @@ class _FormulaListScreenState extends ConsumerState<FormulaListScreen> {
               key: const Key('formulaSearchInput'),
               controller: _searchController,
               decoration: InputDecoration(
-                hintText: 'Search compounding formulas...',
+                hintText: l10n.searchFormulasHint,
                 prefixIcon: const Icon(Icons.search),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8),
@@ -90,7 +92,7 @@ class _FormulaListScreenState extends ConsumerState<FormulaListScreen> {
                           ElevatedButton.icon(
                             key: const Key('addFirstFormulaBtn'),
                             icon: const Icon(Icons.add),
-                            label: const Text('Create First Formula'),
+                            label: Text(l10n.createFirstFormulaButton),
                             onPressed: () async {
                               await Navigator.of(context).push(
                                 MaterialPageRoute(

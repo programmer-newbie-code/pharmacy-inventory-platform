@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/providers.dart';
 import '../../data/database.dart';
+import '../../l10n/app_localizations.dart';
 
 class PatientFormScreen extends ConsumerStatefulWidget {
   const PatientFormScreen({super.key, this.existingPatient});
@@ -48,9 +49,10 @@ class _PatientFormScreenState extends ConsumerState<PatientFormScreen> {
   }
 
   Future<void> _save() async {
+    final l10n = AppLocalizations.of(context)!;
     if (_nameController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Patient name is required.')),
+        SnackBar(content: Text(l10n.patientNameRequired)),
       );
       return;
     }
@@ -117,6 +119,7 @@ class _PatientFormScreenState extends ConsumerState<PatientFormScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final isEdit = widget.existingPatient != null;
 
     return Scaffold(
@@ -126,7 +129,7 @@ class _PatientFormScreenState extends ConsumerState<PatientFormScreen> {
           TextButton(
             key: const Key('savePatientBtn'),
             onPressed: _save,
-            child: const Text('Save'),
+            child: Text(l10n.saveButton),
           ),
         ],
       ),
@@ -138,26 +141,26 @@ class _PatientFormScreenState extends ConsumerState<PatientFormScreen> {
             TextField(
               key: const Key('patientNameInput'),
               controller: _nameController,
-              decoration: const InputDecoration(labelText: 'Patient Name *'),
+              decoration: InputDecoration(labelText: l10n.patientNameRequiredLabel),
             ),
             const SizedBox(height: 12),
             TextField(
               key: const Key('patientPhoneInput'),
               controller: _phoneController,
-              decoration: const InputDecoration(labelText: 'Phone Number'),
+              decoration: InputDecoration(labelText: l10n.phoneLabel),
               keyboardType: TextInputType.phone,
             ),
             const SizedBox(height: 12),
             InkWell(
               onTap: _pickDob,
               child: InputDecorator(
-                decoration: const InputDecoration(
-                  labelText: 'Date of Birth',
-                  border: OutlineInputBorder(),
+                decoration: InputDecoration(
+                  labelText: l10n.dateOfBirthLabel,
+                  border: const OutlineInputBorder(),
                 ),
                 child: Text(
                   _dateOfBirth == null
-                      ? 'Select date of birth...'
+                      ? '${l10n.dateOfBirthLabel}...'
                       : '${_dateOfBirth!.day}/${_dateOfBirth!.month}/${_dateOfBirth!.year}',
                 ),
               ),
@@ -165,31 +168,31 @@ class _PatientFormScreenState extends ConsumerState<PatientFormScreen> {
             const SizedBox(height: 12),
             TextField(
               controller: _addressController,
-              decoration: const InputDecoration(labelText: 'Address'),
+              decoration: InputDecoration(labelText: l10n.addressLabel),
               maxLines: 2,
             ),
             const SizedBox(height: 12),
             TextField(
               key: const Key('patientAllergiesInput'),
               controller: _allergiesController,
-              decoration: const InputDecoration(
-                labelText: 'Known Allergies',
-                hintText: 'e.g. Penicillin, Sulfa',
+              decoration: InputDecoration(
+                labelText: l10n.knownAllergiesLabel,
+                hintText: l10n.allergiesHint,
               ),
             ),
             const SizedBox(height: 12),
             TextField(
               key: const Key('patientChronicConditionsInput'),
               controller: _chronicConditionsController,
-              decoration: const InputDecoration(
-                labelText: 'Chronic Conditions (Prolanis)',
-                hintText: 'e.g. Diabetes, Hipertensi',
+              decoration: InputDecoration(
+                labelText: l10n.chronicConditionsLabel,
+                hintText: l10n.chronicConditionsHint,
               ),
             ),
             const SizedBox(height: 12),
             TextField(
               controller: _notesController,
-              decoration: const InputDecoration(labelText: 'Notes'),
+              decoration: InputDecoration(labelText: l10n.notesLabel),
               maxLines: 3,
             ),
           ],

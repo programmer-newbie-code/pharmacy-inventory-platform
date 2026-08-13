@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/providers.dart';
 import '../../data/database.dart';
+import '../../l10n/app_localizations.dart';
 import 'patient_form_screen.dart';
 
 class PatientDetailScreen extends ConsumerStatefulWidget {
@@ -56,9 +57,10 @@ class _PatientDetailScreenState extends ConsumerState<PatientDetailScreen>
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     if (_isLoading || _patient == null) {
       return Scaffold(
-        appBar: AppBar(title: const Text('Patient Detail')),
+        appBar: AppBar(title: Text(l10n.patientDetailTitle)),
         body: const Center(child: CircularProgressIndicator()),
       );
     }
@@ -84,10 +86,10 @@ class _PatientDetailScreenState extends ConsumerState<PatientDetailScreen>
         ],
         bottom: TabBar(
           controller: _tabController,
-          tabs: const [
-            Tab(icon: Icon(Icons.person), text: 'Info'),
-            Tab(icon: Icon(Icons.history), text: 'History'),
-            Tab(icon: Icon(Icons.description), text: 'Prescriptions'),
+          tabs: [
+            Tab(icon: const Icon(Icons.person), text: l10n.infoTab),
+            Tab(icon: const Icon(Icons.history), text: l10n.historyTab),
+            Tab(icon: const Icon(Icons.description), text: l10n.prescriptionsTab),
           ],
         ),
       ),
@@ -103,6 +105,7 @@ class _PatientDetailScreenState extends ConsumerState<PatientDetailScreen>
   }
 
   Widget _buildInfoTab(Patient p) {
+    final l10n = AppLocalizations.of(context)!;
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -130,7 +133,7 @@ class _PatientDetailScreenState extends ConsumerState<PatientDetailScreen>
                           style: Theme.of(context).textTheme.titleLarge,
                         ),
                         if (p.phone != null)
-                          Text('Phone: ${p.phone}',
+                          Text('${l10n.phoneLabel}: ${p.phone}',
                               style: Theme.of(context).textTheme.bodyMedium),
                       ],
                     ),
@@ -142,19 +145,19 @@ class _PatientDetailScreenState extends ConsumerState<PatientDetailScreen>
           const SizedBox(height: 16),
           _detailTile(
             Icons.cake,
-            'Date of Birth',
+            l10n.dateOfBirthLabel,
             p.dateOfBirth == null
                 ? null
                 : '${p.dateOfBirth!.day}/${p.dateOfBirth!.month}/${p.dateOfBirth!.year}',
           ),
-          _detailTile(Icons.location_on, 'Address', p.address),
-          _detailTile(Icons.warning, 'Allergies', p.allergies),
+          _detailTile(Icons.location_on, l10n.addressLabel, p.address),
+          _detailTile(Icons.warning, l10n.knownAllergiesLabel, p.allergies),
           _detailTile(
             Icons.medical_services,
-            'Chronic Conditions (Prolanis)',
+            l10n.chronicConditionsLabel,
             p.chronicConditions,
           ),
-          _detailTile(Icons.note, 'Notes', p.notes),
+          _detailTile(Icons.note, l10n.notesLabel, p.notes),
         ],
       ),
     );
@@ -187,8 +190,9 @@ class _PatientDetailScreenState extends ConsumerState<PatientDetailScreen>
   }
 
   Widget _buildHistoryTab() {
+    final l10n = AppLocalizations.of(context)!;
     if (_history.isEmpty) {
-      return const Center(child: Text('No transaction history for this patient.'));
+      return Center(child: Text(l10n.noTxnHistoryPatient));
     }
 
     return ListView.builder(
@@ -204,7 +208,7 @@ class _PatientDetailScreenState extends ConsumerState<PatientDetailScreen>
               '${txn.createdAt.toString().split('.')[0]} • ${txn.paymentMethod}',
             ),
             trailing: Text(
-              'Rp ${txn.totalAmount.toStringAsFixed(0)}',
+              '${l10n.currencyPrefix}${txn.totalAmount.toStringAsFixed(0)}',
               style: const TextStyle(fontWeight: FontWeight.bold),
             ),
           ),
@@ -214,8 +218,9 @@ class _PatientDetailScreenState extends ConsumerState<PatientDetailScreen>
   }
 
   Widget _buildPrescriptionsTab() {
+    final l10n = AppLocalizations.of(context)!;
     if (_prescriptions.isEmpty) {
-      return const Center(child: Text('No prescriptions recorded.'));
+      return Center(child: Text(l10n.noPrescriptionsRecorded));
     }
 
     return ListView.builder(
@@ -235,8 +240,8 @@ class _PatientDetailScreenState extends ConsumerState<PatientDetailScreen>
               '${rx.clinicName != null ? " • ${rx.clinicName}" : ""}',
             ),
             trailing: rx.isChronic
-                ? const Chip(
-                    label: Text('CHRONIC'),
+                ? Chip(
+                    label: Text(l10n.chronicBadge),
                     backgroundColor: Colors.amber,
                   )
                 : null,

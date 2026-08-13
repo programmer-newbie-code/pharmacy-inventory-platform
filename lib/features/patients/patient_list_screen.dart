@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/providers.dart';
 import '../../data/database.dart';
+import '../../l10n/app_localizations.dart';
 import 'patient_detail_screen.dart';
 import 'patient_form_screen.dart';
 
@@ -28,16 +29,17 @@ class _PatientListScreenState extends ConsumerState<PatientListScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final patientListAsync = ref.watch(patientListFutureProvider);
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Patient Directory'),
+        title: Text(l10n.patientDirectoryTitle),
         actions: [
           IconButton(
             key: const Key('addPatientBtn'),
             icon: const Icon(Icons.person_add),
-            tooltip: 'Add Patient',
+            tooltip: l10n.addPatientButton,
             onPressed: () async {
               await Navigator.of(context).push(
                 MaterialPageRoute(builder: (_) => const PatientFormScreen()),
@@ -55,7 +57,7 @@ class _PatientListScreenState extends ConsumerState<PatientListScreen> {
               key: const Key('patientSearchInput'),
               controller: _searchController,
               decoration: InputDecoration(
-                hintText: 'Search patients by name or phone...',
+                hintText: l10n.searchPatientsHint,
                 prefixIcon: const Icon(Icons.search),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8),
@@ -92,7 +94,7 @@ class _PatientListScreenState extends ConsumerState<PatientListScreen> {
                           ElevatedButton.icon(
                             key: const Key('addFirstPatientBtn'),
                             icon: const Icon(Icons.add),
-                            label: const Text('Add First Patient'),
+                            label: Text(l10n.addFirstPatientButton),
                             onPressed: () async {
                               await Navigator.of(context).push(
                                 MaterialPageRoute(
