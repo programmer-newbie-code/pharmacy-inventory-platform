@@ -60,20 +60,41 @@ void main() {
     expect(find.text('Penicillin'), findsOneWidget);
   });
 
-  testWidgets('patient screens render from ARB in both locales',
-      (tester) async {
-    Future<void> pumpIn(Locale locale) async {
+  // One test per locale: reusing a single test for both would construct a
+  // second AppDatabase in the same test body, which drift warns about and
+  // which left the first widget tree in place.
+  for (final case_ in <Map<String, String>>[
+    {
+      'locale': 'en',
+      'directory': 'Patient Directory',
+      'addTitle': 'Add New Patient',
+      'absent': 'Direktori Pasien',
+    },
+    {
+      'locale': 'id',
+      'directory': 'Direktori Pasien',
+      'addTitle': 'Tambah Pasien Baru',
+      'absent': 'Patient Directory',
+    },
+  ]) {
+    final locale = case_['locale']!;
+    final directory = case_['directory']!;
+    final addTitle = case_['addTitle']!;
+    final absent = case_['absent']!;
+
+    testWidgets('patient screens render from ARB in $locale', (tester) async {
       final db = AppDatabase(NativeDatabase.memory());
       addTearDown(db.close);
       final container = ProviderContainer(
         overrides: [databaseProvider.overrideWithValue(db)],
       );
       addTearDown(container.dispose);
+
       await tester.pumpWidget(
         UncontrolledProviderScope(
           container: container,
           child: MaterialApp(
-            locale: locale,
+            locale: Locale(locale),
             localizationsDelegates: AppLocalizations.localizationsDelegates,
             supportedLocales: AppLocalizations.supportedLocales,
             home: const PatientListScreen(),
@@ -81,21 +102,14 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
-    }
 
-    await pumpIn(const Locale('en'));
-    expect(find.text('Patient Directory'), findsOneWidget);
-    await tester.tap(find.byKey(const Key('addPatientBtn')));
-    await tester.pumpAndSettle();
-    expect(find.text('Add New Patient'), findsOneWidget);
+      expect(find.text(directory), findsOneWidget);
+      // A regression to hard-coded text would render the other locale here.
+      expect(find.text(absent), findsNothing);
 
-    await pumpIn(const Locale('id'));
-    // A regression to hard-coded English would fail here.
-    expect(find.text('Patient Directory'), findsNothing);
-    expect(find.text('Direktori Pasien'), findsOneWidget);
-    await tester.tap(find.byKey(const Key('addPatientBtn')));
-    await tester.pumpAndSettle();
-    expect(find.text('Add New Patient'), findsNothing);
-    expect(find.text('Tambah Pasien Baru'), findsOneWidget);
-  });
+      await tester.tap(find.byKey(const Key('addPatientBtn')));
+      await tester.pumpAndSettle();
+      expect(find.text(addTitle), findsOneWidget);
+    });
+  }
 }
