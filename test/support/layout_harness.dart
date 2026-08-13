@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 /// Test-only helpers for catching layout problems at real device sizes.
@@ -56,45 +57,49 @@ void expectNoOverflow(WidgetTester tester, {String? reason}) {
   );
 }
 
-/// Fails if the `Text` found by [finder] is rendered narrower than the width it
-/// needs, which is what produces a visible `...`.
+/// Fails if the text found by [finder] was truncated or ellipsised as laid out.
 ///
-/// Measures the text's intrinsic width with the same style and text scale, then
-/// compares it against the width actually painted. A single-line `Text` that is
-/// wider than its slot is truncated; allowing [tolerance] absorbs rounding.
+/// Asks the `RenderParagraph` itself via `didExceedMaxLines`, which is
+/// documented as "whether the text was truncated or ellipsized as laid out".
+/// That is the real rendered outcome, so it needs no assumptions about font
+/// size, ambient style, or text scale.
+///
+/// An earlier version rebuilt a `TextPainter` from the `Text` widget's style
+/// and over-reported truncation, because a floating `InputDecoration` label is
+/// painted with a different style than the widget declares. Measuring the
+/// render object avoids guessing entirely.
 void expectNotTruncated(
   WidgetTester tester,
   Finder finder, {
-  double tolerance = 1.0,
   String? reason,
 }) {
-  final widget = tester.widget<Text>(finder);
-  final data = widget.data;
-  expect(data, isNotNull,
-      reason: 'expectNotTruncated needs a Text with a plain string');
+  final element = tester.element(finder);
+  RenderParagraph? paragraph;
 
-  final rendered = tester.getSize(finder);
-  final maxLines = widget.maxLines ?? 1;
+  void visit(Element node) {
+    if (paragraph != null) return;
+    final renderObject = node.renderObject;
+    if (renderObject is RenderParagraph) {
+      paragraph = renderObject;
+      return;
+    }
+    node.visitChildren(visit);
+  }
 
-  // Read the scaler and the resolved style from the Text's own context, so an
-  // enclosing MediaQuery override and the ambient DefaultTextStyle are both
-  // honoured. Reading the platform value instead would ignore the override.
-  final context = tester.element(finder);
-  final scaler = MediaQuery.maybeOf(context)?.textScaler ?? TextScaler.noScaling;
-  final style = DefaultTextStyle.of(context).style.merge(widget.style);
+  final self = element.renderObject;
+  if (self is RenderParagraph) {
+    paragraph = self;
+  } else {
+    element.visitChildren(visit);
+  }
 
-  final painter = TextPainter(
-    text: TextSpan(text: data, style: style),
-    textDirection: Directionality.of(context),
-    textScaler: scaler,
-    maxLines: maxLines,
-  )..layout(maxWidth: rendered.width);
-
+  expect(paragraph, isNotNull,
+      reason: 'expectNotTruncated needs a text-rendering widget');
   expect(
-    painter.didExceedMaxLines,
+    paragraph!.didExceedMaxLines,
     isFalse,
     reason: reason ??
-        'text "$data" is truncated: needs more than $maxLines line(s) '
-            'in ${rendered.width}px',
+        'text was truncated or ellipsised as laid out in '
+            '${paragraph!.size.width}px',
   );
 }
