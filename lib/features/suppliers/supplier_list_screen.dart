@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/providers.dart';
 import '../../data/database.dart';
+import '../../l10n/app_localizations.dart';
 import 'supplier_detail_screen.dart';
 
 final supplierListFutureProvider = FutureProvider.autoDispose<List<Supplier>>((ref) {
@@ -27,6 +28,7 @@ class _SupplierListScreenState extends ConsumerState<SupplierListScreen> {
   }
 
   Future<void> _showAddSupplierDialog(BuildContext context) async {
+    final l10n = AppLocalizations.of(context)!;
     final nameController = TextEditingController();
     final contactController = TextEditingController();
     final phoneController = TextEditingController();
@@ -37,7 +39,7 @@ class _SupplierListScreenState extends ConsumerState<SupplierListScreen> {
     final result = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Add New Supplier'),
+        title: Text(l10n.addNewSupplier),
         content: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -45,37 +47,37 @@ class _SupplierListScreenState extends ConsumerState<SupplierListScreen> {
               TextField(
                 key: const Key('supplierNameInput'),
                 controller: nameController,
-                decoration: const InputDecoration(labelText: 'Supplier Name *'),
+                decoration: InputDecoration(labelText: l10n.supplierNameLabel),
               ),
               TextField(
                 key: const Key('supplierContactInput'),
                 controller: contactController,
-                decoration: const InputDecoration(labelText: 'Contact Person'),
+                decoration: InputDecoration(labelText: l10n.contactPersonLabel),
               ),
               TextField(
                 key: const Key('supplierPhoneInput'),
                 controller: phoneController,
-                decoration: const InputDecoration(labelText: 'Phone'),
+                decoration: InputDecoration(labelText: l10n.phoneLabel),
                 keyboardType: TextInputType.phone,
               ),
               TextField(
                 key: const Key('supplierEmailInput'),
                 controller: emailController,
-                decoration: const InputDecoration(labelText: 'Email'),
+                decoration: InputDecoration(labelText: l10n.emailLabel),
                 keyboardType: TextInputType.emailAddress,
               ),
               TextField(
                 key: const Key('supplierAddressInput'),
                 controller: addressController,
-                decoration: const InputDecoration(labelText: 'Address'),
+                decoration: InputDecoration(labelText: l10n.addressLabel),
                 maxLines: 2,
               ),
               TextField(
                 key: const Key('supplierPaymentTermsInput'),
                 controller: paymentTermsController,
-                decoration: const InputDecoration(
-                  labelText: 'Payment Terms',
-                  hintText: 'e.g. Net 30, COD',
+                decoration: InputDecoration(
+                  labelText: l10n.paymentTermsLabel,
+                  hintText: l10n.paymentTermsHint,
                 ),
               ),
             ],
@@ -84,12 +86,12 @@ class _SupplierListScreenState extends ConsumerState<SupplierListScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(false),
-            child: const Text('Cancel'),
+            child: Text(l10n.cancelButton),
           ),
           ElevatedButton(
             key: const Key('confirmAddSupplierBtn'),
             onPressed: () => Navigator.of(ctx).pop(true),
-            child: const Text('Save'),
+            child: Text(l10n.saveButton),
           ),
         ],
       ),
@@ -138,16 +140,17 @@ class _SupplierListScreenState extends ConsumerState<SupplierListScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final suppliersAsync = ref.watch(supplierListFutureProvider);
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Suppliers Directory'),
+        title: Text(l10n.suppliersDirectoryTitle),
         actions: [
           IconButton(
             key: const Key('addSupplierBtn'),
             icon: const Icon(Icons.person_add),
-            tooltip: 'Add Supplier',
+            tooltip: l10n.addSupplierButton,
             onPressed: () => _showAddSupplierDialog(context),
           ),
         ],
@@ -163,7 +166,7 @@ class _SupplierListScreenState extends ConsumerState<SupplierListScreen> {
                     key: const Key('supplierSearchInput'),
                     controller: _searchController,
                     decoration: InputDecoration(
-                      hintText: 'Search suppliers...',
+                      hintText: l10n.searchSuppliersHint,
                       prefixIcon: const Icon(Icons.search),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8),
@@ -176,7 +179,7 @@ class _SupplierListScreenState extends ConsumerState<SupplierListScreen> {
                 const SizedBox(width: 8),
                 FilterChip(
                   key: const Key('activeFilterChip'),
-                  label: const Text('Active only'),
+                  label: Text(l10n.activeOnlyToggle),
                   selected: _showActiveOnly,
                   onSelected: (val) => setState(() => _showActiveOnly = val),
                 ),
@@ -194,15 +197,15 @@ class _SupplierListScreenState extends ConsumerState<SupplierListScreen> {
                       children: [
                         Text(
                           suppliers.isEmpty
-                              ? 'No suppliers added yet.'
-                              : 'No suppliers match your filter.',
+                              ? l10n.noSuppliersAdded
+                              : l10n.noSuppliersMatchFilter,
                         ),
                         if (suppliers.isEmpty) ...[
                           const SizedBox(height: 12),
                           ElevatedButton.icon(
                             key: const Key('addFirstSupplierBtn'),
                             icon: const Icon(Icons.add),
-                            label: const Text('Add First Supplier'),
+                            label: Text(l10n.addFirstSupplier),
                             onPressed: () => _showAddSupplierDialog(context),
                           ),
                         ],
@@ -237,14 +240,14 @@ class _SupplierListScreenState extends ConsumerState<SupplierListScreen> {
                       subtitle: Text(
                         [
                           if (s.contactPerson != null)
-                            'Contact: ${s.contactPerson}',
-                          if (s.phone != null) 'Phone: ${s.phone}',
+                            '${l10n.contactLabel}: ${s.contactPerson}',
+                          if (s.phone != null) '${l10n.phoneLabel}: ${s.phone}',
                           if (s.paymentTerms != null) s.paymentTerms!,
                         ].join(' • '),
                       ),
                       trailing: s.isActive
                           ? null
-                          : const Chip(label: Text('Inactive')),
+                          : Chip(label: Text(l10n.statusInactive)),
                       onTap: () async {
                         await Navigator.of(context).push(
                           MaterialPageRoute(
