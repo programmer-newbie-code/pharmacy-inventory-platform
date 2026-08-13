@@ -2,16 +2,17 @@
 
 **Last updated:** 2026-08-13
 
-**Verified main:** `e727840` (`docs(roadmap): record localization sweep slice 1 (#154) (#155)`)
+**Verified main:** `81110a6` (`feat(brand): introduce PharmaLoka identity (#156)`)
 
-**Verified main CI:** run `31587615490` passed for `e727840`.
+**Verified main CI:** run `31654201784` passed for `81110a6`, including
+analyze/test, 80% coverage, Windows, Android, signature, secret scan, and GitHub
+Pages deployment.
 
 **Open PR at audit:** none
 
-**Next increment:** PharmaLoka professional branding and icon integration is in
-progress on `feat/pharmaloka-branding`. The owner approved Option A (Loka Bloom);
-final deterministic renders still require approval before merge. Localization
-sweep slice 2 (`features/suppliers`) resumes afterward.
+**Next increment:** Localization sweep slice 2 (`features/suppliers`) per
+`docs/superpowers/plans/2026-08-12-feature-localization-sweep.md`. PharmaLoka
+professional branding and icon integration shipped in #156.
 
 This is the stable handoff file. Update it after every merged increment. Current
 GitHub and implementation evidence overrides this file if it becomes stale.
@@ -41,6 +42,7 @@ GitHub and implementation evidence overrides this file if it becomes stale.
 
 | PR | Shipped outcome |
 | --- | --- |
+| #156 | PharmaLoka Option A (Loka Bloom) shipped as a canonical SVG with reproducible Windows, Android adaptive/legacy, web, docs, MSIX, and Play Store exports. Compact surfaces use `PharmaLoka`; descriptive surfaces use `PharmaLoka — Pharmacy Inventory Platform`; stable technical identities remain unchanged. Flutter 3.47 toolchain requirements are pinned (AGP 8.11.1, Kotlin 2.2.20). Main run `31654201784` is green. |
 | #153-#154 | Localization sweep: spec, plan, and `scripts/audit_hardcoded_strings.py`, then slice 1 fixing all 23 strings that rendered Indonesian to English users. Total hardcoded strings 198 to 169. Drug-classification stored values pinned by test; `lib/data/` still imports no localization. |
 | #150-#151 | Adaptive shell correctness. Restored logout/language/help/branding, which were unreachable in production because they lived in a `HomeScreen` `AppBar` that never rendered; deleted ~250 lines of unreachable shell; fixed the no-op sidebar Dashboard item, the split navigation model, and mobile selected-index; made the two-tier width split explicit; localized the last shell strings. 255 tests, coverage 80.8%. |
 | #148 | Purchase receiving now requires an active session (no more `?? 1` fallback) and is fully localized (en/id). Closes the Priority 6 critical-correctness item from the modernization spec. |
@@ -61,7 +63,7 @@ GitHub and implementation evidence overrides this file if it becomes stale.
 | Priority | Workstream | Status | Current evidence / next action |
 | --- | --- | --- | --- |
 | 0 | Durable cross-agent context | Shipped | PR #146 merged; post-merge main run `31555388676` is green. |
-| 1 | ProgrammerNewbie Studio branding and icon | In progress | Option A is owner-approved. `feat/pharmaloka-branding` adds the canonical SVG, reproducible exports, PharmaLoka display branding, platform assets, and final rendered proof. |
+| 1 | ProgrammerNewbie Studio branding and icon | Shipped | #156 delivered the owner-approved Option A canonical SVG, deterministic platform exports, adaptive Android icon, final size proof, and PharmaLoka naming hierarchy. Post-merge main run `31654201784` is green. |
 | 2 | Windows desktop modernization | Correctness shipped (#151); visual refinement pending | Sidebar chrome now owns navigation and global actions, with tests at 1366x768, 1920x1080, and the 1023/1024 boundary, plus `Tab` traversal and 2.0 text scale. Remaining: collapsible sidebar, top context bar, density, theme tokens — all need rendered comparison and owner approval. |
 | 3 | Android mobile modernization | Correctness shipped (#151); flow review pending | Bottom bar and More sheet now report selection correctly and expose the global actions. Remaining: task-frequency, one-handed reach, high-frequency POS/scanner flow, and real-device text-scale review. |
 | 4 | Accessibility/localization/docs | In progress (slice 1 of 7 shipped) | #153 added the audit scan and sliced plan; #154 closed the mixed-language defect. 169 hardcoded strings remain: suppliers 53, inventory 34, pos 24, patients 19, compounding 18, users 10, reports 4, data 3, alerts 2, settings 1, main 1. Screen-reader, contrast, focus, and text-scale auditing plus docs-site responsive verification remain separate concerns. |
@@ -87,7 +89,7 @@ add a `NavigationRail` tier without confirmed tablet usage.
 
 ## External and owner-only actions
 
-- Approve the final deterministic PharmaLoka icon proof and the later Windows/Android visual directions.
+- Approve the later Windows/Android visual directions.
 - Complete Google Play identity/payment/contact verification and agreements.
 - Decide package-ID/signing-key custody before irreversible publication setup.
 - Select real testers and submit Play declarations/production access.
