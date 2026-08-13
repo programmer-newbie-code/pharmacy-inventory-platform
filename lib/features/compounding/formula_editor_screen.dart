@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/providers.dart';
 import '../../data/compounding_repository.dart';
 import '../../data/database.dart';
+import '../../l10n/app_localizations.dart';
 
 class FormulaEditorScreen extends ConsumerStatefulWidget {
   const FormulaEditorScreen({super.key});
@@ -74,16 +75,17 @@ class _FormulaEditorScreenState extends ConsumerState<FormulaEditorScreen> {
   }
 
   Future<void> _saveFormula() async {
+    final l10n = AppLocalizations.of(context)!;
     if (_nameController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Formula name is required.')),
+        SnackBar(content: Text(l10n.formulaNameRequired)),
       );
       return;
     }
 
     if (_ingredients.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Add at least one ingredient.')),
+        SnackBar(content: Text(l10n.addAtLeastOneIngredient)),
       );
       return;
     }
@@ -117,14 +119,15 @@ class _FormulaEditorScreenState extends ConsumerState<FormulaEditorScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('New Compounding Formula'),
+        title: Text(l10n.newFormulaTitle),
         actions: [
           TextButton(
             key: const Key('saveFormulaBtn'),
             onPressed: _saveFormula,
-            child: const Text('Save'),
+            child: Text(l10n.saveButton),
           ),
         ],
       ),
@@ -137,7 +140,7 @@ class _FormulaEditorScreenState extends ConsumerState<FormulaEditorScreen> {
               key: const Key('formulaNameInput'),
               controller: _nameController,
               decoration:
-                  const InputDecoration(labelText: 'Formula Name *'),
+                  InputDecoration(labelText: l10n.formulaNameLabel),
             ),
             const SizedBox(height: 12),
             Row(
@@ -146,12 +149,12 @@ class _FormulaEditorScreenState extends ConsumerState<FormulaEditorScreen> {
                   child: DropdownButtonFormField<String>(
                     isExpanded: true,
                     initialValue: _dosageForm,
-                    decoration: const InputDecoration(labelText: 'Dosage Form'),
-                    items: const [
-                      DropdownMenuItem(value: 'puyer', child: Text('Puyer (Powder)')),
-                      DropdownMenuItem(value: 'kapsul', child: Text('Kapsul (Capsule)')),
-                      DropdownMenuItem(value: 'salep', child: Text('Salep (Ointment)')),
-                      DropdownMenuItem(value: 'sirup', child: Text('Sirup (Syrup)')),
+                    decoration: InputDecoration(labelText: l10n.dosageFormLabel),
+                    items: [
+                      DropdownMenuItem(value: 'puyer', child: Text(l10n.formPuyer)),
+                      DropdownMenuItem(value: 'kapsul', child: Text(l10n.formCapsule)),
+                      DropdownMenuItem(value: 'salep', child: Text(l10n.formOintment)),
+                      DropdownMenuItem(value: 'sirup', child: Text(l10n.formSyrup)),
                     ],
                     onChanged: (val) {
                       if (val != null) setState(() => _dosageForm = val);
@@ -163,7 +166,7 @@ class _FormulaEditorScreenState extends ConsumerState<FormulaEditorScreen> {
                   child: TextField(
                     controller: _yieldQtyController,
                     decoration:
-                        const InputDecoration(labelText: 'Yield Qty'),
+                        InputDecoration(labelText: l10n.yieldQtyLabel),
                     keyboardType: TextInputType.number,
                   ),
                 ),
@@ -172,22 +175,22 @@ class _FormulaEditorScreenState extends ConsumerState<FormulaEditorScreen> {
                   child: TextField(
                     controller: _yieldUnitController,
                     decoration:
-                        const InputDecoration(labelText: 'Yield Unit'),
+                        InputDecoration(labelText: l10n.yieldUnitLabel),
                   ),
                 ),
               ],
             ),
             const SizedBox(height: 16),
-            Text('Ingredients', style: Theme.of(context).textTheme.titleMedium),
+            Text(l10n.ingredientsHeader, style: Theme.of(context).textTheme.titleMedium),
             const SizedBox(height: 8),
             // Product selector dropdown
             if (_isLoadingProducts)
               const CircularProgressIndicator()
             else
               DropdownButtonFormField<Product>(
-                decoration: const InputDecoration(
-                  labelText: 'Add Component Drug',
-                  border: OutlineInputBorder(),
+                decoration: InputDecoration(
+                  labelText: l10n.addComponentDrugButton,
+                  border: const OutlineInputBorder(),
                   isDense: true,
                 ),
                 items: _availableProducts.map((p) {

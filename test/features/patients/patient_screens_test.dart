@@ -5,6 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:pharmacy_inventory_platform/core/providers.dart';
 import 'package:pharmacy_inventory_platform/data/database.dart';
 import 'package:pharmacy_inventory_platform/features/patients/patient_list_screen.dart';
+import 'package:pharmacy_inventory_platform/l10n/app_localizations.dart';
 
 void main() {
   testWidgets('renders PatientListScreen, adds patient, and views details',
@@ -21,6 +22,8 @@ void main() {
       UncontrolledProviderScope(
         container: container,
         child: const MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
           home: PatientListScreen(),
         ),
       ),
@@ -56,4 +59,57 @@ void main() {
 
     expect(find.text('Penicillin'), findsOneWidget);
   });
+
+  // One test per locale: reusing a single test for both would construct a
+  // second AppDatabase in the same test body, which drift warns about and
+  // which left the first widget tree in place.
+  for (final case_ in <Map<String, String>>[
+    {
+      'locale': 'en',
+      'directory': 'Patient Directory',
+      'addTitle': 'Add New Patient',
+      'absent': 'Direktori Pasien',
+    },
+    {
+      'locale': 'id',
+      'directory': 'Direktori Pasien',
+      'addTitle': 'Tambah Pasien Baru',
+      'absent': 'Patient Directory',
+    },
+  ]) {
+    final locale = case_['locale']!;
+    final directory = case_['directory']!;
+    final addTitle = case_['addTitle']!;
+    final absent = case_['absent']!;
+
+    testWidgets('patient screens render from ARB in $locale', (tester) async {
+      final db = AppDatabase(NativeDatabase.memory());
+      addTearDown(db.close);
+      final container = ProviderContainer(
+        overrides: [databaseProvider.overrideWithValue(db)],
+      );
+      addTearDown(container.dispose);
+
+      await tester.pumpWidget(
+        UncontrolledProviderScope(
+          container: container,
+          child: MaterialApp(
+            locale: Locale(locale),
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            home: const PatientListScreen(),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text(directory), findsOneWidget);
+      // A regression to hard-coded text would render the other locale here.
+      expect(find.text(absent), findsNothing);
+
+      await tester.tap(find.byKey(const Key('addPatientBtn')));
+      await tester.pumpAndSettle();
+      expect(find.text(addTitle), findsOneWidget);
+    });
+  }
 }
