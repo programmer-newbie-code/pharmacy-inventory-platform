@@ -174,7 +174,7 @@ class _CashMovementDialogState extends ConsumerState<CashMovementDialog> {
                 keyboardType: TextInputType.number,
                 decoration: InputDecoration(
                   labelText: l10n.amountLabel,
-                  prefixText: 'Rp ',
+                  prefixText: l10n.currencyPrefix,
                   border: const OutlineInputBorder(),
                 ),
                 validator: (val) {

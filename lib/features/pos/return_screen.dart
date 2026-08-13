@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/providers.dart';
 import '../../data/database.dart';
 import '../../data/return_repository.dart';
+import '../../l10n/app_localizations.dart';
 
 class ReturnScreen extends ConsumerStatefulWidget {
   const ReturnScreen({super.key});
@@ -31,6 +32,7 @@ class _ReturnScreenState extends ConsumerState<ReturnScreen> {
   }
 
   Future<void> _showRecentTransactionsPicker() async {
+    final l10n = AppLocalizations.of(context)!;
     final saleRepo = ref.read(saleRepositoryProvider);
     final txns = await saleRepo.listTransactions();
 
@@ -44,14 +46,14 @@ class _ReturnScreenState extends ConsumerState<ReturnScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'Select Recent Sale Transaction',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            Text(
+              l10n.browseRecentSalesButton,
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 12),
             Expanded(
               child: txns.isEmpty
-                  ? const Center(child: Text('No transactions found.'))
+                  ? Center(child: Text(l10n.noTransactionsFound))
                   : ListView.builder(
                       itemCount: txns.length,
                       itemBuilder: (c, i) {
@@ -60,7 +62,7 @@ class _ReturnScreenState extends ConsumerState<ReturnScreen> {
                           key: Key('recentTxnTile_${t.id}'),
                           title: Text(t.txnNo, style: const TextStyle(fontWeight: FontWeight.bold)),
                           subtitle: Text(
-                              '${t.paymentMethod} • Total: Rp ${t.totalAmount.toStringAsFixed(0)} • ${t.createdAt.toIso8601String().split('T').first}'),
+                              '${t.paymentMethod} • Total: ${l10n.currencyPrefix}${t.totalAmount.toStringAsFixed(0)} • ${t.createdAt.toIso8601String().split('T').first}'),
                           trailing: const Icon(Icons.chevron_right),
                           onTap: () {
                             Navigator.pop(ctx);
@@ -78,6 +80,7 @@ class _ReturnScreenState extends ConsumerState<ReturnScreen> {
   }
 
   Future<void> _searchTransaction() async {
+    final l10n = AppLocalizations.of(context)!;
     final query = _searchController.text.trim();
     if (query.isEmpty) return;
 
@@ -98,7 +101,7 @@ class _ReturnScreenState extends ConsumerState<ReturnScreen> {
         });
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Transaction not found.')),
+            SnackBar(content: Text(l10n.transactionNotFound)),
           );
         }
         return;
@@ -144,6 +147,7 @@ class _ReturnScreenState extends ConsumerState<ReturnScreen> {
 
   Future<void> _processReturn() async {
     if (_foundTxn == null) return;
+    final l10n = AppLocalizations.of(context)!;
 
     final selectedInputs = <ReturnItemInput>[];
     for (final item in _txnItems) {
@@ -161,7 +165,7 @@ class _ReturnScreenState extends ConsumerState<ReturnScreen> {
 
     if (selectedInputs.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please select at least 1 item to return.')),
+        SnackBar(content: Text(l10n.selectAtLeastOneItemReturn)),
       );
       return;
     }
@@ -189,15 +193,15 @@ class _ReturnScreenState extends ConsumerState<ReturnScreen> {
         showDialog(
           context: context,
           builder: (ctx) => AlertDialog(
-            title: const Text('Return Processed'),
+            title: Text(l10n.returnProcessedTitle),
             content: Text(
               'Return #${ret.returnNo} processed successfully.\n'
-              'Total Refund: Rp ${ret.refundAmount.toStringAsFixed(0)} via ${ret.refundMethod}.',
+              'Total Refund: ${l10n.currencyPrefix}${ret.refundAmount.toStringAsFixed(0)} via ${ret.refundMethod}.',
             ),
             actions: [
               ElevatedButton(
                 onPressed: () => Navigator.of(ctx).pop(),
-                child: const Text('OK'),
+                child: Text(l10n.okButton),
               ),
             ],
           ),
@@ -215,9 +219,10 @@ class _ReturnScreenState extends ConsumerState<ReturnScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Returns & Refunds'),
+        title: Text(l10n.returnsRefundsTitle),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -229,9 +234,9 @@ class _ReturnScreenState extends ConsumerState<ReturnScreen> {
                   child: TextField(
                     key: const Key('searchTxnInput'),
                     controller: _searchController,
-                    decoration: const InputDecoration(
-                      labelText: 'Enter Transaction Number (e.g. TXN-...)',
-                      prefixIcon: Icon(Icons.search),
+                    decoration: InputDecoration(
+                      labelText: l10n.enterTransactionNumberHint,
+                      prefixIcon: const Icon(Icons.search),
                     ),
                   ),
                 ),
@@ -241,14 +246,14 @@ class _ReturnScreenState extends ConsumerState<ReturnScreen> {
                   icon: _isSearching
                       ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
                       : const Icon(Icons.search),
-                  label: const Text('Search'),
+                  label: Text(l10n.searchButton),
                   onPressed: _isSearching ? null : _searchTransaction,
                 ),
                 const SizedBox(width: 8),
                 IconButton.filledTonal(
                   key: const Key('browseRecentTxnsBtn'),
                   icon: const Icon(Icons.history),
-                  tooltip: 'Browse Recent Sales',
+                  tooltip: l10n.browseRecentSalesButton,
                   onPressed: _showRecentTransactionsPicker,
                 ),
               ],
@@ -265,7 +270,7 @@ class _ReturnScreenState extends ConsumerState<ReturnScreen> {
                         'Txn: ${_foundTxn!.txnNo}',
                         style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                       ),
-                      Text('Payment: ${_foundTxn!.paymentMethod} • Total: Rp ${_foundTxn!.totalAmount.toStringAsFixed(0)}'),
+                      Text('Payment: ${_foundTxn!.paymentMethod} • Total: ${l10n.currencyPrefix}${_foundTxn!.totalAmount.toStringAsFixed(0)}'),
                     ],
                   ),
                 ),
@@ -283,7 +288,7 @@ class _ReturnScreenState extends ConsumerState<ReturnScreen> {
                     return Card(
                       child: ListTile(
                         title: Text(prod?.name ?? 'Product #${item.productId}'),
-                        subtitle: Text('Sold: ${item.qtySold} @ Rp ${item.unitPrice.toStringAsFixed(0)}'),
+                        subtitle: Text('Sold: ${item.qtySold} @ ${l10n.currencyPrefix}${item.unitPrice.toStringAsFixed(0)}'),
                         trailing: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
@@ -293,7 +298,7 @@ class _ReturnScreenState extends ConsumerState<ReturnScreen> {
                                 setState(() => _restockMap[item.id] = val ?? true);
                               },
                             ),
-                            const Text('Restock'),
+                            Text(l10n.restockLabel),
                             const SizedBox(width: 12),
                             IconButton(
                               icon: const Icon(Icons.remove_circle_outline),
@@ -325,20 +330,20 @@ class _ReturnScreenState extends ConsumerState<ReturnScreen> {
                       children: [
                         DropdownButton<String>(
                           value: _reason,
-                          items: const [
-                            DropdownMenuItem(value: 'wrong_product', child: Text('Wrong Product')),
-                            DropdownMenuItem(value: 'allergic', child: Text('Allergic Reaction')),
-                            DropdownMenuItem(value: 'defective', child: Text('Defective / Damaged')),
-                            DropdownMenuItem(value: 'other', child: Text('Other')),
+                          items: [
+                            DropdownMenuItem(value: 'wrong_product', child: Text(l10n.reasonWrongProduct)),
+                            DropdownMenuItem(value: 'allergic', child: Text(l10n.reasonAllergicReaction)),
+                            DropdownMenuItem(value: 'defective', child: Text(l10n.reasonDefectiveDamaged)),
+                            DropdownMenuItem(value: 'other', child: Text(l10n.reasonOther)),
                           ],
                           onChanged: (val) => setState(() => _reason = val ?? 'wrong_product'),
                         ),
                         DropdownButton<String>(
                           value: _refundMethod,
-                          items: const [
-                            DropdownMenuItem(value: 'Cash', child: Text('Cash Refund')),
-                            DropdownMenuItem(value: 'Store Credit', child: Text('Store Credit')),
-                            DropdownMenuItem(value: 'Bank Transfer', child: Text('Bank Transfer')),
+                          items: [
+                            DropdownMenuItem(value: 'Cash', child: Text(l10n.refundMethodCash)),
+                            DropdownMenuItem(value: 'Store Credit', child: Text(l10n.refundMethodStoreCredit)),
+                            DropdownMenuItem(value: 'Bank Transfer', child: Text(l10n.refundMethodBankTransfer)),
                           ],
                           onChanged: (val) => setState(() => _refundMethod = val ?? 'Cash'),
                         ),
@@ -348,9 +353,9 @@ class _ReturnScreenState extends ConsumerState<ReturnScreen> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text('TOTAL REFUND:', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                        Text(l10n.totalRefundLabel, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                         Text(
-                          'Rp ${_totalRefundAmount.toStringAsFixed(0)}',
+                          '${l10n.currencyPrefix}${_totalRefundAmount.toStringAsFixed(0)}',
                           style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: Colors.red),
                         ),
                       ],
@@ -364,7 +369,7 @@ class _ReturnScreenState extends ConsumerState<ReturnScreen> {
                         icon: _isProcessing
                             ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
                             : const Icon(Icons.assignment_return),
-                        label: const Text('Process Return & Issue Refund'),
+                        label: Text(l10n.processReturnButton),
                         onPressed: _isProcessing || _totalRefundAmount == 0 ? null : _processReturn,
                       ),
                     ),
@@ -372,7 +377,7 @@ class _ReturnScreenState extends ConsumerState<ReturnScreen> {
                 ),
               ),
             ] else
-              const Expanded(child: Center(child: Text('Search a transaction number to process a return.'))),
+              Expanded(child: Center(child: Text(l10n.searchTxnPrompt))),
           ],
         ),
       ),

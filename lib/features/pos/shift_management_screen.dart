@@ -67,7 +67,7 @@ class _ShiftManagementScreenState extends ConsumerState<ShiftManagementScreen> {
           keyboardType: TextInputType.number,
           decoration: InputDecoration(
             labelText: l10n.openingDrawerBalance,
-            prefixText: 'Rp ',
+            prefixText: l10n.currencyPrefix,
           ),
         ),
         actions: [
@@ -133,7 +133,7 @@ class _ShiftManagementScreenState extends ConsumerState<ShiftManagementScreen> {
               keyboardType: TextInputType.number,
               decoration: InputDecoration(
                 labelText: l10n.countedDrawerCash,
-                prefixText: 'Rp ',
+                prefixText: l10n.currencyPrefix,
               ),
             ),
             const SizedBox(height: 8),
