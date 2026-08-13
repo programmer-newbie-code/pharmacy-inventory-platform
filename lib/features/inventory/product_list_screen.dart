@@ -236,42 +236,21 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen> {
                                     color: AppTheme.primaryColor)
                                 : null,
                           ),
-                          title: Row(
-                            children: [
-                              Expanded(
-                                child: Text(
-                                  prod.name,
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 15,
-                                  ),
-                                ),
-                              ),
-                              if (prod.isControlled)
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 8,
-                                    vertical: 2,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: AppTheme.golonganKeras.withAlpha(25),
-                                    borderRadius: BorderRadius.circular(6),
-                                    border: Border.all(
-                                      color: AppTheme.golonganKeras.withAlpha(
-                                        80,
-                                      ),
-                                    ),
-                                  ),
-                                  child: Text(
-                                    l10n.obatKeras,
-                                    style: const TextStyle(
-                                      color: AppTheme.golonganKeras,
-                                      fontSize: 11,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                ),
-                            ],
+                          // The name gets the tile's full width and can wrap to
+                          // two lines instead of truncating. The 'Obat Keras'
+                          // badge and edit icon previously left only ~179dp for
+                          // a name that can need ~175dp or more, so it broke
+                          // with any longer name or text scaling. The badge
+                          // moves into the subtitle row instead of sharing the
+                          // title's width.
+                          title: Text(
+                            prod.name,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 15,
+                            ),
                           ),
                           subtitle: Padding(
                             padding: const EdgeInsets.only(top: 6),
@@ -279,6 +258,31 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen> {
                               spacing: 8,
                               runSpacing: 4,
                               children: [
+                                if (prod.isControlled)
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 8,
+                                      vertical: 2,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color:
+                                          AppTheme.golonganKeras.withAlpha(25),
+                                      borderRadius: BorderRadius.circular(6),
+                                      border: Border.all(
+                                        color: AppTheme.golonganKeras.withAlpha(
+                                          80,
+                                        ),
+                                      ),
+                                    ),
+                                    child: Text(
+                                      l10n.obatKeras,
+                                      style: const TextStyle(
+                                        color: AppTheme.golonganKeras,
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ),
                                 Text(
                                   prod.barcode,
                                   style: TextStyle(color: Colors.grey.shade700),
