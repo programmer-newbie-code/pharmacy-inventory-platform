@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/providers.dart';
 import '../../data/database.dart';
+import '../../l10n/app_localizations.dart';
 
 class SupplierDetailScreen extends ConsumerStatefulWidget {
   const SupplierDetailScreen({super.key, required this.supplierId});
@@ -77,9 +78,10 @@ class _SupplierDetailScreenState extends ConsumerState<SupplierDetailScreen>
   }
 
   Future<void> _saveChanges() async {
+    final l10n = AppLocalizations.of(context)!;
     if (_nameController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Supplier name is required.')),
+        SnackBar(content: Text(l10n.supplierNameRequired)),
       );
       return;
     }
@@ -110,7 +112,7 @@ class _SupplierDetailScreenState extends ConsumerState<SupplierDetailScreen>
       _isEditing = false;
     });
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Supplier updated.')),
+      SnackBar(content: Text(l10n.supplierUpdated)),
     );
   }
 
@@ -126,9 +128,10 @@ class _SupplierDetailScreenState extends ConsumerState<SupplierDetailScreen>
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     if (_isLoading || _supplier == null) {
       return Scaffold(
-        appBar: AppBar(title: const Text('Supplier Detail')),
+        appBar: AppBar(title: Text(l10n.supplierDetailTitle)),
         body: const Center(child: CircularProgressIndicator()),
       );
     }
@@ -143,13 +146,13 @@ class _SupplierDetailScreenState extends ConsumerState<SupplierDetailScreen>
             IconButton(
               key: const Key('editSupplierBtn'),
               icon: const Icon(Icons.edit),
-              tooltip: 'Edit',
+              tooltip: l10n.editButton,
               onPressed: () => setState(() => _isEditing = true),
             ),
             IconButton(
               key: const Key('toggleActiveBtn'),
               icon: Icon(supplier.isActive ? Icons.block : Icons.check_circle),
-              tooltip: supplier.isActive ? 'Deactivate' : 'Activate',
+              tooltip: supplier.isActive ? l10n.statusInactive : l10n.editButton,
               onPressed: _toggleActive,
             ),
           ] else ...[
@@ -158,20 +161,20 @@ class _SupplierDetailScreenState extends ConsumerState<SupplierDetailScreen>
                 _populateFields(supplier);
                 setState(() => _isEditing = false);
               },
-              child: const Text('Cancel'),
+              child: Text(l10n.cancelButton),
             ),
             TextButton(
               key: const Key('saveSupplierBtn'),
               onPressed: _saveChanges,
-              child: const Text('Save'),
+              child: Text(l10n.saveButton),
             ),
           ],
         ],
         bottom: TabBar(
           controller: _tabController,
-          tabs: const [
-            Tab(icon: Icon(Icons.info), text: 'Details'),
-            Tab(icon: Icon(Icons.receipt_long), text: 'Purchase Orders'),
+          tabs: [
+            Tab(icon: const Icon(Icons.info), text: l10n.detailsTab),
+            Tab(icon: const Icon(Icons.receipt_long), text: l10n.purchaseOrdersTab),
           ],
         ),
       ),
@@ -186,6 +189,7 @@ class _SupplierDetailScreenState extends ConsumerState<SupplierDetailScreen>
   }
 
   Widget _buildDetailsTab(Supplier supplier) {
+    final l10n = AppLocalizations.of(context)!;
     if (_isEditing) {
       return SingleChildScrollView(
         padding: const EdgeInsets.all(16),
@@ -194,44 +198,44 @@ class _SupplierDetailScreenState extends ConsumerState<SupplierDetailScreen>
           children: [
             TextField(
               controller: _nameController,
-              decoration: const InputDecoration(labelText: 'Supplier Name *'),
+              decoration: InputDecoration(labelText: l10n.supplierNameLabel),
             ),
             const SizedBox(height: 12),
             TextField(
               controller: _contactController,
-              decoration: const InputDecoration(labelText: 'Contact Person'),
+              decoration: InputDecoration(labelText: l10n.contactPersonLabel),
             ),
             const SizedBox(height: 12),
             TextField(
               controller: _phoneController,
-              decoration: const InputDecoration(labelText: 'Phone'),
+              decoration: InputDecoration(labelText: l10n.phoneLabel),
               keyboardType: TextInputType.phone,
             ),
             const SizedBox(height: 12),
             TextField(
               controller: _emailController,
-              decoration: const InputDecoration(labelText: 'Email'),
+              decoration: InputDecoration(labelText: l10n.emailLabel),
               keyboardType: TextInputType.emailAddress,
             ),
             const SizedBox(height: 12),
             TextField(
               controller: _addressController,
-              decoration: const InputDecoration(labelText: 'Address'),
+              decoration: InputDecoration(labelText: l10n.addressLabel),
               maxLines: 2,
             ),
             const SizedBox(height: 12),
             TextField(
               controller: _paymentTermsController,
-              decoration: const InputDecoration(
-                labelText: 'Payment Terms',
-                hintText: 'e.g. Net 30, COD',
+              decoration: InputDecoration(
+                labelText: l10n.paymentTermsLabel,
+                hintText: l10n.paymentTermsHint,
               ),
             ),
             const SizedBox(height: 12),
             TextField(
               controller: _leadTimeDaysController,
-              decoration: const InputDecoration(
-                labelText: 'Lead Time (days)',
+              decoration: InputDecoration(
+                labelText: l10n.leadTimeDaysLabel,
               ),
               keyboardType: TextInputType.number,
             ),
@@ -273,7 +277,7 @@ class _SupplierDetailScreenState extends ConsumerState<SupplierDetailScreen>
                             ),
                             Chip(
                               label: Text(
-                                supplier.isActive ? 'Active' : 'Inactive',
+                                supplier.isActive ? 'Active' : l10n.statusInactive,
                               ),
                               backgroundColor: supplier.isActive
                                   ? Colors.green.shade100
@@ -289,14 +293,14 @@ class _SupplierDetailScreenState extends ConsumerState<SupplierDetailScreen>
             ),
           ),
           const SizedBox(height: 16),
-          _detailRow(Icons.person, 'Contact', supplier.contactPerson),
-          _detailRow(Icons.phone, 'Phone', supplier.phone),
-          _detailRow(Icons.email, 'Email', supplier.email),
-          _detailRow(Icons.location_on, 'Address', supplier.address),
-          _detailRow(Icons.payment, 'Payment Terms', supplier.paymentTerms),
+          _detailRow(Icons.person, l10n.contactLabel, supplier.contactPerson),
+          _detailRow(Icons.phone, l10n.phoneLabel, supplier.phone),
+          _detailRow(Icons.email, l10n.emailLabel, supplier.email),
+          _detailRow(Icons.location_on, l10n.addressLabel, supplier.address),
+          _detailRow(Icons.payment, l10n.paymentTermsLabel, supplier.paymentTerms),
           _detailRow(
             Icons.schedule,
-            'Lead Time',
+            l10n.leadTimeDaysLabel,
             '${supplier.leadTimeDays} days',
           ),
         ],
@@ -319,9 +323,10 @@ class _SupplierDetailScreenState extends ConsumerState<SupplierDetailScreen>
   }
 
   Widget _buildOrdersTab() {
+    final l10n = AppLocalizations.of(context)!;
     if (_orders == null || _orders!.isEmpty) {
-      return const Center(
-        child: Text('No purchase orders for this supplier.'),
+      return Center(
+        child: Text(l10n.noPoForSupplier),
       );
     }
 

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/providers.dart';
 import '../../data/database.dart';
 import '../../data/purchase_order_repository.dart';
+import '../../l10n/app_localizations.dart';
 import 'supplier_list_screen.dart';
 
 final poListFutureProvider = FutureProvider.autoDispose<List<PurchaseOrder>>((ref) {
@@ -14,13 +15,14 @@ class PurchaseOrderScreen extends ConsumerWidget {
   const PurchaseOrderScreen({super.key});
 
   Future<void> _showCreatePODialog(BuildContext context, WidgetRef ref) async {
+    final l10n = AppLocalizations.of(context)!;
     final suppliers = await ref.read(supplierRepositoryProvider).listSuppliers();
     final products = await ref.read(productRepositoryProvider).listProducts();
 
     if (suppliers.isEmpty) {
       if (!context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please add at least 1 supplier first.')),
+        SnackBar(content: Text(l10n.addSupplierFirst)),
       );
       Navigator.of(context).push(
         MaterialPageRoute(builder: (_) => const SupplierListScreen()),
@@ -31,7 +33,7 @@ class PurchaseOrderScreen extends ConsumerWidget {
     if (products.isEmpty) {
       if (!context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please register products in inventory catalog first.')),
+        SnackBar(content: Text(l10n.registerProductsFirst)),
       );
       return;
     }
@@ -48,14 +50,14 @@ class PurchaseOrderScreen extends ConsumerWidget {
         builder: (ctx, setState) {
           final prod = products.firstWhere((p) => p.id == selectedProductId);
           return AlertDialog(
-            title: const Text('Create Purchase Order'),
+            title: Text(l10n.createPurchaseOrder),
             content: SingleChildScrollView(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   DropdownButtonFormField<int>(
                     initialValue: selectedSupplierId,
-                    decoration: const InputDecoration(labelText: 'Supplier'),
+                    decoration: InputDecoration(labelText: l10n.supplierLabel),
                     items: suppliers
                         .map((s) => DropdownMenuItem(value: s.id, child: Text(s.name)))
                         .toList(),
@@ -64,7 +66,7 @@ class PurchaseOrderScreen extends ConsumerWidget {
                   const SizedBox(height: 8),
                   DropdownButtonFormField<int>(
                     initialValue: selectedProductId,
-                    decoration: const InputDecoration(labelText: 'Product'),
+                    decoration: InputDecoration(labelText: l10n.productLabel),
                     items: products
                         .map((p) => DropdownMenuItem(value: p.id, child: Text(p.name)))
                         .toList(),
@@ -80,13 +82,13 @@ class PurchaseOrderScreen extends ConsumerWidget {
                     key: const Key('poQtyInput'),
                     controller: qtyController,
                     keyboardType: TextInputType.number,
-                    decoration: InputDecoration(labelText: 'Quantity (${prod.baseUnit}s)'),
+                    decoration: InputDecoration(labelText: '${l10n.receivingQuantityLabel} (${prod.baseUnit}s)'),
                   ),
                   TextField(
                     key: const Key('poCostInput'),
                     controller: costController,
                     keyboardType: TextInputType.number,
-                    decoration: const InputDecoration(labelText: 'Unit Cost Price (Rp)'),
+                    decoration: InputDecoration(labelText: l10n.unitCostPriceLabel),
                   ),
                 ],
               ),
@@ -94,12 +96,12 @@ class PurchaseOrderScreen extends ConsumerWidget {
             actions: [
               TextButton(
                 onPressed: () => Navigator.of(ctx).pop(false),
-                child: const Text('Cancel'),
+                child: Text(l10n.cancelButton),
               ),
               ElevatedButton(
                 key: const Key('confirmCreatePoBtn'),
                 onPressed: () => Navigator.of(ctx).pop(true),
-                child: const Text('Send Order'),
+                child: Text(l10n.sendOrderButton),
               ),
             ],
           );
@@ -126,6 +128,7 @@ class PurchaseOrderScreen extends ConsumerWidget {
   }
 
   Future<void> _handleReceivePO(BuildContext context, WidgetRef ref, PurchaseOrder po) async {
+    final l10n = AppLocalizations.of(context)!;
     final prefixController = TextEditingController(text: 'BATCH-${DateTime.now().year}');
     DateTime expiryDate = DateTime.now().add(const Duration(days: 365));
 
@@ -134,19 +137,19 @@ class PurchaseOrderScreen extends ConsumerWidget {
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setState) {
           return AlertDialog(
-            title: Text('Receive Delivery for ${po.poNumber}'),
+            title: Text(l10n.receivingTitle(po.poNumber)),
             content: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
                 TextField(
                   key: const Key('batchPrefixInput'),
                   controller: prefixController,
-                  decoration: const InputDecoration(labelText: 'Stock Batch No. Prefix'),
+                  decoration: InputDecoration(labelText: l10n.batchPrefixLabel),
                 ),
                 const SizedBox(height: 12),
                 Row(
                   children: [
-                    Text('Expiry Date: ${expiryDate.toIso8601String().split('T').first}'),
+                    Text('${l10n.receivingExpiryLabel}: ${expiryDate.toIso8601String().split('T').first}'),
                     IconButton(
                       icon: const Icon(Icons.calendar_today),
                       onPressed: () async {
@@ -168,13 +171,13 @@ class PurchaseOrderScreen extends ConsumerWidget {
             actions: [
               TextButton(
                 onPressed: () => Navigator.of(ctx).pop(false),
-                child: const Text('Cancel'),
+                child: Text(l10n.cancelButton),
               ),
               ElevatedButton(
                 key: const Key('confirmReceivePoBtn'),
                 style: ElevatedButton.styleFrom(backgroundColor: Colors.green, foregroundColor: Colors.white),
                 onPressed: () => Navigator.of(ctx).pop(true),
-                child: const Text('Receive & Add to Stock'),
+                child: Text(l10n.receiveAndAddToStock),
               ),
             ],
           );
@@ -194,7 +197,7 @@ class PurchaseOrderScreen extends ConsumerWidget {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Delivery for ${po.poNumber} received and added to active inventory stock!'),
+            content: Text(l10n.receivingSuccess),
             backgroundColor: Colors.green,
           ),
         );
@@ -204,16 +207,17 @@ class PurchaseOrderScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
     final posAsync = ref.watch(poListFutureProvider);
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Purchase Orders & Reordering'),
+        title: Text(l10n.purchaseOrdersTitle),
         actions: [
           IconButton(
             key: const Key('navSuppliersDirectoryBtn'),
             icon: const Icon(Icons.contacts),
-            tooltip: 'Suppliers Directory',
+            tooltip: l10n.suppliersDirectoryNav,
             onPressed: () {
               Navigator.of(context).push(
                 MaterialPageRoute(builder: (_) => const SupplierListScreen()),
@@ -229,12 +233,12 @@ class PurchaseOrderScreen extends ConsumerWidget {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Text('No purchase orders created yet.'),
+                  Text(l10n.noPurchaseOrdersYet),
                   const SizedBox(height: 12),
                   ElevatedButton.icon(
                     key: const Key('createPoBtn'),
                     icon: const Icon(Icons.add_shopping_cart),
-                    label: const Text('Create Purchase Order'),
+                    label: Text(l10n.createPurchaseOrder),
                     onPressed: () => _showCreatePODialog(context, ref),
                   ),
                 ],
@@ -250,13 +254,13 @@ class PurchaseOrderScreen extends ConsumerWidget {
 
               Widget trailingWidget;
               if (isReceived) {
-                trailingWidget = const Chip(
-                  label: Text('RECEIVED'),
+                trailingWidget = Chip(
+                  label: Text(l10n.poStatusReceived),
                   backgroundColor: Colors.greenAccent,
                 );
               } else if (isCancelled) {
                 trailingWidget = Chip(
-                  label: const Text('CANCELLED'),
+                  label: Text(l10n.poStatusCancelled),
                   backgroundColor: Colors.red.shade100,
                 );
               } else {
@@ -266,23 +270,23 @@ class PurchaseOrderScreen extends ConsumerWidget {
                     OutlinedButton.icon(
                       key: Key('cancelPoBtn_${po.id}'),
                       icon: const Icon(Icons.cancel_outlined, color: Colors.red, size: 18),
-                      label: const Text('Cancel', style: TextStyle(color: Colors.red)),
+                      label: Text(l10n.cancelButton, style: const TextStyle(color: Colors.red)),
                       onPressed: () async {
                         final confirm = await showDialog<bool>(
                           context: context,
                           builder: (c) => AlertDialog(
                             title: Text('Cancel PO ${po.poNumber}'),
-                            content: const Text('Are you sure you want to cancel this Purchase Order?'),
+                            content: Text(l10n.cancelPoConfirmPrompt),
                             actions: [
                               TextButton(
                                 onPressed: () => Navigator.pop(c, false),
-                                child: const Text('No'),
+                                child: Text(l10n.noButton),
                               ),
                               ElevatedButton(
                                 key: Key('confirmCancelPoBtn_${po.id}'),
                                 style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
                                 onPressed: () => Navigator.pop(c, true),
-                                child: const Text('Cancel PO'),
+                                child: Text(l10n.cancelPoButton),
                               ),
                             ],
                           ),
@@ -298,7 +302,7 @@ class PurchaseOrderScreen extends ConsumerWidget {
                     ElevatedButton.icon(
                       key: Key('receivePoBtn_${po.id}'),
                       icon: const Icon(Icons.inventory_2),
-                      label: const Text('Receive'),
+                      label: Text(l10n.receiveButton),
                       onPressed: () => _handleReceivePO(context, ref, po),
                     ),
                   ],

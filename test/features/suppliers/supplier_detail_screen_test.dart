@@ -6,6 +6,7 @@ import 'package:pharmacy_inventory_platform/core/providers.dart';
 import 'package:pharmacy_inventory_platform/data/database.dart';
 import 'package:pharmacy_inventory_platform/data/supplier_repository.dart';
 import 'package:pharmacy_inventory_platform/features/suppliers/supplier_detail_screen.dart';
+import 'package:pharmacy_inventory_platform/l10n/app_localizations.dart';
 
 void main() {
   testWidgets('renders SupplierDetailScreen, edits details, and toggles active status',
@@ -33,6 +34,8 @@ void main() {
       UncontrolledProviderScope(
         container: container,
         child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
           home: SupplierDetailScreen(supplierId: supplier.id),
         ),
       ),

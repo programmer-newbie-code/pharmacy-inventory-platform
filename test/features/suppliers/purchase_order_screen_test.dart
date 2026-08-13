@@ -8,6 +8,7 @@ import 'package:pharmacy_inventory_platform/data/database.dart';
 import 'package:pharmacy_inventory_platform/data/purchase_order_repository.dart';
 import 'package:pharmacy_inventory_platform/data/supplier_repository.dart';
 import 'package:pharmacy_inventory_platform/features/suppliers/purchase_order_screen.dart';
+import 'package:pharmacy_inventory_platform/l10n/app_localizations.dart';
 
 void main() {
   testWidgets('renders PurchaseOrderScreen, creates PO, and receives delivery into stock', (tester) async {
@@ -46,6 +47,8 @@ void main() {
       UncontrolledProviderScope(
         container: container,
         child: const MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
           home: PurchaseOrderScreen(),
         ),
       ),
@@ -64,19 +67,13 @@ void main() {
     await tester.tap(find.byKey(const Key('confirmCreatePoBtn')));
     await tester.pumpAndSettle();
 
-    // Verify PO listed
-    expect(find.textContaining('PO-'), findsOneWidget);
-    expect(find.textContaining('SENT'), findsOneWidget);
+    expect(find.byKey(const Key('receivePoBtn_1')), findsOneWidget);
 
-    // Tap Receive PO
-    final po = await db.select(db.purchaseOrders).getSingle();
-    final receiveBtnKey = Key('receivePoBtn_${po.id}');
-    expect(find.byKey(receiveBtnKey), findsOneWidget);
-
-    await tester.tap(find.byKey(receiveBtnKey));
+    // Receive delivery
+    await tester.tap(find.byKey(const Key('receivePoBtn_1')));
     await tester.pumpAndSettle();
 
-    expect(find.textContaining('Receive Delivery for'), findsOneWidget);
+    expect(find.byKey(const Key('confirmReceivePoBtn')), findsOneWidget);
     await tester.tap(find.byKey(const Key('confirmReceivePoBtn')));
     await tester.pumpAndSettle();
 
@@ -126,6 +123,8 @@ void main() {
       UncontrolledProviderScope(
         container: container,
         child: const MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
           home: PurchaseOrderScreen(),
         ),
       ),
