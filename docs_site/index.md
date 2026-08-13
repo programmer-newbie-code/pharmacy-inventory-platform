@@ -1,6 +1,6 @@
 ---
 layout: default
-title: Documentation & User Manual — Pharmacy Inventory Platform
+title: Documentation & User Manual — PharmaLoka — Pharmacy Inventory Platform
 ---
 
 ### 📱 Multi-Platform Interface Overview
@@ -9,13 +9,13 @@ title: Documentation & User Manual — Pharmacy Inventory Platform
   <figure class="platform-gallery__item">
     <figcaption>💻 Windows Desktop Interface</figcaption>
     <a href="assets/images/desktop_ui.png">
-      <img src="assets/images/desktop_ui.png" alt="Pharmacy Inventory Platform dashboard on Windows desktop">
+      <img src="assets/images/desktop_ui.png" alt="PharmaLoka dashboard on Windows desktop">
     </a>
   </figure>
   <figure class="platform-gallery__item">
     <figcaption>📱 Android Mobile Interface</figcaption>
     <a href="assets/images/android_ui.png">
-      <img src="assets/images/android_ui.png" alt="Pharmacy Inventory Platform dashboard on Android mobile">
+      <img src="assets/images/android_ui.png" alt="PharmaLoka dashboard on Android mobile">
     </a>
   </figure>
 </div>

@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" role="img" aria-label="">
+  <defs>
+    <linearGradient id="background" x1="128" y1="96" x2="896" y2="928" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#081A33"/>
+      <stop offset="1" stop-color="#123C69"/>
+    </linearGradient>
+    <linearGradient id="orbit" x1="208" y1="208" x2="816" y2="816" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#2DD4BF"/>
+      <stop offset="1" stop-color="#38BDF8"/>
+    </linearGradient>
+    <linearGradient id="leaf" x1="470" y1="598" x2="626" y2="416" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#22C55E"/>
+      <stop offset="1" stop-color="#16A34A"/>
+    </linearGradient>
+  </defs>
+  <rect width="1024" height="1024" rx="208" fill="url(#background)"/>
+  <circle cx="512" cy="512" r="360" fill="none" stroke="url(#orbit)" stroke-width="48" stroke-linecap="round" stroke-dasharray="1770 492" transform="rotate(28 512 512)"/>
+  <path fill="#FFFFFF" d="M430 292C430 247 467 210 512 210C557 210 594 247 594 292V406C594 419 605 430 618 430H732C777 430 814 467 814 512C814 557 777 594 732 594H618C605 594 594 605 594 618V732C594 777 557 814 512 814C467 814 430 777 430 732V618C430 605 419 594 406 594H292C247 594 210 557 210 512C210 467 247 430 292 430H406C419 430 430 419 430 406Z"/>
+  <path fill="url(#leaf)" d="M458 590C466 502 520 438 626 416C622 520 560 582 470 598Z"/>
+  <path d="M478 577C517 537 555 494 596 449" fill="none" stroke="#FFFFFF" stroke-width="14" stroke-linecap="round"/>
+</svg>

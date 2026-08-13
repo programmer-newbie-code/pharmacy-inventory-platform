@@ -51,8 +51,7 @@ void main() {
   /// is pending at the end of the *test body*, before tearDowns run, so a
   /// tearDown cannot satisfy it. Tests that log in without signing out through
   /// the UI must call this before finishing.
-  void endSession() =>
-      container.read(authSessionProvider.notifier).logout();
+  void endSession() => container.read(authSessionProvider.notifier).logout();
 
   Future<void> pumpShell(
     WidgetTester tester, {
@@ -124,8 +123,7 @@ void main() {
       expect(find.byKey(const Key('mobileShellNavigation')), findsNothing);
     });
 
-    testWidgets(
-        'tablet portrait deliberately uses the bottom bar, not a rail',
+    testWidgets('tablet portrait deliberately uses the bottom bar, not a rail',
         (tester) async {
       // Documented decision, not an oversight: there is no evidence of tablet
       // use, so no third chrome tier exists. See
@@ -294,7 +292,7 @@ void main() {
       makeContainer();
       await pumpShell(tester, locale: 'id');
 
-      expect(find.text('Platform Inventaris Apotek'), findsWidgets);
+      expect(find.text('PharmaLoka'), findsWidgets);
       expect(find.text('Didukung oleh Programmer Newbie'), findsOneWidget);
     });
 
