@@ -124,7 +124,7 @@ class _PatientFormScreenState extends ConsumerState<PatientFormScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(isEdit ? 'Edit Patient' : 'Add New Patient'),
+        title: Text(isEdit ? l10n.editPatientTitle : l10n.addPatientTitle),
         actions: [
           TextButton(
             key: const Key('savePatientBtn'),

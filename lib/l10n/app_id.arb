@@ -553,5 +553,7 @@
   "createFirstFormulaButton": "Buat Formula Pertama",
   "infoTab": "Info",
   "historyTab": "Riwayat",
-  "prescriptionsTab": "Resep"
+  "prescriptionsTab": "Resep",
+  "editPatientTitle": "Ubah Pasien",
+  "addPatientTitle": "Tambah Pasien Baru"
 }

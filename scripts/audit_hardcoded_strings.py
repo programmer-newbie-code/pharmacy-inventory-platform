@@ -22,17 +22,27 @@ import sys
 from collections import Counter
 
 # Constructors and named parameters that render user-visible text.
+# Named parameters whose value is rendered to the user.
+_TEXT_PARAMS = (
+    r"title|subtitle|label|labelText|hintText|helperText|tooltip"
+    r"|message|content|errorText|semanticLabel|counterText|prefixText"
+    r"|suffixText"
+)
+
+# A literal may not sit immediately after the opening delimiter: a conditional
+# can precede it, as in `Text(isEdit ? 'Edit' : 'Add')`. Allowing an optional
+# expression prefix is what catches those; requiring it to end in `?` or `:`
+# keeps the match anchored to a rendered value rather than any nearby string.
+_MAYBE_CONDITION = r"(?:[^'\"()]*?[?:]\s*)?"
+
 PATTERNS = [
-    re.compile(r"Text\(\s*'([^']{2,})'"),
-    re.compile(r'Text\(\s*"([^"]{2,})"'),
+    re.compile(r"Text\(\s*" + _MAYBE_CONDITION + r"'([^']{2,})'"),
+    re.compile(r'Text\(\s*' + _MAYBE_CONDITION + r'"([^"]{2,})"'),
     re.compile(
-        r"(?:title|subtitle|label|labelText|hintText|helperText|tooltip"
-        r"|message|content|errorText|semanticLabel|counterText|prefixText"
-        r"|suffixText)\s*:\s*'([^']{2,})'"
+        r"(?:" + _TEXT_PARAMS + r")\s*:\s*" + _MAYBE_CONDITION + r"'([^']{2,})'"
     ),
     re.compile(
-        r"(?:title|subtitle|label|labelText|hintText|helperText|tooltip"
-        r"|message|content|errorText|semanticLabel)\s*:\s*\"([^\"]{2,})\""
+        r"(?:" + _TEXT_PARAMS + r")\s*:\s*" + _MAYBE_CONDITION + r'"([^"]{2,})"'
     ),
 ]
 

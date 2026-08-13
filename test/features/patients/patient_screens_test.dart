@@ -59,4 +59,43 @@ void main() {
 
     expect(find.text('Penicillin'), findsOneWidget);
   });
+
+  testWidgets('patient screens render from ARB in both locales',
+      (tester) async {
+    Future<void> pumpIn(Locale locale) async {
+      final db = AppDatabase(NativeDatabase.memory());
+      addTearDown(db.close);
+      final container = ProviderContainer(
+        overrides: [databaseProvider.overrideWithValue(db)],
+      );
+      addTearDown(container.dispose);
+      await tester.pumpWidget(
+        UncontrolledProviderScope(
+          container: container,
+          child: MaterialApp(
+            locale: locale,
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            home: const PatientListScreen(),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+    }
+
+    await pumpIn(const Locale('en'));
+    expect(find.text('Patient Directory'), findsOneWidget);
+    await tester.tap(find.byKey(const Key('addPatientBtn')));
+    await tester.pumpAndSettle();
+    expect(find.text('Add New Patient'), findsOneWidget);
+
+    await pumpIn(const Locale('id'));
+    // A regression to hard-coded English would fail here.
+    expect(find.text('Patient Directory'), findsNothing);
+    expect(find.text('Direktori Pasien'), findsOneWidget);
+    await tester.tap(find.byKey(const Key('addPatientBtn')));
+    await tester.pumpAndSettle();
+    expect(find.text('Add New Patient'), findsNothing);
+    expect(find.text('Tambah Pasien Baru'), findsOneWidget);
+  });
 }

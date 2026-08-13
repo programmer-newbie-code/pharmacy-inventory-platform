@@ -553,5 +553,7 @@
   "createFirstFormulaButton": "Create First Formula",
   "infoTab": "Info",
   "historyTab": "History",
-  "prescriptionsTab": "Prescriptions"
+  "prescriptionsTab": "Prescriptions",
+  "editPatientTitle": "Edit Patient",
+  "addPatientTitle": "Add New Patient"
 }
