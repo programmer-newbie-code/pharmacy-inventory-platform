@@ -50,6 +50,19 @@ TransitionBuilder textScaleBuilder(double textScale) {
 /// separately via [expectNotTruncated].
 void expectNoOverflow(WidgetTester tester, {String? reason}) {
   final error = tester.takeException();
+  // FlutterError's toString() is one line; the full box-constraints
+  // diagnostic that pinpoints the overflowing widget is only in
+  // FlutterErrorDetails, which the default matcher does not surface. Print it
+  // explicitly so a CI failure is diagnosable without another push+wait cycle.
+  if (error is FlutterError) {
+    debugPrint('--- expectNoOverflow FlutterError.toString() ---');
+    debugPrint(error.toString());
+    debugPrint('--- diagnostics ---');
+    for (final line in error.diagnostics) {
+      debugPrint(line.toString());
+    }
+    debugPrint('--- end ---');
+  }
   expect(
     error,
     isNull,
