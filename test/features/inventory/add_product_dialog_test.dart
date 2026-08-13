@@ -4,10 +4,13 @@ import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:pharmacy_inventory_platform/core/adaptive_field_pair.dart';
 import 'package:pharmacy_inventory_platform/core/providers.dart';
 import 'package:pharmacy_inventory_platform/data/database.dart';
 import 'package:pharmacy_inventory_platform/features/inventory/add_product_dialog.dart';
 import 'package:pharmacy_inventory_platform/l10n/app_localizations.dart';
+
+import '../../support/layout_harness.dart';
 
 void main() {
   testWidgets('renders and submits AddProductDialog form', (tester) async {
@@ -204,5 +207,77 @@ void main() {
     expect(find.text('Tambah Produk Baru'), findsOneWidget);
     expect(find.text('Nama Produk *'), findsOneWidget);
     expect(find.text('Golongan Obat'), findsOneWidget);
+  });
+
+  group('narrow screen readability', () {
+    Future<void> pumpDialog(WidgetTester tester, {double textScale = 1.0}) async {
+      final db = AppDatabase(NativeDatabase.memory());
+      addTearDown(db.close);
+      final container = ProviderContainer(
+        overrides: [databaseProvider.overrideWithValue(db)],
+      );
+      addTearDown(container.dispose);
+      await tester.pumpWidget(
+        UncontrolledProviderScope(
+          container: container,
+          child: MaterialApp(
+            locale: const Locale('id'),
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            builder: textScale == 1.0 ? null : textScaleBuilder(textScale),
+            home: const Scaffold(body: AddProductDialog()),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+    }
+
+    testWidgets('unit and price labels are readable on the owner phone',
+        (tester) async {
+      useSurface(tester, kOwnerPhone);
+      await pumpDialog(tester);
+      expectNoOverflow(tester);
+
+      // These four measured ~148dp of space against ~218dp of need before the
+      // fields were stacked. See the spec's evidence table.
+      for (final label in [
+        'Satuan Dasar (mis. tablet, kapsul)',
+        'Satuan Beli (mis. box, dus)',
+      ]) {
+        final finder = find.text(label);
+        expect(finder, findsOneWidget, reason: 'missing label: $label');
+        expectNotTruncated(tester, finder);
+      }
+    });
+
+    testWidgets('paired fields stack on a phone and pair on desktop',
+        (tester) async {
+      useSurface(tester, kOwnerPhone);
+      await pumpDialog(tester);
+      final phonePairs = find.byType(AdaptiveFieldPair);
+      expect(phonePairs, findsWidgets);
+      // Stacked: the two children occupy different vertical bands.
+      final baseUnit = tester.getRect(find.byKey(const Key('baseUnitDropdown')));
+      final purchaseUnit =
+          tester.getRect(find.byKey(const Key('purchaseUnitDropdown')));
+      expect(purchaseUnit.top, greaterThan(baseUnit.bottom - 1),
+          reason: 'fields must stack vertically on a phone');
+    });
+
+    testWidgets('paired fields stay side by side on desktop', (tester) async {
+      useSurface(tester, kDesktop);
+      await pumpDialog(tester);
+      final baseUnit = tester.getRect(find.byKey(const Key('baseUnitDropdown')));
+      final purchaseUnit =
+          tester.getRect(find.byKey(const Key('purchaseUnitDropdown')));
+      expect(purchaseUnit.left, greaterThan(baseUnit.right - 1),
+          reason: 'fields must stay side by side where there is room');
+    });
+
+    testWidgets('survives 2.0 text scale on the owner phone', (tester) async {
+      useSurface(tester, kOwnerPhone);
+      await pumpDialog(tester, textScale: 2.0);
+      expectNoOverflow(tester);
+    });
   });
 }

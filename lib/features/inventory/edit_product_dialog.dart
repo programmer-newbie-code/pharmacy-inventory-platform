@@ -3,6 +3,7 @@ import 'package:drift/drift.dart' hide Column, isNotNull, isNull;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
+import '../../core/adaptive_field_pair.dart';
 import '../../core/app_theme.dart';
 import '../../core/formatters.dart';
 import '../../core/providers.dart';
@@ -251,32 +252,27 @@ class _EditProductDialogState extends ConsumerState<EditProductDialog> {
               const SizedBox(height: 12),
 
               // ── Units row ───────────────────────────────────────────────
-              Row(
-                children: [
-                  Expanded(
-                    child: EditableUnitDropdown(
-                      widgetKey: const Key('editBaseUnitDropdown'),
-                      controller: _baseUnitController,
-                      labelText: l10n.baseUnitLabel,
-                      defaultOptions: defaultBaseUnits,
-                      validator: (v) =>
-                          (v == null || v.trim().isEmpty) ? l10n.fieldRequired : null,
-                      onChanged: (_) => setState(() {}),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: EditableUnitDropdown(
-                      widgetKey: const Key('editPurchaseUnitDropdown'),
-                      controller: _purchaseUnitController,
-                      labelText: l10n.purchaseUnitLabel,
-                      defaultOptions: defaultPurchaseUnits,
-                      validator: (v) =>
-                          (v == null || v.trim().isEmpty) ? l10n.fieldRequired : null,
-                      onChanged: (_) => setState(() {}),
-                    ),
-                  ),
-                ],
+              AdaptiveFieldPair(
+                first: EditableUnitDropdown(
+                  widgetKey: const Key('editBaseUnitDropdown'),
+                  controller: _baseUnitController,
+                  labelText: l10n.baseUnitLabel,
+                  defaultOptions: defaultBaseUnits,
+                  validator: (v) => (v == null || v.trim().isEmpty)
+                      ? l10n.fieldRequired
+                      : null,
+                  onChanged: (_) => setState(() {}),
+                ),
+                second: EditableUnitDropdown(
+                  widgetKey: const Key('editPurchaseUnitDropdown'),
+                  controller: _purchaseUnitController,
+                  labelText: l10n.purchaseUnitLabel,
+                  defaultOptions: defaultPurchaseUnits,
+                  validator: (v) => (v == null || v.trim().isEmpty)
+                      ? l10n.fieldRequired
+                      : null,
+                  onChanged: (_) => setState(() {}),
+                ),
               ),
               const SizedBox(height: 12),
               TextFormField(
@@ -295,37 +291,29 @@ class _EditProductDialogState extends ConsumerState<EditProductDialog> {
               const SizedBox(height: 12),
 
               // ── Price row (Dual Box vs Tablet Calculation) ───────────────
-              Row(
-                children: [
-                  Expanded(
-                    child: TextFormField(
-                      controller: _purchaseUnitPriceController,
-                      decoration: InputDecoration(
-                        labelText: l10n.pricePerPurchaseUnitLabel,
-                        prefixText: l10n.currencyPrefix,
-                        border: const OutlineInputBorder(),
-                      ),
-                      keyboardType: TextInputType.number,
-                      onChanged: _onPurchasePriceChanged,
-                    ),
+              AdaptiveFieldPair(
+                first: TextFormField(
+                  controller: _purchaseUnitPriceController,
+                  decoration: InputDecoration(
+                    labelText: l10n.pricePerPurchaseUnitLabel,
+                    prefixText: l10n.currencyPrefix,
+                    border: const OutlineInputBorder(),
                   ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: TextFormField(
-                      controller: _costPriceController,
-                      decoration: InputDecoration(
-                        labelText: l10n.costPricePerBaseUnitLabel,
-                        prefixText: l10n.currencyPrefix,
-                        border: const OutlineInputBorder(),
-                      ),
-                      keyboardType: TextInputType.number,
-                      onChanged: _onBasePriceChanged,
-                      validator: (v) => v == null || v.trim().isEmpty
-                          ? l10n.fieldRequired
-                          : null,
-                    ),
+                  keyboardType: TextInputType.number,
+                  onChanged: _onPurchasePriceChanged,
+                ),
+                second: TextFormField(
+                  controller: _costPriceController,
+                  decoration: InputDecoration(
+                    labelText: l10n.costPricePerBaseUnitLabel,
+                    prefixText: l10n.currencyPrefix,
+                    border: const OutlineInputBorder(),
                   ),
-                ],
+                  keyboardType: TextInputType.number,
+                  onChanged: _onBasePriceChanged,
+                  validator: (v) =>
+                      v == null || v.trim().isEmpty ? l10n.fieldRequired : null,
+                ),
               ),
               const SizedBox(height: 8),
 
