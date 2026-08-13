@@ -238,16 +238,24 @@ void main() {
       await pumpDialog(tester);
       expectNoOverflow(tester);
 
-      // These four measured ~148dp of space against ~218dp of need before the
-      // fields were stacked. See the spec's evidence table.
+      // Before this increment these labels had ~148dp against ~218dp of need.
+      // Stacking raised the slot to ~310dp, which was still not enough once
+      // EditableUnitDropdown's dropdown-arrow suffixIcon took ~48dp, so the
+      // parenthetical examples moved to helperText.
       for (final label in [
-        'Satuan Dasar (mis. tablet, kapsul)',
-        'Satuan Beli (mis. box, dus)',
+        'Satuan Dasar',
+        'Satuan Beli',
+        'HPP per Satuan Dasar',
+        'Harga Beli per Satuan Beli',
       ]) {
         final finder = find.text(label);
         expect(finder, findsOneWidget, reason: 'missing label: $label');
         expectNotTruncated(tester, finder);
       }
+
+      // The examples must remain visible, only relocated.
+      expect(find.text('mis. tablet, kapsul'), findsOneWidget);
+      expect(find.text('mis. box, dus'), findsOneWidget);
     });
 
     testWidgets('paired fields stack on a phone and pair on desktop',

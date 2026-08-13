@@ -174,12 +174,7 @@
   "importCsvHint": "Paste or edit CSV spreadsheet rows below:",
   "importProducts": "Import Products",
   "importSuccess": "Imported {count} products successfully ({failed} failed).",
-  "@importSuccess": {
-    "placeholders": {
-      "count": {"type": "int"},
-      "failed": {"type": "int"}
-    }
-  },
+  "@importSuccess": {"placeholders": {"count": {"type": "int"}, "failed": {"type": "int"}}},
   "saveBranding": "Save Branding",
   "transactions": "Transactions",
   "items": "items",
@@ -256,13 +251,13 @@
   "catalogCheckFailed": "Could not check catalog update. Check your connection.",
   "catalogUpdateSuccess": "Drug catalog updated successfully.",
   "catalogUpdateFailed": "Failed to download catalog update. Try again.",
-  "pricePerPurchaseUnitLabel": "Purchase Unit Price (1 Box/Pack)",
-  "costPricePerBaseUnitLabel": "Cost Price per Base Unit (1 Tablet/Pcs)",
+  "pricePerPurchaseUnitLabel": "Purchase Unit Price",
+  "costPricePerBaseUnitLabel": "Cost Price per Base Unit",
   "conversionBreakdownHint": "1 {purchaseUnit} ({units} {baseUnit}) = Rp {purchasePrice} → Rp {basePrice} / {baseUnit}",
   "@conversionBreakdownHint": {"placeholders": {"purchaseUnit": {}, "units": {"type": "int"}, "baseUnit": {}, "purchasePrice": {}, "basePrice": {}}},
   "unitsPerPurchaseUnitLabel": "Units per Purchase Package",
-  "baseUnitLabel": "Base Unit (e.g. tablet, kapsul)",
-  "purchaseUnitLabel": "Purchase Unit (e.g. box, dus)",
+  "baseUnitLabel": "Base Unit",
+  "purchaseUnitLabel": "Purchase Unit",
   "cashMovementTitle": "Cash Drawer Movements & Owner Draw (Prive)",
   "cashOutLabel": "Cash Withdrawal (Out)",
   "cashInLabel": "Cash Deposit (In)",
@@ -294,11 +289,7 @@
   "filterCustom": "Custom Date Range",
   "saveReceiptPdf": "Save PDF",
   "receiptSavedSuccess": "Receipt saved to: {path}",
-  "@receiptSavedSuccess": {
-    "placeholders": {
-      "path": {}
-    }
-  },
+  "@receiptSavedSuccess": {"placeholders": {"path": {}}},
   "receiptSaveFailed": "Could not save the receipt. Check storage access and try again.",
   "receiptPrintFailed": "Could not print the receipt. Check the printer and try again.",
   "receiptDirectoryLabel": "Receipt Folder Path (Optional)",
@@ -454,8 +445,6 @@
   "supplierUpdated": "Supplier updated.",
   "supplierDetailTitle": "Supplier Detail",
   "editButton": "Edit",
-  "saveButton": "Save",
-  "cancelButton": "Cancel",
   "supplierNameLabel": "Supplier Name *",
   "contactPersonLabel": "Contact Person",
   "phoneLabel": "Phone",
@@ -470,7 +459,6 @@
   "addSupplierButton": "Add Supplier",
   "searchSuppliersHint": "Search suppliers...",
   "activeOnlyToggle": "Active only",
-  "addFirstSupplier": "Add First Supplier",
   "statusInactive": "Inactive",
   "noSuppliersAdded": "No suppliers added yet.",
   "noSuppliersMatchFilter": "No suppliers match your filter.",
@@ -502,7 +490,6 @@
   "transactionNotFound": "Transaction not found.",
   "selectAtLeastOneItemReturn": "Please select at least 1 item to return.",
   "returnProcessedTitle": "Return Processed",
-  "okButton": "OK",
   "returnsRefundsTitle": "Returns & Refunds",
   "enterTransactionNumberHint": "Enter Transaction Number (e.g. TXN-...)",
   "browseRecentSalesButton": "Browse Recent Sales",
@@ -525,7 +512,6 @@
   "patientNameRequired": "Patient name is required.",
   "patientNameRequiredLabel": "Patient Name *",
   "dateOfBirthLabel": "Date of Birth",
-  "addressLabel": "Address",
   "knownAllergiesLabel": "Known Allergies",
   "allergiesHint": "e.g. Penicillin, Sulfa",
   "chronicConditionsLabel": "Chronic Conditions (Prolanis)",
@@ -555,5 +541,9 @@
   "historyTab": "History",
   "prescriptionsTab": "Prescriptions",
   "editPatientTitle": "Edit Patient",
-  "addPatientTitle": "Add New Patient"
+  "addPatientTitle": "Add New Patient",
+  "baseUnitHint": "e.g. tablet, kapsul",
+  "purchaseUnitHint": "e.g. box, dus",
+  "costPricePerBaseUnitHint": "per 1 tablet / pcs",
+  "pricePerPurchaseUnitHint": "per 1 box / pack"
 }

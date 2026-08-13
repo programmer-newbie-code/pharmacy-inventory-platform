@@ -403,6 +403,7 @@ class _AddProductDialogState extends ConsumerState<AddProductDialog> {
                     widgetKey: const Key('baseUnitDropdown'),
                     controller: _baseUnitController,
                     labelText: l10n.baseUnitLabel,
+                    helperText: l10n.baseUnitHint,
                     defaultOptions: defaultBaseUnits,
                     validator: (v) =>
                         (v == null || v.trim().isEmpty) ? 'Wajib' : null,
@@ -412,6 +413,7 @@ class _AddProductDialogState extends ConsumerState<AddProductDialog> {
                     widgetKey: const Key('purchaseUnitDropdown'),
                     controller: _purchaseUnitController,
                     labelText: l10n.purchaseUnitLabel,
+                    helperText: l10n.purchaseUnitHint,
                     defaultOptions: defaultPurchaseUnits,
                     validator: (v) =>
                         (v == null || v.trim().isEmpty) ? 'Wajib' : null,
@@ -441,6 +443,7 @@ class _AddProductDialogState extends ConsumerState<AddProductDialog> {
                     controller: _purchaseUnitPriceController,
                     decoration: InputDecoration(
                       labelText: l10n.pricePerPurchaseUnitLabel,
+                      helperText: l10n.pricePerPurchaseUnitHint,
                       prefixText: l10n.currencyPrefix,
                       border: const OutlineInputBorder(),
                     ),
@@ -452,6 +455,7 @@ class _AddProductDialogState extends ConsumerState<AddProductDialog> {
                     controller: _costPriceController,
                     decoration: InputDecoration(
                       labelText: l10n.costPricePerBaseUnitLabel,
+                      helperText: l10n.costPricePerBaseUnitHint,
                       prefixText: l10n.currencyPrefix,
                       border: const OutlineInputBorder(),
                     ),

@@ -257,6 +257,7 @@ class _EditProductDialogState extends ConsumerState<EditProductDialog> {
                   widgetKey: const Key('editBaseUnitDropdown'),
                   controller: _baseUnitController,
                   labelText: l10n.baseUnitLabel,
+                  helperText: l10n.baseUnitHint,
                   defaultOptions: defaultBaseUnits,
                   validator: (v) => (v == null || v.trim().isEmpty)
                       ? l10n.fieldRequired
@@ -267,6 +268,7 @@ class _EditProductDialogState extends ConsumerState<EditProductDialog> {
                   widgetKey: const Key('editPurchaseUnitDropdown'),
                   controller: _purchaseUnitController,
                   labelText: l10n.purchaseUnitLabel,
+                  helperText: l10n.purchaseUnitHint,
                   defaultOptions: defaultPurchaseUnits,
                   validator: (v) => (v == null || v.trim().isEmpty)
                       ? l10n.fieldRequired
@@ -296,6 +298,7 @@ class _EditProductDialogState extends ConsumerState<EditProductDialog> {
                   controller: _purchaseUnitPriceController,
                   decoration: InputDecoration(
                     labelText: l10n.pricePerPurchaseUnitLabel,
+                    helperText: l10n.pricePerPurchaseUnitHint,
                     prefixText: l10n.currencyPrefix,
                     border: const OutlineInputBorder(),
                   ),
@@ -306,6 +309,7 @@ class _EditProductDialogState extends ConsumerState<EditProductDialog> {
                   controller: _costPriceController,
                   decoration: InputDecoration(
                     labelText: l10n.costPricePerBaseUnitLabel,
+                    helperText: l10n.costPricePerBaseUnitHint,
                     prefixText: l10n.currencyPrefix,
                     border: const OutlineInputBorder(),
                   ),

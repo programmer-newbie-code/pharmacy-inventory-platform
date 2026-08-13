@@ -56,6 +56,7 @@ class EditableUnitDropdown extends StatelessWidget {
     super.key,
     required this.controller,
     required this.labelText,
+    this.helperText,
     required this.defaultOptions,
     this.validator,
     this.onChanged,
@@ -64,6 +65,10 @@ class EditableUnitDropdown extends StatelessWidget {
 
   final TextEditingController controller;
   final String labelText;
+
+  /// Shown under the field. Used to carry examples that would otherwise make
+  /// [labelText] too long to fit on a phone.
+  final String? helperText;
   final List<String> defaultOptions;
   final String? Function(String?)? validator;
   final ValueChanged<String>? onChanged;
@@ -94,6 +99,7 @@ class EditableUnitDropdown extends StatelessWidget {
           focusNode: focusNode,
           decoration: InputDecoration(
             labelText: labelText,
+            helperText: helperText,
             border: const OutlineInputBorder(),
             suffixIcon: PopupMenuButton<String>(
               icon: const Icon(Icons.arrow_drop_down),
