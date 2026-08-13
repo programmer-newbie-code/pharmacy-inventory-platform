@@ -8,6 +8,30 @@ on:
     tags: ['v*']
 
 jobs:
+  classify-changes:
+    name: Classify Changed Paths
+    runs-on: ubuntu-latest
+    outputs:
+      app_changed: ${{ steps.classify.outputs.app_changed }}
+      docs_site_changed: ${{ steps.classify.outputs.docs_site_changed }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Classify change scope
+        id: classify
+        shell: bash
+        env:
+          BASE_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before }}
+          HEAD_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+        run: |
+          if [[ "${GITHUB_REF}" == refs/tags/v* ]]; then
+            echo "app_changed=true" >> "$GITHUB_OUTPUT"
+            echo "docs_site_changed=false" >> "$GITHUB_OUTPUT"
+          else
+            python scripts/classify_ci_paths.py --base "$BASE_SHA" --head "$HEAD_SHA" >> "$GITHUB_OUTPUT"
+          fi
+
   secret-scan:
     name: Secret & Credential Leak Scan
     runs-on: ubuntu-latest
@@ -41,6 +65,8 @@ jobs:
             console.log(`Commit ${context.sha} GPG Verification: ${verified} (${reason})`);
 
   analyze-and-test:
+    needs: classify-changes
+    if: needs.classify-changes.outputs.app_changed == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -69,6 +95,8 @@ jobs:
           awk -v cov="$COVERAGE" 'BEGIN { if (cov + 0 < 80) { print "Coverage below 80%"; exit 1 } }'
 
   build-windows:
+    needs: classify-changes
+    if: needs.classify-changes.outputs.app_changed == 'true'
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
@@ -103,6 +131,8 @@ jobs:
           path: build/windows/x64/runner/Release/
 
   build-android:
+    needs: classify-changes
+    if: needs.classify-changes.outputs.app_changed == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -184,8 +214,13 @@ jobs:
           generate_release_notes: true
 
   deploy-gh-pages:
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-    needs: [analyze-and-test]
+    if: >-
+      always() &&
+      github.ref == 'refs/heads/main' &&
+      github.event_name == 'push' &&
+      needs.classify-changes.outputs.docs_site_changed == 'true' &&
+      (needs.analyze-and-test.result == 'success' || needs.analyze-and-test.result == 'skipped')
+    needs: [classify-changes, analyze-and-test]
     runs-on: ubuntu-latest
     permissions:
       contents: write
