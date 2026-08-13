@@ -299,34 +299,42 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen> {
                                   '•',
                                   style: TextStyle(color: Colors.grey.shade400),
                                 ),
-                                Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Text(
-                                      '${l10n.stockLabel}: ',
-                                      style: const TextStyle(
-                                        fontWeight: FontWeight.w500,
+                                // A single RichText, not a nested Row: Wrap
+                                // constrains each child to its own max width,
+                                // and an atomic Row cannot reflow internally,
+                                // so it overflowed by 69dp once the name's
+                                // 2-line wrap left this run narrower than
+                                // 'Stok: 20 kapsul' at bold weight needs.
+                                // RichText keeps the two-weight styling in one
+                                // flowable Wrap child instead.
+                                RichText(
+                                  text: TextSpan(
+                                    style: DefaultTextStyle.of(ctx).style,
+                                    children: [
+                                      TextSpan(
+                                        text: '${l10n.stockLabel}: ',
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.w500,
+                                        ),
                                       ),
-                                    ),
-                                    Text(
-                                      '$stock ${prod.baseUnit}',
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        color: isLow
-                                            ? AppTheme.warningColor
-                                            : AppTheme.successColor,
-                                      ),
-                                    ),
-                                    if (isLow) ...[
-                                      const SizedBox(width: 4),
-                                      const Icon(
-                                        Icons.warning_amber_rounded,
-                                        size: 16,
-                                        color: AppTheme.warningColor,
+                                      TextSpan(
+                                        text: '$stock ${prod.baseUnit}',
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          color: isLow
+                                              ? AppTheme.warningColor
+                                              : AppTheme.successColor,
+                                        ),
                                       ),
                                     ],
-                                  ],
+                                  ),
                                 ),
+                                if (isLow)
+                                  const Icon(
+                                    Icons.warning_amber_rounded,
+                                    size: 16,
+                                    color: AppTheme.warningColor,
+                                  ),
                               ],
                             ),
                           ),
