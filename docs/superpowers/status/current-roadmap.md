@@ -2,19 +2,23 @@
 
 **Last updated:** 2026-08-13
 
-**Verified main:** `74d7a8f` (`localize(patients, compounding): extract hardcoded user-facing strings to ARB (#164)`)
+**Verified main:** `363812e` (`docs(release): prepare v1.8.0 and restore the changelog (#166)`)
 
-**Verified main CI:** run `31668625534`, completed successfully.
+**Verified main CI:** run `31671030356`, completed successfully.
+
+**Released:** `v1.8.0`, published 2026-08-13 from `363812e`. Tag pipeline run
+`31671071229` passed every job including `create-release`. Artifacts attached:
+`...-android-v1.8.0.apk`, `...-android-v1.8.0.aab`,
+`...-windows-v1.8.0.msix`, `...-windows-v1.8.0.zip`.
 
 **Open PR at audit:** none
 
-**Next increment:** Release `v1.8.0` per
-`docs/superpowers/plans/2026-08-13-release-v1-8-0.md`. 40 commits sit on `main`
-unreleased since the `v1.7.0` tag of 2026-08-09, including the #151 fix for
-logout being unreachable. Localization slice 6 (`features/users` 10 strings,
-`features/reports` 4) follows the release; 22 plain and 34 interpolated strings
-remain and none are user-visible defects, since all are English-only in an
-English build.
+**Next increment:** Localization sweep slice 6 (`features/users` 10 strings,
+`features/reports` 4) per
+`docs/superpowers/plans/2026-08-12-feature-localization-sweep.md`. 22 plain and
+34 interpolated strings remain; none are user-visible defects, since all are
+English-only in an English build. Everything else on the roadmap is blocked on
+owner approval, a physical device, or a Play account.
 
 **Versioning:** do not edit `pubspec.yaml`. CI derives the version from the tag
 (`.github/workflows/ci.yml`, "Auto-Inject Dynamic Version"), as
@@ -43,7 +47,7 @@ GitHub and implementation evidence overrides this file if it becomes stale.
 | --- | --- | --- |
 | Branch/PR/CI workflow | Shipped | `AGENT.md`; PR #160 and main run `31657666877` are green. Continue enforcing it. |
 | Cross-agent handoff | Shipped | PR #146 added the canonical spec, plan, live status, and startup routing; main run `31555388676` is green. |
-| Release automation | Partial; release pending | Signed `v*` tags build and publish Windows and Android artifacts. **40 commits were unreleased at `503ce3d`** (last tag `v1.7.0`, 2026-08-09). `v1.8.0` is the increment closing that gap. Manual Windows and Android smoke testing required by `docs/release/RELEASE_CHECKLIST.md` is **not** performed in the agent environment (no Flutter toolchain, no device) and remains an owner action before distributing artifacts. |
+| Release automation | Shipped for this cycle | `v1.8.0` published 2026-08-13 from `363812e`; tag run `31671071229` green with `create-release` executed and four artifacts attached. Version is tag-derived, so `pubspec.yaml` was not edited. **Manual Windows and Android smoke testing required by `docs/release/RELEASE_CHECKLIST.md` was not performed** (no Flutter toolchain or device in the agent environment) and remains an owner action before distributing the artifacts. |
 
 ## Recently shipped evidence
 
