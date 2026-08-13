@@ -125,33 +125,33 @@ class _AddStockBatchDialogState extends ConsumerState<AddStockBatchDialog> {
               TextFormField(
                 key: const Key('batchNoInput'),
                 controller: _batchNoController,
-                decoration: const InputDecoration(
-                  labelText: 'Batch Number',
-                  border: OutlineInputBorder(),
+                decoration: InputDecoration(
+                  labelText: l10n.batchNumberLabel,
+                  border: const OutlineInputBorder(),
                 ),
-                validator: (v) => (v == null || v.isEmpty) ? 'Required' : null,
+                validator: (v) => (v == null || v.isEmpty) ? l10n.fieldRequired : null,
               ),
               const SizedBox(height: 8),
               TextFormField(
                 key: const Key('supplierInput'),
                 controller: _supplierController,
-                decoration: const InputDecoration(
-                  labelText: 'Supplier',
-                  border: OutlineInputBorder(),
+                decoration: InputDecoration(
+                  labelText: l10n.supplierLabel,
+                  border: const OutlineInputBorder(),
                 ),
-                validator: (v) => (v == null || v.isEmpty) ? 'Required' : null,
+                validator: (v) => (v == null || v.isEmpty) ? l10n.fieldRequired : null,
               ),
               const SizedBox(height: 8),
               TextFormField(
                 key: const Key('qtyPurchaseUnitInput'),
                 controller: _qtyPurchaseUnitController,
                 decoration: InputDecoration(
-                  labelText: 'Quantity in ${widget.product.purchaseUnit}s',
+                  labelText: '${l10n.receivingQuantityLabel} in ${widget.product.purchaseUnit}s',
                   border: const OutlineInputBorder(),
                 ),
                 keyboardType: TextInputType.number,
                 onChanged: (_) => setState(() {}),
-                validator: (v) => (v == null || int.tryParse(v) == null) ? 'Invalid' : null,
+                validator: (v) => (v == null || int.tryParse(v) == null) ? l10n.fieldRequired : null,
               ),
               const SizedBox(height: 8),
               Container(
@@ -178,7 +178,7 @@ class _AddStockBatchDialogState extends ConsumerState<AddStockBatchDialog> {
                       controller: _purchaseUnitPriceController,
                       decoration: InputDecoration(
                         labelText: l10n.pricePerPurchaseUnitLabel,
-                        prefixText: 'Rp ',
+                        prefixText: l10n.currencyPrefix,
                         border: const OutlineInputBorder(),
                       ),
                       keyboardType: TextInputType.number,
@@ -191,12 +191,12 @@ class _AddStockBatchDialogState extends ConsumerState<AddStockBatchDialog> {
                       controller: _costPriceController,
                       decoration: InputDecoration(
                         labelText: l10n.costPricePerBaseUnitLabel,
-                        prefixText: 'Rp ',
+                        prefixText: l10n.currencyPrefix,
                         border: const OutlineInputBorder(),
                       ),
                       keyboardType: TextInputType.number,
                       onChanged: _onBasePriceChanged,
-                      validator: (v) => (v == null || double.tryParse(v) == null) ? 'Required' : null,
+                      validator: (v) => (v == null || double.tryParse(v) == null) ? l10n.fieldRequired : null,
                     ),
                   ),
                 ],
@@ -241,7 +241,7 @@ class _AddStockBatchDialogState extends ConsumerState<AddStockBatchDialog> {
               const SizedBox(height: 8),
 
               ListTile(
-                title: Text('Expiry Date: ${_expiryDate.toIso8601String().split('T').first}'),
+                title: Text('${l10n.receivingExpiryLabel}: ${_expiryDate.toIso8601String().split('T').first}'),
                 trailing: const Icon(Icons.calendar_today),
                 onTap: _pickExpiryDate,
               ),
@@ -252,12 +252,12 @@ class _AddStockBatchDialogState extends ConsumerState<AddStockBatchDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(false),
-          child: const Text('Cancel'),
+          child: Text(l10n.cancelButton),
         ),
         ElevatedButton(
           key: const Key('saveBatchButton'),
           onPressed: _save,
-          child: const Text('Save Stock Batch'),
+          child: Text(l10n.saveStockBatch),
         ),
       ],
     );

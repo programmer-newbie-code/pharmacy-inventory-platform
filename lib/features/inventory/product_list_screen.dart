@@ -333,7 +333,7 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen> {
                                     IconButton(
                                       key: Key('editProdBtn_${prod.id}'),
                                       icon: const Icon(Icons.edit_outlined),
-                                      tooltip: 'Edit Product',
+                                      tooltip: l10n.editProductTooltip,
                                       onPressed: () => _openEditProduct(prod),
                                     ),
                                     IconButton(

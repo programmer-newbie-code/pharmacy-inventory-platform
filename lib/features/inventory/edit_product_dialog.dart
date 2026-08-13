@@ -163,7 +163,7 @@ class _EditProductDialogState extends ConsumerState<EditProductDialog> {
     final l10n = AppLocalizations.of(context)!;
 
     return AlertDialog(
-      title: const Text('Edit Product Details'),
+      title: Text(l10n.editProductDetailsTitle),
       content: SingleChildScrollView(
         child: Form(
           key: _formKey,
@@ -219,9 +219,9 @@ class _EditProductDialogState extends ConsumerState<EditProductDialog> {
               TextFormField(
                 key: const Key('editProductNameInput'),
                 controller: _nameController,
-                decoration: const InputDecoration(labelText: 'Product Name *'),
+                decoration: InputDecoration(labelText: l10n.productNameLabel),
                 validator: (v) =>
-                    v == null || v.trim().isEmpty ? 'Name required' : null,
+                    v == null || v.trim().isEmpty ? l10n.fieldRequired : null,
               ),
               const SizedBox(height: 12),
               Row(
@@ -229,10 +229,10 @@ class _EditProductDialogState extends ConsumerState<EditProductDialog> {
                   Expanded(
                     child: TextFormField(
                       controller: _activeIngredientController,
-                      decoration: const InputDecoration(
-                          labelText: 'Active Ingredient *'),
+                      decoration: InputDecoration(
+                          labelText: '${l10n.activeIngredientLabel} *'),
                       validator: (v) => v == null || v.trim().isEmpty
-                          ? 'Ingredient required'
+                          ? l10n.fieldRequired
                           : null,
                     ),
                   ),
@@ -240,10 +240,10 @@ class _EditProductDialogState extends ConsumerState<EditProductDialog> {
                   Expanded(
                     child: TextFormField(
                       controller: _ingredientPctController,
-                      decoration: const InputDecoration(labelText: 'Pct (%) *'),
+                      decoration: InputDecoration(labelText: l10n.pctLabel),
                       keyboardType: TextInputType.number,
                       validator: (v) =>
-                          v == null || v.trim().isEmpty ? 'Pct required' : null,
+                          v == null || v.trim().isEmpty ? l10n.fieldRequired : null,
                     ),
                   ),
                 ],
@@ -260,7 +260,7 @@ class _EditProductDialogState extends ConsumerState<EditProductDialog> {
                       labelText: l10n.baseUnitLabel,
                       defaultOptions: defaultBaseUnits,
                       validator: (v) =>
-                          (v == null || v.trim().isEmpty) ? 'Wajib' : null,
+                          (v == null || v.trim().isEmpty) ? l10n.fieldRequired : null,
                       onChanged: (_) => setState(() {}),
                     ),
                   ),
@@ -272,7 +272,7 @@ class _EditProductDialogState extends ConsumerState<EditProductDialog> {
                       labelText: l10n.purchaseUnitLabel,
                       defaultOptions: defaultPurchaseUnits,
                       validator: (v) =>
-                          (v == null || v.trim().isEmpty) ? 'Wajib' : null,
+                          (v == null || v.trim().isEmpty) ? l10n.fieldRequired : null,
                       onChanged: (_) => setState(() {}),
                     ),
                   ),
@@ -289,7 +289,7 @@ class _EditProductDialogState extends ConsumerState<EditProductDialog> {
                 keyboardType: TextInputType.number,
                 onChanged: _onUnitsChanged,
                 validator: (v) => (v == null || int.tryParse(v) == null)
-                    ? 'Angka tidak valid'
+                    ? l10n.fieldRequired
                     : null,
               ),
               const SizedBox(height: 12),
@@ -302,7 +302,7 @@ class _EditProductDialogState extends ConsumerState<EditProductDialog> {
                       controller: _purchaseUnitPriceController,
                       decoration: InputDecoration(
                         labelText: l10n.pricePerPurchaseUnitLabel,
-                        prefixText: 'Rp ',
+                        prefixText: l10n.currencyPrefix,
                         border: const OutlineInputBorder(),
                       ),
                       keyboardType: TextInputType.number,
@@ -315,13 +315,13 @@ class _EditProductDialogState extends ConsumerState<EditProductDialog> {
                       controller: _costPriceController,
                       decoration: InputDecoration(
                         labelText: l10n.costPricePerBaseUnitLabel,
-                        prefixText: 'Rp ',
+                        prefixText: l10n.currencyPrefix,
                         border: const OutlineInputBorder(),
                       ),
                       keyboardType: TextInputType.number,
                       onChanged: _onBasePriceChanged,
                       validator: (v) => v == null || v.trim().isEmpty
-                          ? 'Cost required'
+                          ? l10n.fieldRequired
                           : null,
                     ),
                   ),
@@ -386,10 +386,10 @@ class _EditProductDialogState extends ConsumerState<EditProductDialog> {
                     child: TextFormField(
                       controller: _marginController,
                       decoration:
-                          const InputDecoration(labelText: 'Margin % *'),
+                          InputDecoration(labelText: l10n.marginPctLabel),
                       keyboardType: TextInputType.number,
                       validator: (v) => v == null || v.trim().isEmpty
-                          ? 'Margin required'
+                          ? l10n.fieldRequired
                           : null,
                     ),
                   ),
@@ -398,7 +398,7 @@ class _EditProductDialogState extends ConsumerState<EditProductDialog> {
                     child: TextFormField(
                       controller: _reorderThresholdController,
                       decoration:
-                          const InputDecoration(labelText: 'Reorder Alert Qty'),
+                          InputDecoration(labelText: l10n.reorderAlertQtyLabel),
                       keyboardType: TextInputType.number,
                     ),
                   ),
@@ -414,16 +414,16 @@ class _EditProductDialogState extends ConsumerState<EditProductDialog> {
                 DropdownButtonFormField<String>(
                   isExpanded: true,
                   initialValue: _controlledCategory ?? 'Narkotika',
-                  decoration: const InputDecoration(
-                      labelText: 'Controlled Substance Category'),
-                  items: const [
+                  decoration: InputDecoration(
+                      labelText: l10n.controlledSubstanceCategory),
+                  items: [
                     DropdownMenuItem(
-                        value: 'Narkotika', child: Text('Narkotika')),
+                        value: 'Narkotika', child: Text(l10n.categoryNarcotic)),
                     DropdownMenuItem(
-                        value: 'Psikotropika', child: Text('Psikotropika')),
+                        value: 'Psikotropika', child: Text(l10n.categoryPsychotropic)),
                     DropdownMenuItem(
-                        value: 'Prekursor', child: Text('Prekursor')),
-                    DropdownMenuItem(value: 'OOT', child: Text('OOT')),
+                        value: 'Prekursor', child: Text(l10n.categoryPrecursor)),
+                    DropdownMenuItem(value: 'OOT', child: Text(l10n.categoryOot)),
                   ],
                   onChanged: (val) {
                     if (val != null) setState(() => _controlledCategory = val);
@@ -437,12 +437,12 @@ class _EditProductDialogState extends ConsumerState<EditProductDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(false),
-          child: const Text('Cancel'),
+          child: Text(l10n.cancelButton),
         ),
         ElevatedButton(
           key: const Key('saveEditProductBtn'),
           onPressed: _saveProduct,
-          child: const Text('Save Changes'),
+          child: Text(l10n.saveChanges),
         ),
       ],
     );

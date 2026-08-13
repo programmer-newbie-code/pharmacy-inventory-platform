@@ -302,14 +302,14 @@ class _AddProductDialogState extends ConsumerState<AddProductDialog> {
                   key: const Key('productBarcodeInput'),
                   controller: _barcodeController,
                   decoration: InputDecoration(
-                    labelText: 'Barcode *',
+                    labelText: l10n.barcodeLabel,
                     prefixIcon: const Icon(Icons.barcode_reader),
                     suffixIcon: isWindows
                         ? null
                         : IconButton(
                             key: const Key('cameraScanBarcodeBtn'),
                             icon: const Icon(Icons.qr_code_scanner),
-                            tooltip: 'Scan barcode dengan kamera',
+                            tooltip: l10n.scanBarcodeCamera,
                             onPressed: () async {
                               final scanned =
                                   await CameraScannerDialog.scanBarcode(
@@ -321,7 +321,7 @@ class _AddProductDialogState extends ConsumerState<AddProductDialog> {
                           ),
                   ),
                   validator: (v) =>
-                      (v == null || v.isEmpty) ? 'Wajib diisi' : null,
+                      (v == null || v.isEmpty) ? l10n.fieldRequired : null,
                 ),
                 if (isWindows)
                   Padding(
@@ -337,12 +337,12 @@ class _AddProductDialogState extends ConsumerState<AddProductDialog> {
                 TextFormField(
                   key: const Key('productInternalCodeInput'),
                   controller: _internalCodeController,
-                  decoration: const InputDecoration(
-                    labelText: 'Kode Internal *',
-                    prefixIcon: Icon(Icons.tag),
+                  decoration: InputDecoration(
+                    labelText: l10n.internalCodeLabel,
+                    prefixIcon: const Icon(Icons.tag),
                   ),
                   validator: (v) =>
-                      (v == null || v.isEmpty) ? 'Wajib diisi' : null,
+                      (v == null || v.isEmpty) ? l10n.fieldRequired : null,
                 ),
                 const SizedBox(height: 8),
 
@@ -350,9 +350,9 @@ class _AddProductDialogState extends ConsumerState<AddProductDialog> {
                 TextFormField(
                   key: const Key('activeIngredientInput'),
                   controller: _activeIngredientController,
-                  decoration: const InputDecoration(
-                    labelText: 'Zat Aktif',
-                    prefixIcon: Icon(Icons.science),
+                  decoration: InputDecoration(
+                    labelText: l10n.activeIngredientLabel,
+                    prefixIcon: const Icon(Icons.science),
                   ),
                 ),
                 const SizedBox(height: 8),
@@ -367,8 +367,6 @@ class _AddProductDialogState extends ConsumerState<AddProductDialog> {
                     labelText: l10n.drugClassLabel,
                     prefixIcon: const Icon(Icons.category),
                   ),
-                  // Only the label is localized. The `value` is persisted and
-                  // is a regulatory category, so it must not change.
                   items: [
                     DropdownMenuItem(
                         value: 'Obat Bebas', child: Text(l10n.drugClassOtc)),
@@ -378,12 +376,12 @@ class _AddProductDialogState extends ConsumerState<AddProductDialog> {
                     DropdownMenuItem(
                         value: 'Obat Keras',
                         child: Text(l10n.drugClassPrescription)),
-                    const DropdownMenuItem(
-                        value: 'Psikotropika', child: Text('Psikotropika')),
-                    const DropdownMenuItem(
-                        value: 'Narkotika', child: Text('Narkotika')),
-                    const DropdownMenuItem(
-                        value: 'Herbal / Jamu', child: Text('Herbal / Jamu')),
+                    DropdownMenuItem(
+                        value: 'Psikotropika', child: Text(l10n.categoryPsychotropic)),
+                    DropdownMenuItem(
+                        value: 'Narkotika', child: Text(l10n.categoryNarcotic)),
+                    DropdownMenuItem(
+                        value: 'Herbal / Jamu', child: Text(l10n.categoryHerbal)),
                   ],
                   onChanged: (val) {
                     if (val != null) {
@@ -451,7 +449,7 @@ class _AddProductDialogState extends ConsumerState<AddProductDialog> {
                         controller: _purchaseUnitPriceController,
                         decoration: InputDecoration(
                           labelText: l10n.pricePerPurchaseUnitLabel,
-                          prefixText: 'Rp ',
+                          prefixText: l10n.currencyPrefix,
                           border: const OutlineInputBorder(),
                         ),
                         keyboardType: TextInputType.number,
@@ -465,14 +463,14 @@ class _AddProductDialogState extends ConsumerState<AddProductDialog> {
                         controller: _costPriceController,
                         decoration: InputDecoration(
                           labelText: l10n.costPricePerBaseUnitLabel,
-                          prefixText: 'Rp ',
+                          prefixText: l10n.currencyPrefix,
                           border: const OutlineInputBorder(),
                         ),
                         keyboardType: TextInputType.number,
                         onChanged: _onBasePriceChanged,
                         validator: (v) =>
                             (v == null || double.tryParse(v) == null)
-                                ? 'Wajib isi HPP'
+                                ? l10n.fieldRequired
                                 : null,
                       ),
                     ),
@@ -536,10 +534,10 @@ class _AddProductDialogState extends ConsumerState<AddProductDialog> {
                     Expanded(
                       child: TextFormField(
                         controller: _marginPctController,
-                        decoration: const InputDecoration(
-                          labelText: 'Margin %',
+                        decoration: InputDecoration(
+                          labelText: l10n.marginPctLabel,
                           suffixText: '%',
-                          border: OutlineInputBorder(),
+                          border: const OutlineInputBorder(),
                         ),
                         keyboardType: TextInputType.number,
                       ),
@@ -563,9 +561,9 @@ class _AddProductDialogState extends ConsumerState<AddProductDialog> {
                 if (_locations.isNotEmpty) ...[
                   DropdownButtonFormField<int>(
                     initialValue: _selectedStorageLocationId,
-                    decoration: const InputDecoration(
-                      labelText: 'Lokasi Penyimpanan',
-                      prefixIcon: Icon(Icons.shelves),
+                    decoration: InputDecoration(
+                      labelText: l10n.storageLocationLabel,
+                      prefixIcon: const Icon(Icons.shelves),
                     ),
                     items: _locations
                         .map((loc) => DropdownMenuItem<int>(
@@ -856,7 +854,7 @@ class _DrugResultTile extends StatelessWidget {
                         ),
                       ),
                       if (drug.manufacturer.isNotEmpty) ...[
-                        Text('  ·  ',
+                        Text(' - ',
                             style: TextStyle(color: cs.outline, fontSize: 11)),
                         Text(
                           drug.manufacturer,
