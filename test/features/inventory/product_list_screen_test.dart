@@ -146,7 +146,7 @@ void main() {
     final productRepo = ProductRepository(db);
     // Long enough to have needed ~175dp+ against the ~179dp the row used to
     // leave once the 'Obat Keras' badge and edit icon took their share.
-    await productRepo.createProduct(
+    final productId = await productRepo.createProduct(
       barcode: '8990000000099',
       internalCode: 'AMX-500',
       name: _longProductName,
@@ -185,6 +185,10 @@ void main() {
     final nameFinder = find.text(_longProductName);
     expect(nameFinder, findsOneWidget);
     expectNotTruncated(tester, nameFinder);
+    // Actions moved out of `trailing` into this row; confirm they are still
+    // present and tappable at this width.
+    expect(find.byKey(Key('editProdBtn_$productId')), findsOneWidget);
+    expect(find.byKey(Key('addBatchBtn_$productId')), findsOneWidget);
   });
 
   testWidgets('survives 2.0 text scale with a long name on the owner phone',

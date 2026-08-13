@@ -335,31 +335,46 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen> {
                                     size: 16,
                                     color: AppTheme.warningColor,
                                   ),
+                                // Actions moved here from `trailing`, which
+                                // previously reserved ~96dp on every row for
+                                // two full-size IconButtons. Even the longest
+                                // real catalog name (33 characters) did not
+                                // fit the name in 2 lines once that space was
+                                // taken from a 393dp-wide phone. They join the
+                                // Wrap as compact icon-only buttons instead.
+                                if (canCreate) ...[
+                                  InkWell(
+                                    key: Key('editProdBtn_${prod.id}'),
+                                    onTap: () => _openEditProduct(prod),
+                                    borderRadius: BorderRadius.circular(16),
+                                    child: Tooltip(
+                                      message: l10n.editProductTooltip,
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(4),
+                                        child: Icon(Icons.edit_outlined,
+                                            size: 18,
+                                            color: Colors.grey.shade700),
+                                      ),
+                                    ),
+                                  ),
+                                  InkWell(
+                                    key: Key('addBatchBtn_${prod.id}'),
+                                    onTap: () => _openAddBatch(prod),
+                                    borderRadius: BorderRadius.circular(16),
+                                    child: Tooltip(
+                                      message: l10n.receiveStock,
+                                      child: const Padding(
+                                        padding: EdgeInsets.all(4),
+                                        child: Icon(Icons.add_shopping_cart,
+                                            size: 18,
+                                            color: AppTheme.primaryColor),
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ],
                             ),
                           ),
-                          trailing: canCreate
-                              ? Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    IconButton(
-                                      key: Key('editProdBtn_${prod.id}'),
-                                      icon: const Icon(Icons.edit_outlined),
-                                      tooltip: l10n.editProductTooltip,
-                                      onPressed: () => _openEditProduct(prod),
-                                    ),
-                                    IconButton(
-                                      key: Key('addBatchBtn_${prod.id}'),
-                                      icon: const Icon(
-                                        Icons.add_shopping_cart,
-                                        color: AppTheme.primaryColor,
-                                      ),
-                                      tooltip: l10n.receiveStock,
-                                      onPressed: () => _openAddBatch(prod),
-                                    ),
-                                  ],
-                                )
-                              : null,
                         ),
                       );
                     },
