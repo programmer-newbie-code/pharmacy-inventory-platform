@@ -8,12 +8,18 @@
 
 **Open PR at audit:** none
 
-**Next increment:** Localization sweep slice 6 (`features/users` 10 strings,
-`features/reports` 4) per
-`docs/superpowers/plans/2026-08-12-feature-localization-sweep.md`. Slices 1-5
-shipped in #154, #160, #162, #163, and #164. 22 hardcoded strings remain:
-users 10, reports 4, `data/receipt_pdf_service.dart` 3, alerts 2, main 1,
-settings 1, home 1.
+**Next increment:** Release `v1.8.0` per
+`docs/superpowers/plans/2026-08-13-release-v1-8-0.md`. 40 commits sit on `main`
+unreleased since the `v1.7.0` tag of 2026-08-09, including the #151 fix for
+logout being unreachable. Localization slice 6 (`features/users` 10 strings,
+`features/reports` 4) follows the release; 22 plain and 34 interpolated strings
+remain and none are user-visible defects, since all are English-only in an
+English build.
+
+**Versioning:** do not edit `pubspec.yaml`. CI derives the version from the tag
+(`.github/workflows/ci.yml`, "Auto-Inject Dynamic Version"), as
+`docs/release/RELEASE_CHECKLIST.md` requires. The historical
+`chore: bump version` commits predate that automation.
 
 This is the stable handoff file. Update it after every merged increment. Current
 GitHub and implementation evidence overrides this file if it becomes stale.
@@ -37,7 +43,7 @@ GitHub and implementation evidence overrides this file if it becomes stale.
 | --- | --- | --- |
 | Branch/PR/CI workflow | Shipped | `AGENT.md`; PR #160 and main run `31657666877` are green. Continue enforcing it. |
 | Cross-agent handoff | Shipped | PR #146 added the canonical spec, plan, live status, and startup routing; main run `31555388676` is green. |
-| Release automation | Partial | Signed `v*` tags create Windows/Android artifacts; final roadmap release remains pending. |
+| Release automation | Partial; release pending | Signed `v*` tags build and publish Windows and Android artifacts. **40 commits were unreleased at `503ce3d`** (last tag `v1.7.0`, 2026-08-09). `v1.8.0` is the increment closing that gap. Manual Windows and Android smoke testing required by `docs/release/RELEASE_CHECKLIST.md` is **not** performed in the agent environment (no Flutter toolchain, no device) and remains an owner action before distributing artifacts. |
 
 ## Recently shipped evidence
 
