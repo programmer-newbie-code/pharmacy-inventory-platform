@@ -78,8 +78,14 @@ final alertRepositoryProvider = Provider<AlertRepository>(
   (ref) => AlertRepository(ref.watch(databaseProvider)),
 );
 
+final excelReportServiceProvider = Provider<ExcelReportService>((ref) => ExcelReportService());
+
 final reportRepositoryProvider = Provider<ReportRepository>(
-  (ref) => ReportRepository(ref.watch(databaseProvider)),
+  (ref) => ReportRepository(
+    ref.watch(databaseProvider),
+    auditLogger: ref.watch(auditLoggerProvider),
+    excelReportService: ref.watch(excelReportServiceProvider),
+  ),
 );
 
 final backupServiceProvider = Provider<BackupService>(
@@ -96,8 +102,6 @@ final googleDriveBackupServiceProvider = Provider<GoogleDriveBackupService>(
     credentialStore: ref.watch(driveCredentialStoreProvider),
   ),
 );
-
-final excelReportServiceProvider = Provider<ExcelReportService>((ref) => ExcelReportService());
 
 final csvImportServiceProvider = Provider<CsvImportService>(
   (ref) => CsvImportService(ref.watch(productRepositoryProvider)),

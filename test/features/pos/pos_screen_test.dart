@@ -115,7 +115,7 @@ void main() {
     await tester.pumpAndSettle();
 
     // Verify receipt modal appears
-    expect(find.text('Transaction Receipt'), findsOneWidget);
+    expect(find.text('Struk Transaksi'), findsOneWidget);
     expect(find.byKey(const Key('closeReceiptButton')), findsOneWidget);
 
     await tester.tap(find.byKey(const Key('closeReceiptButton')));
@@ -194,7 +194,7 @@ void main() {
     await tester.tap(find.byKey(const Key('checkoutButton')));
     await tester.pumpAndSettle();
 
-    expect(find.text('Transaction Receipt'), findsOneWidget);
+    expect(find.text('Struk Transaksi'), findsOneWidget);
   });
 
   testWidgets('opens CashMovementDialog via posCashMovementBtn',

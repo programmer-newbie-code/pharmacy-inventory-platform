@@ -50,6 +50,28 @@ void main() {
     expect(service.currentUser, isNull);
   });
 
+  test('records a failed Drive attempt when no account is active', () async {
+    final result = await service.uploadCurrentUserBackupToDrive();
+
+    expect(result.success, isFalse);
+    expect(result.errorMessage, isNull);
+
+    final logs = await db.select(db.backupLogs).get();
+    expect(logs, hasLength(1));
+    expect(logs.single.destination, equals('drive'));
+    expect(logs.single.status, equals('Failed'));
+  });
+
+  test('uploads with the active account when one is available', () async {
+    await service.signInWithGoogle();
+
+    final result = await service.uploadCurrentUserBackupToDrive();
+
+    expect(result.success, isTrue);
+    final logs = await db.select(db.backupLogs).get();
+    expect(logs.single.status, equals('Success'));
+  });
+
   test('selects desktop OAuth instead of google_sign_in on Windows', () {
     expect(
       createGoogleAccountAuthorizer(isWindows: true),

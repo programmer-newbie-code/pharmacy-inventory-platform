@@ -2,121 +2,63 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../core/app_theme.dart';
 import '../../core/formatters.dart';
 import '../../core/providers.dart';
 import '../../data/report_repository.dart';
+import '../../l10n/app_localizations.dart';
+import '../auth/auth_session.dart';
 
 class CategorySalesData {
-  CategorySalesData({required this.category, required this.totalAmount, required this.unitsSold});
+  CategorySalesData(
+      {required this.category,
+      required this.totalAmount,
+      required this.unitsSold});
   final String category;
   final double totalAmount;
   final int unitsSold;
 }
 
-class TopProductData {
-  TopProductData({required this.productName, required this.unitsSold, required this.revenue});
-  final String productName;
-  final int unitsSold;
-  final double revenue;
+class SalesAnalyticsFilter {
+  const SalesAnalyticsFilter({required this.range, required this.rankBy});
+
+  final DateTimeRange range;
+  final BestSellingRankMode rankBy;
+
+  @override
+  bool operator ==(Object other) =>
+      other is SalesAnalyticsFilter &&
+      other.range == range &&
+      other.rankBy == rankBy;
+
+  @override
+  int get hashCode => Object.hash(range, rankBy);
 }
 
-final salesAnalyticsFutureProvider = FutureProvider.family.autoDispose<Map<String, dynamic>, DateTimeRange>((ref, range) async {
-  final reportRepo = ref.watch(reportRepositoryProvider);
-  final saleRepo = ref.watch(saleRepositoryProvider);
-  final prodRepo = ref.watch(productRepositoryProvider);
-  final returnRepo = ref.watch(returnRepositoryProvider);
-
-  final summary = await reportRepo.getSalesSummary(startDate: range.start, endDate: range.end);
-  final txns = await saleRepo.listTransactions();
-  final products = await prodRepo.listProducts();
-  final returns = await returnRepo.listReturns();
-
-  final filteredTxns = txns.where((t) => t.createdAt.isAfter(range.start) && t.createdAt.isBefore(range.end)).toList();
-  final filteredReturns = returns.where((r) => r.createdAt.isAfter(range.start) && r.createdAt.isBefore(range.end)).toList();
-
-  double totalRefunds = 0;
-  for (final r in filteredReturns) {
-    totalRefunds += r.refundAmount;
-  }
-
-  // Payment methods breakdown
-  final paymentCounts = <String, int>{'Cash': 0, 'QRIS': 0, 'Debit': 0, 'Credit': 0};
-  for (final t in filteredTxns) {
-    final pm = t.paymentMethod;
-    paymentCounts[pm] = (paymentCounts[pm] ?? 0) + 1;
-  }
-
-  // Product sales and category breakdown
-  final prodSalesMap = <int, int>{}; // prodId -> totalQty
-  final prodRevMap = <int, double>{}; // prodId -> totalRevenue
-
-  for (final t in filteredTxns) {
-    final items = await saleRepo.getSaleItemsForTransaction(t.id);
-    for (final item in items) {
-      prodSalesMap[item.productId] = (prodSalesMap[item.productId] ?? 0) + item.qtySold;
-      prodRevMap[item.productId] = (prodRevMap[item.productId] ?? 0) + item.subtotal;
-    }
-  }
-
-  final prodMap = {for (var p in products) p.id: p};
-  final categoryMap = <String, double>{};
-  final topProducts = <TopProductData>[];
-
-  // Calculate returns per product
-  final prodRefundQty = <int, int>{};
-  final prodRefundAmount = <int, double>{};
-  for (final r in filteredReturns) {
-    final rItems = await returnRepo.getReturnItemsForReturn(r.id);
-    for (final ri in rItems) {
-      final saleItem = await (saleRepo.getSaleItemsForTransaction(r.originalTxnId));
-      final matchingSaleItem = saleItem.where((s) => s.id == ri.saleItemId).firstOrNull;
-      if (matchingSaleItem != null) {
-        final prodId = matchingSaleItem.productId;
-        prodRefundQty[prodId] = (prodRefundQty[prodId] ?? 0) + ri.qtyReturned;
-        prodRefundAmount[prodId] = (prodRefundAmount[prodId] ?? 0) + (ri.qtyReturned * matchingSaleItem.unitPrice);
-      }
-    }
-  }
-
-  prodSalesMap.forEach((prodId, qty) {
-    final prod = prodMap[prodId];
-    final name = prod?.name ?? 'Product #$prodId';
-    final grossRev = prodRevMap[prodId] ?? 0;
-    final refundAmt = prodRefundAmount[prodId] ?? 0;
-    final refundQty = prodRefundQty[prodId] ?? 0;
-
-    final netRev = (grossRev - refundAmt).clamp(0.0, double.infinity);
-    final netQty = (qty - refundQty).clamp(0, 999999);
-    final cat = prod?.category ?? 'General';
-
-    categoryMap[cat] = (categoryMap[cat] ?? 0) + netRev;
-    if (netQty > 0 || netRev > 0) {
-      topProducts.add(TopProductData(productName: name, unitsSold: netQty, revenue: netRev));
-    }
-  });
-
-  topProducts.sort((a, b) => b.revenue.compareTo(a.revenue));
-
-  return {
-    'summary': summary,
-    'totalTxns': filteredTxns.length,
-    'totalRefunds': totalRefunds,
-    'paymentCounts': paymentCounts,
-    'categoryMap': categoryMap,
-    'topProducts': topProducts.take(5).toList(),
-  };
+final salesAnalyticsFutureProvider = FutureProvider.family
+    .autoDispose<SalesAnalyticsData, SalesAnalyticsFilter>((ref, filter) {
+  return ref.watch(reportRepositoryProvider).getSalesAnalytics(
+        BestSellingMedicinesFilter(
+          startDate: filter.range.start,
+          endDate: filter.range.end,
+          rankMode: filter.rankBy,
+        ),
+      );
 });
 
 class SalesAnalyticsScreen extends ConsumerStatefulWidget {
   const SalesAnalyticsScreen({super.key});
 
   @override
-  ConsumerState<SalesAnalyticsScreen> createState() => _SalesAnalyticsScreenState();
+  ConsumerState<SalesAnalyticsScreen> createState() =>
+      _SalesAnalyticsScreenState();
 }
 
 class _SalesAnalyticsScreenState extends ConsumerState<SalesAnalyticsScreen> {
   late DateTimeRange _dateRange;
   String _selectedPreset = 'This Month';
+  BestSellingRankMode _rankBy = BestSellingRankMode.netQuantity;
+  bool _isExporting = false;
 
   @override
   void initState() {
@@ -145,13 +87,77 @@ class _SalesAnalyticsScreenState extends ConsumerState<SalesAnalyticsScreen> {
     });
   }
 
+  Future<void> _selectCustomRange() async {
+    final selected = await showDateRangePicker(
+      context: context,
+      firstDate: DateTime(2020),
+      lastDate: DateTime.now(),
+      initialDateRange: _dateRange,
+    );
+    if (selected == null || !mounted) return;
+    setState(() {
+      _selectedPreset = 'Custom';
+      _dateRange = DateTimeRange(
+        start: DateTime(
+            selected.start.year, selected.start.month, selected.start.day),
+        end: DateTime(selected.end.year, selected.end.month, selected.end.day,
+            23, 59, 59),
+      );
+    });
+  }
+
+  Future<void> _exportBestSelling(
+      List<BestSellingMedicineRow> rows) async {
+    final l10n = AppLocalizations.of(context)!;
+    setState(() => _isExporting = true);
+    try {
+      final currentUser = ref.read(authSessionProvider);
+      final repo = ref.read(reportRepositoryProvider);
+      final file = await repo.exportBestSellingMedicines(
+        filter: BestSellingMedicinesFilter(
+          startDate: _dateRange.start,
+          endDate: _dateRange.end,
+          rankMode: _rankBy,
+        ),
+        rows: rows,
+        userId: currentUser?.id ?? 1,
+      );
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(l10n.exportBestSellingSaved(file.path)),
+            backgroundColor: AppTheme.successColor,
+            duration: const Duration(seconds: 4),
+          ),
+        );
+      }
+    } catch (err) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(l10n.exportBestSellingFailed),
+            backgroundColor: AppTheme.dangerColor,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isExporting = false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    final analyticsAsync = ref.watch(salesAnalyticsFutureProvider(_dateRange));
+    final l10n = AppLocalizations.of(context)!;
+    final analyticsAsync = ref.watch(
+      salesAnalyticsFutureProvider(
+        SalesAnalyticsFilter(range: _dateRange, rankBy: _rankBy),
+      ),
+    );
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Sales Analytics & Insights'),
+        title: Text(l10n.analyticsTitle),
       ),
       body: Column(
         children: [
@@ -165,13 +171,21 @@ class _SalesAnalyticsScreenState extends ConsumerState<SalesAnalyticsScreen> {
               runSpacing: 8,
               children: [
                 SegmentedButton<String>(
-                  segments: const [
-                    ButtonSegment(value: 'Today', label: Text('Today')),
-                    ButtonSegment(value: 'This Week', label: Text('This Week')),
-                    ButtonSegment(value: 'This Month', label: Text('This Month')),
+                  segments: [
+                    ButtonSegment(
+                        value: 'Today', label: Text(l10n.filterToday)),
+                    ButtonSegment(
+                        value: 'This Week', label: Text(l10n.filterThisWeek)),
+                    ButtonSegment(
+                        value: 'This Month', label: Text(l10n.filterThisMonth)),
                   ],
                   selected: {_selectedPreset},
                   onSelectionChanged: (val) => _applyPreset(val.first),
+                ),
+                OutlinedButton.icon(
+                  onPressed: _selectCustomRange,
+                  icon: const Icon(Icons.date_range),
+                  label: Text(l10n.filterCustom),
                 ),
                 Text(
                   '${_dateRange.start.toIso8601String().split('T').first} - ${_dateRange.end.toIso8601String().split('T').first}',
@@ -183,11 +197,11 @@ class _SalesAnalyticsScreenState extends ConsumerState<SalesAnalyticsScreen> {
           Expanded(
             child: analyticsAsync.when(
               data: (data) {
-                final summary = data['summary'] as SalesSummary;
-                final totalRefunds = data['totalRefunds'] as double;
-                final paymentCounts = data['paymentCounts'] as Map<String, int>;
-                final categoryMap = data['categoryMap'] as Map<String, double>;
-                final topProducts = data['topProducts'] as List<TopProductData>;
+                final summary = data.summary;
+                final totalRefunds = summary.totalRefunds;
+                final paymentCounts = data.paymentCounts;
+                final categoryMap = data.categoryRevenue;
+                final topProducts = data.bestSellingMedicines;
 
                 final marginPct = summary.totalRevenue > 0
                     ? (summary.grossProfit / summary.totalRevenue) * 100
@@ -203,7 +217,7 @@ class _SalesAnalyticsScreenState extends ConsumerState<SalesAnalyticsScreen> {
                         children: [
                           Expanded(
                             child: _MetricCard(
-                              title: 'NET REVENUE',
+                              title: l10n.analyticsNetRevenue,
                               value: formatIdr(summary.netRevenue),
                               icon: Icons.monetization_on,
                               color: Colors.green,
@@ -212,7 +226,7 @@ class _SalesAnalyticsScreenState extends ConsumerState<SalesAnalyticsScreen> {
                           const SizedBox(width: 12),
                           Expanded(
                             child: _MetricCard(
-                              title: 'GROSS REVENUE',
+                              title: l10n.analyticsGrossRevenue,
                               value: formatIdr(summary.totalRevenue),
                               icon: Icons.receipt_long,
                               color: Colors.blue,
@@ -225,8 +239,9 @@ class _SalesAnalyticsScreenState extends ConsumerState<SalesAnalyticsScreen> {
                         children: [
                           Expanded(
                             child: _MetricCard(
-                              title: 'NET PROFIT',
-                              value: '${formatIdr(summary.grossProfit - totalRefunds)} (${marginPct.toStringAsFixed(1)}%)',
+                              title: l10n.analyticsNetProfit,
+                              value:
+                                  '${formatIdr(summary.grossProfit - totalRefunds)} (${marginPct.toStringAsFixed(1)}%)',
                               icon: Icons.trending_up,
                               color: Colors.teal,
                             ),
@@ -234,7 +249,7 @@ class _SalesAnalyticsScreenState extends ConsumerState<SalesAnalyticsScreen> {
                           const SizedBox(width: 12),
                           Expanded(
                             child: _MetricCard(
-                              title: 'TOTAL REFUNDS',
+                              title: l10n.analyticsTotalRefunds,
                               value: formatIdr(totalRefunds),
                               icon: Icons.assignment_return,
                               color: Colors.red,
@@ -245,26 +260,33 @@ class _SalesAnalyticsScreenState extends ConsumerState<SalesAnalyticsScreen> {
                       const SizedBox(height: 24),
 
                       // Sales by Category
-                      const Text(
-                        'Sales by Product Category',
-                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                      Text(
+                        l10n.analyticsCategorySales,
+                        style: const TextStyle(
+                            fontWeight: FontWeight.bold, fontSize: 18),
                       ),
                       const SizedBox(height: 8),
                       if (categoryMap.isEmpty)
-                        const Text('No category sales data for selected period.')
+                        Text(l10n.noCategoryData)
                       else
                         ...categoryMap.entries.map((e) {
-                          final pct = summary.totalRevenue > 0 ? (e.value / summary.totalRevenue) : 0.0;
+                          final pct = summary.totalRevenue > 0
+                              ? (e.value / summary.totalRevenue)
+                              : 0.0;
                           return Padding(
                             padding: const EdgeInsets.symmetric(vertical: 4.0),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
                                   children: [
-                                    Text(e.key, style: const TextStyle(fontWeight: FontWeight.w600)),
-                                    Text('${formatIdr(e.value)} (${(pct * 100).toStringAsFixed(1)}%)'),
+                                    Text(e.key,
+                                        style: const TextStyle(
+                                            fontWeight: FontWeight.w600)),
+                                    Text(
+                                        '${formatIdr(e.value)} (${(pct * 100).toStringAsFixed(1)}%)'),
                                   ],
                                 ),
                                 const SizedBox(height: 4),
@@ -279,14 +301,55 @@ class _SalesAnalyticsScreenState extends ConsumerState<SalesAnalyticsScreen> {
                         }),
                       const SizedBox(height: 24),
 
-                      // Top 5 Best-Selling Products Table & Chart
-                      const Text(
-                        'Top 5 Best-Selling Products',
-                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            l10n.bestSellingMedicines,
+                            style: const TextStyle(
+                                fontWeight: FontWeight.bold, fontSize: 18),
+                          ),
+                          Tooltip(
+                            message: _isExporting
+                                ? l10n.exportingBestSelling
+                                : topProducts.isEmpty
+                                    ? l10n.exportBestSellingDisabledEmpty
+                                    : l10n.exportBestSellingButtonTooltip,
+                            child: OutlinedButton.icon(
+                              key: const Key('exportBestSellingBtn'),
+                              onPressed: topProducts.isEmpty || _isExporting
+                                  ? null
+                                  : () => _exportBestSelling(topProducts),
+                              icon: _isExporting
+                                  ? const SizedBox(
+                                      width: 16,
+                                      height: 16,
+                                      child: CircularProgressIndicator(
+                                          strokeWidth: 2),
+                                    )
+                                  : const Icon(Icons.file_download),
+                              label: Text(l10n.exportBestSellingButton),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      SegmentedButton<BestSellingRankMode>(
+                        segments: [
+                          ButtonSegment(
+                              value: BestSellingRankMode.netQuantity,
+                              label: Text(l10n.rankByNetUnits)),
+                          ButtonSegment(
+                              value: BestSellingRankMode.netRevenue,
+                              label: Text(l10n.rankByNetRevenue)),
+                        ],
+                        selected: {_rankBy},
+                        onSelectionChanged: (value) =>
+                            setState(() => _rankBy = value.first),
                       ),
                       const SizedBox(height: 8),
                       if (topProducts.isEmpty)
-                        const Text('No sales recorded in selected period.')
+                        Text(l10n.noSalesData)
                       else ...[
                         Card(
                           elevation: 2,
@@ -297,24 +360,43 @@ class _SalesAnalyticsScreenState extends ConsumerState<SalesAnalyticsScreen> {
                               child: BarChart(
                                 BarChartData(
                                   alignment: BarChartAlignment.spaceAround,
-                                  maxY: (topProducts.first.revenue * 1.2).clamp(10.0, double.infinity),
+                                  maxY: ((_rankBy ==
+                                                  BestSellingRankMode
+                                                      .netQuantity
+                                              ? topProducts.first.netQuantity
+                                                  .toDouble()
+                                              : topProducts.first.netRevenue) *
+                                          1.2)
+                                      .clamp(10.0, double.infinity),
                                   barTouchData: BarTouchData(enabled: true),
                                   titlesData: FlTitlesData(
                                     show: true,
-                                    leftTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                                    rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                                    topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                                    leftTitles: const AxisTitles(
+                                        sideTitles:
+                                            SideTitles(showTitles: false)),
+                                    rightTitles: const AxisTitles(
+                                        sideTitles:
+                                            SideTitles(showTitles: false)),
+                                    topTitles: const AxisTitles(
+                                        sideTitles:
+                                            SideTitles(showTitles: false)),
                                     bottomTitles: AxisTitles(
                                       sideTitles: SideTitles(
                                         showTitles: true,
                                         getTitlesWidget: (value, meta) {
                                           final index = value.toInt();
-                                          if (index >= 0 && index < topProducts.length) {
-                                            final name = topProducts[index].productName;
-                                            final shortName = name.length > 8 ? '${name.substring(0, 7)}…' : name;
+                                          if (index >= 0 &&
+                                              index < topProducts.length) {
+                                            final name =
+                                                topProducts[index].productName;
+                                            final shortName = name.length > 8
+                                                ? '${name.substring(0, 7)}…'
+                                                : name;
                                             return SideTitleWidget(
                                               axisSide: meta.axisSide,
-                                              child: Text(shortName, style: const TextStyle(fontSize: 10)),
+                                              child: Text(shortName,
+                                                  style: const TextStyle(
+                                                      fontSize: 10)),
                                             );
                                           }
                                           return const SizedBox.shrink();
@@ -324,17 +406,23 @@ class _SalesAnalyticsScreenState extends ConsumerState<SalesAnalyticsScreen> {
                                   ),
                                   gridData: const FlGridData(show: false),
                                   borderData: FlBorderData(show: false),
-                                  barGroups: topProducts.asMap().entries.map((entry) {
+                                  barGroups:
+                                      topProducts.asMap().entries.map((entry) {
                                     final idx = entry.key;
                                     final item = entry.value;
                                     return BarChartGroupData(
                                       x: idx,
                                       barRods: [
                                         BarChartRodData(
-                                          toY: item.revenue,
+                                          toY: _rankBy ==
+                                                  BestSellingRankMode
+                                                      .netQuantity
+                                              ? item.netQuantity.toDouble()
+                                              : item.netRevenue,
                                           color: Colors.indigo,
                                           width: 16,
-                                          borderRadius: BorderRadius.circular(4),
+                                          borderRadius:
+                                              BorderRadius.circular(4),
                                         ),
                                       ],
                                     );
@@ -349,18 +437,20 @@ class _SalesAnalyticsScreenState extends ConsumerState<SalesAnalyticsScreen> {
                           child: SingleChildScrollView(
                             scrollDirection: Axis.horizontal,
                             child: DataTable(
-                              columns: const [
-                                DataColumn(label: Text('Product')),
-                                DataColumn(label: Text('Qty Sold')),
-                                DataColumn(label: Text('Revenue')),
+                              columns: [
+                                DataColumn(label: Text(l10n.reportProduct)),
+                                DataColumn(label: Text(l10n.rankByNetUnits)),
+                                DataColumn(label: Text(l10n.reportReturned)),
+                                DataColumn(label: Text(l10n.rankByNetRevenue)),
                               ],
                               rows: topProducts
                                   .map(
                                     (p) => DataRow(
                                       cells: [
                                         DataCell(Text(p.productName)),
-                                        DataCell(Text('${p.unitsSold}')),
-                                        DataCell(Text(formatIdr(p.revenue))),
+                                        DataCell(Text('${p.netQuantity}')),
+                                        DataCell(Text('${p.returnedQuantity}')),
+                                        DataCell(Text(formatIdr(p.netRevenue))),
                                       ],
                                     ),
                                   )
@@ -372,9 +462,10 @@ class _SalesAnalyticsScreenState extends ConsumerState<SalesAnalyticsScreen> {
                       const SizedBox(height: 24),
 
                       // Payment Method Breakdown
-                      const Text(
-                        'Payment Method Breakdown',
-                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                      Text(
+                        l10n.reportPaymentBreakdown,
+                        style: const TextStyle(
+                            fontWeight: FontWeight.bold, fontSize: 18),
                       ),
                       const SizedBox(height: 8),
                       Wrap(
@@ -394,7 +485,7 @@ class _SalesAnalyticsScreenState extends ConsumerState<SalesAnalyticsScreen> {
                 );
               },
               loading: () => const Center(child: CircularProgressIndicator()),
-              error: (err, _) => Center(child: Text('Error loading analytics: $err')),
+              error: (_, __) => Center(child: Text(l10n.analyticsLoadError)),
             ),
           ),
         ],
@@ -432,7 +523,11 @@ class _MetricCard extends StatelessWidget {
                 children: [
                   Icon(icon, color: color, size: 20),
                   const SizedBox(width: 6),
-                  Text(title, style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.grey.shade700)),
+                  Text(title,
+                      style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.grey.shade700)),
                 ],
               ),
             ),
@@ -442,7 +537,8 @@ class _MetricCard extends StatelessWidget {
               alignment: Alignment.centerLeft,
               child: Text(
                 value,
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: color),
+                style: TextStyle(
+                    fontSize: 16, fontWeight: FontWeight.bold, color: color),
               ),
             ),
           ],

@@ -1,6 +1,6 @@
-# 📖 Pharmacy Inventory Platform — User Guide & Manual
+# 📖 PharmaLoka — Pharmacy Inventory Platform — User Guide & Manual
 
-Welcome to the **Pharmacy Inventory Platform**! This application is an offline-first inventory management and Point-of-Sale (POS) counter system designed specifically for pharmacies, clinics, and drugstores.
+Welcome to **PharmaLoka — Pharmacy Inventory Platform**! This application is an offline-first inventory management and Point-of-Sale (POS) counter system designed specifically for pharmacies, clinics, and drugstores.
 
 ---
 
@@ -98,7 +98,7 @@ When migrating pharmacy data to a new Windows or Android device:
   - Ensure the `.json` file size is non-zero and matching expected record count.
 
 - [ ] **Step 3: Transfer to New Device**
-  - Install **Pharmacy Inventory Platform** on the new device.
+  - Install **PharmaLoka** on the new device.
   - Copy the backup `.json` file via USB/Local Network, OR sign in with Google to download from Drive.
 
 - [ ] **Step 4: Execute Verified Restore**

@@ -5,12 +5,12 @@ import '../../core/app_theme.dart';
 import '../../core/formatters.dart';
 import '../../core/providers.dart';
 import '../../data/report_repository.dart';
+import '../auth/auth_session.dart';
 
 import '../../l10n/app_localizations.dart';
 
-final procurementReportFutureProvider =
-    FutureProvider.family.autoDispose<ProcurementSummary, DateTimeRange>(
-        (ref, range) async {
+final procurementReportFutureProvider = FutureProvider.family
+    .autoDispose<ProcurementSummary, DateTimeRange>((ref, range) async {
   final repo = ref.watch(reportRepositoryProvider);
   return repo.getProcurementSummary(
     startDate: range.start,
@@ -29,6 +29,7 @@ class ProcurementReportScreen extends ConsumerStatefulWidget {
 class _ProcurementReportScreenState
     extends ConsumerState<ProcurementReportScreen> {
   late DateTimeRange _selectedDateRange;
+  bool _isExporting = false;
 
   @override
   void initState() {
@@ -52,6 +53,41 @@ class _ProcurementReportScreenState
     }
   }
 
+  Future<void> _export(ProcurementSummary summary) async {
+    if (summary.supplierSpendMap.isEmpty || _isExporting) return;
+
+    final l10n = AppLocalizations.of(context)!;
+    setState(() => _isExporting = true);
+    try {
+      final file =
+          await ref.read(reportRepositoryProvider).exportProcurementReport(
+                summary: summary,
+                startDate: _selectedDateRange.start,
+                endDate: _selectedDateRange.end,
+                userId: ref.read(authSessionProvider)?.id ?? 1,
+              );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(l10n.exportReportSaved(file.path)),
+            backgroundColor: AppTheme.successColor,
+          ),
+        );
+      }
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(l10n.exportReportFailed),
+            backgroundColor: AppTheme.dangerColor,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isExporting = false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
@@ -59,9 +95,7 @@ class _ProcurementReportScreenState
         ref.watch(procurementReportFutureProvider(_selectedDateRange));
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(l10n.procurementReportTitle),
-      ),
+      appBar: AppBar(title: Text(l10n.procurementReportTitle)),
       body: Column(
         children: [
           // Filter Bar
@@ -85,7 +119,7 @@ class _ProcurementReportScreenState
                   key: const Key('changeProcurementDateRangeBtn'),
                   onPressed: _selectDateRange,
                   icon: const Icon(Icons.filter_alt),
-                  label: const Text('Filter Date'),
+                  label: Text(l10n.filterDate),
                 ),
               ],
             ),
@@ -104,7 +138,7 @@ class _ProcurementReportScreenState
                         children: [
                           Expanded(
                             child: _MetricCard(
-                              title: 'TOTAL PURCHASES',
+                              title: l10n.procurementTotalPurchases,
                               value: formatIdr(summary.totalPurchaseSpend),
                               icon: Icons.shopping_bag,
                               color: AppTheme.primaryColor,
@@ -113,7 +147,7 @@ class _ProcurementReportScreenState
                           const SizedBox(width: 12),
                           Expanded(
                             child: _MetricCard(
-                              title: 'PURCHASE ORDERS',
+                              title: l10n.procurementPurchaseOrders,
                               value: '${summary.totalOrdersCount}',
                               icon: Icons.assignment,
                               color: Colors.teal,
@@ -122,7 +156,7 @@ class _ProcurementReportScreenState
                           const SizedBox(width: 12),
                           Expanded(
                             child: _MetricCard(
-                              title: 'BATCHES RECEIVED',
+                              title: l10n.procurementBatchesReceived,
                               value: '${summary.receivedBatchesCount}',
                               icon: Icons.inventory_2,
                               color: Colors.indigo,
@@ -133,18 +167,44 @@ class _ProcurementReportScreenState
                       const SizedBox(height: 24),
 
                       // Supplier Spend Breakdown Table
-                      const Text(
-                        'Purchases by Supplier',
-                        style: TextStyle(
-                            fontSize: 18, fontWeight: FontWeight.bold),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            l10n.procurementBySupplier,
+                            style: const TextStyle(
+                                fontSize: 18, fontWeight: FontWeight.bold),
+                          ),
+                          IconButton(
+                            key: const Key('exportProcurementReportBtn'),
+                            tooltip: _isExporting
+                                ? l10n.exportingProcurement
+                                : summary.supplierSpendMap.isEmpty
+                                    ? l10n.exportProcurementEmpty
+                                    : l10n.exportProcurementTooltip,
+                            onPressed:
+                                summary.supplierSpendMap.isEmpty || _isExporting
+                                    ? null
+                                    : () => _export(summary),
+                            icon: _isExporting
+                                ? const SizedBox(
+                                    height: 20,
+                                    width: 20,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                    ),
+                                  )
+                                : const Icon(Icons.download),
+                          ),
+                        ],
                       ),
                       const SizedBox(height: 12),
                       Card(
                         child: summary.supplierSpendMap.isEmpty
-                            ? const Padding(
-                                padding: EdgeInsets.all(24.0),
+                            ? Padding(
+                                padding: const EdgeInsets.all(24.0),
                                 child: Center(
-                                  child: Text('No purchases in selected period.'),
+                                  child: Text(l10n.procurementEmpty),
                                 ),
                               )
                             : ListView.separated(
@@ -178,7 +238,7 @@ class _ProcurementReportScreenState
                 );
               },
               loading: () => const Center(child: CircularProgressIndicator()),
-              error: (err, _) => Center(child: Text('Error: $err')),
+              error: (_, __) => Center(child: Text(l10n.reportsLoadError)),
             ),
           ),
         ],

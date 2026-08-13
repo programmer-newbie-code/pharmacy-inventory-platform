@@ -1,7 +1,10 @@
+import 'dart:io';
+
 import 'package:drift/drift.dart';
 
 import 'audit_logger.dart';
 import 'database.dart';
+import 'excel_report_service.dart';
 
 class ProcurementSummary {
   const ProcurementSummary({
@@ -38,12 +41,77 @@ class SalesSummary {
       totalRevenue > 0 ? (grossProfit / totalRevenue) * 100 : 0;
 }
 
+enum BestSellingRankMode { netQuantity, netRevenue }
+
+class BestSellingMedicinesFilter {
+  const BestSellingMedicinesFilter({
+    required this.startDate,
+    required this.endDate,
+    required this.rankMode,
+  });
+
+  final DateTime startDate;
+  final DateTime endDate;
+  final BestSellingRankMode rankMode;
+
+  @override
+  bool operator ==(Object other) =>
+      other is BestSellingMedicinesFilter &&
+      other.startDate == startDate &&
+      other.endDate == endDate &&
+      other.rankMode == rankMode;
+
+  @override
+  int get hashCode => Object.hash(startDate, endDate, rankMode);
+}
+
+class BestSellingMedicineRow {
+  const BestSellingMedicineRow({
+    required this.productId,
+    required this.productName,
+    required this.grossQuantity,
+    required this.returnedQuantity,
+    required this.grossRevenue,
+    required this.refundedRevenue,
+    required this.netQuantity,
+    required this.netRevenue,
+  });
+
+  final int productId;
+  final String productName;
+  final int grossQuantity;
+  final int returnedQuantity;
+  final double grossRevenue;
+  final double refundedRevenue;
+  final int netQuantity;
+  final double netRevenue;
+}
+
+class SalesAnalyticsData {
+  const SalesAnalyticsData({
+    required this.summary,
+    required this.paymentCounts,
+    required this.categoryRevenue,
+    required this.bestSellingMedicines,
+  });
+
+  final SalesSummary summary;
+  final Map<String, int> paymentCounts;
+  final Map<String, double> categoryRevenue;
+  final List<BestSellingMedicineRow> bestSellingMedicines;
+}
+
 class ReportRepository {
-  ReportRepository(this._db, {AuditLogger? auditLogger})
-      : _auditLogger = auditLogger;
+  ReportRepository(
+    this._db, {
+    AuditLogger? auditLogger,
+    ExcelReportService? excelReportService,
+  })  : _auditLogger = auditLogger,
+        _excelReportService = excelReportService ?? ExcelReportService();
 
   final AppDatabase _db;
   final AuditLogger? _auditLogger;
+  final ExcelReportService _excelReportService;
 
   /// Generates sales summary report for a given date range.
   Future<SalesSummary> getSalesSummary({
@@ -51,9 +119,11 @@ class ReportRepository {
     required DateTime endDate,
   }) async {
     final query = _db.select(_db.saleTransactions)
-      ..where((tbl) =>
-          tbl.createdAt.isBiggerOrEqual(Variable(startDate)) &
-          tbl.createdAt.isSmallerOrEqual(Variable(endDate)));
+      ..where(
+        (tbl) =>
+            tbl.createdAt.isBiggerOrEqual(Variable(startDate)) &
+            tbl.createdAt.isSmallerOrEqual(Variable(endDate)),
+      );
     final txns = await query.get();
 
     int count = txns.length;
@@ -62,13 +132,15 @@ class ReportRepository {
     // Calculate COGS by joining sale items with stock batches
     double cogs = 0.0;
     for (final txn in txns) {
-      final items = await (_db.select(_db.saleItems)
-            ..where((tbl) => tbl.transactionId.equals(txn.id)))
+      final items = await (_db.select(
+        _db.saleItems,
+      )..where((tbl) => tbl.transactionId.equals(txn.id)))
           .get();
 
       for (final item in items) {
-        final batch = await (_db.select(_db.stockBatches)
-              ..where((tbl) => tbl.id.equals(item.batchId)))
+        final batch = await (_db.select(
+          _db.stockBatches,
+        )..where((tbl) => tbl.id.equals(item.batchId)))
             .getSingleOrNull();
 
         final costPerUnit = batch?.costPricePerBaseUnit ?? 0.0;
@@ -78,12 +150,13 @@ class ReportRepository {
 
     // Total refunds in the same period
     final refunds = await (_db.select(_db.returnTransactions)
-          ..where((tbl) =>
-              tbl.createdAt.isBiggerOrEqual(Variable(startDate)) &
-              tbl.createdAt.isSmallerOrEqual(Variable(endDate))))
+          ..where(
+            (tbl) =>
+                tbl.createdAt.isBiggerOrEqual(Variable(startDate)) &
+                tbl.createdAt.isSmallerOrEqual(Variable(endDate)),
+          ))
         .get();
-    final totalRefunds =
-        refunds.fold(0.0, (sum, r) => sum + r.refundAmount);
+    final totalRefunds = refunds.fold(0.0, (sum, r) => sum + r.refundAmount);
 
     return SalesSummary(
       totalTransactions: count,
@@ -95,15 +168,161 @@ class ReportRepository {
     );
   }
 
+  /// Returns medicines ranked by net quantity or net revenue for a period.
+  ///
+  /// Returns are attributed using their processed date, so the report reflects
+  /// the stock and revenue movement that happened during the selected period.
+  Future<List<BestSellingMedicineRow>> getBestSellingMedicines(
+    BestSellingMedicinesFilter filter,
+  ) async {
+    final startDate = filter.startDate;
+    final endDate = filter.endDate;
+    final transactions = await (_db.select(_db.saleTransactions)
+          ..where(
+            (txn) =>
+                txn.createdAt.isBiggerOrEqual(Variable(startDate)) &
+                txn.createdAt.isSmallerOrEqual(Variable(endDate)),
+          ))
+        .get();
+    if (transactions.isEmpty) return const [];
+
+    final transactionIds = transactions.map((txn) => txn.id).toList();
+    final saleItems = await (_db.select(
+      _db.saleItems,
+    )..where((item) => item.transactionId.isIn(transactionIds)))
+        .get();
+    if (saleItems.isEmpty) return const [];
+
+    final productIds = saleItems.map((item) => item.productId).toSet().toList();
+    final products = await (_db.select(
+      _db.products,
+    )..where((product) => product.id.isIn(productIds)))
+        .get();
+    final productNames = {
+      for (final product in products) product.id: product.name,
+    };
+
+    final returns = await (_db.select(_db.returnTransactions)
+          ..where(
+            (txn) =>
+                txn.createdAt.isBiggerOrEqual(Variable(startDate)) &
+                txn.createdAt.isSmallerOrEqual(Variable(endDate)) &
+                txn.originalTxnId.isIn(transactionIds),
+          ))
+        .get();
+    final returnedBySaleItem = <int, int>{};
+    if (returns.isNotEmpty) {
+      final returnItems = await (_db.select(_db.returnItems)
+            ..where(
+              (item) => item.returnTxnId.isIn(returns.map((txn) => txn.id)),
+            ))
+          .get();
+      for (final item in returnItems) {
+        returnedBySaleItem[item.saleItemId] =
+            (returnedBySaleItem[item.saleItemId] ?? 0) + item.qtyReturned;
+      }
+    }
+
+    final totals = <int, _BestSellingTotals>{};
+    for (final item in saleItems) {
+      final total = totals.putIfAbsent(item.productId, _BestSellingTotals.new);
+      final returnedQuantity = returnedBySaleItem[item.id] ?? 0;
+      total.grossQuantity += item.qtySold;
+      total.returnedQuantity += returnedQuantity;
+      total.grossRevenue += item.subtotal;
+      total.refundedRevenue += returnedQuantity * item.unitPrice;
+    }
+
+    final rows = totals.entries.map((entry) {
+      final total = entry.value;
+      return BestSellingMedicineRow(
+        productId: entry.key,
+        productName: productNames[entry.key] ?? 'Unknown Product',
+        grossQuantity: total.grossQuantity,
+        returnedQuantity: total.returnedQuantity,
+        grossRevenue: total.grossRevenue,
+        refundedRevenue: total.refundedRevenue,
+        netQuantity: (total.grossQuantity - total.returnedQuantity).clamp(
+          0,
+          total.grossQuantity,
+        ),
+        netRevenue: (total.grossRevenue - total.refundedRevenue).clamp(
+          0.0,
+          total.grossRevenue,
+        ),
+      );
+    }).toList();
+    rows.sort((a, b) {
+      final primary = filter.rankMode == BestSellingRankMode.netQuantity
+          ? b.netQuantity.compareTo(a.netQuantity)
+          : b.netRevenue.compareTo(a.netRevenue);
+      return primary != 0 ? primary : a.productName.compareTo(b.productName);
+    });
+    return rows;
+  }
+
+  Future<SalesAnalyticsData> getSalesAnalytics(
+    BestSellingMedicinesFilter filter,
+  ) async {
+    final transactions = await (_db.select(_db.saleTransactions)
+          ..where(
+            (txn) =>
+                txn.createdAt.isBiggerOrEqual(Variable(filter.startDate)) &
+                txn.createdAt.isSmallerOrEqual(Variable(filter.endDate)),
+          ))
+        .get();
+    final paymentCounts = <String, int>{
+      'Cash': 0,
+      'QRIS': 0,
+      'Debit': 0,
+      'Credit': 0,
+    };
+    for (final transaction in transactions) {
+      paymentCounts[transaction.paymentMethod] =
+          (paymentCounts[transaction.paymentMethod] ?? 0) + 1;
+    }
+
+    final bestSellingMedicines = await getBestSellingMedicines(filter);
+    final products = await (_db.select(_db.products)
+          ..where(
+            (product) => product.id.isIn(
+              bestSellingMedicines.map((row) => row.productId),
+            ),
+          ))
+        .get();
+    final categories = {
+      for (final product in products) product.id: product.category,
+    };
+    final categoryRevenue = <String, double>{};
+    for (final row in bestSellingMedicines) {
+      final category = categories[row.productId] ?? 'General';
+      categoryRevenue[category] =
+          (categoryRevenue[category] ?? 0) + row.netRevenue;
+    }
+
+    final summary = await getSalesSummary(
+      startDate: filter.startDate,
+      endDate: filter.endDate,
+    );
+    return SalesAnalyticsData(
+      summary: summary,
+      paymentCounts: paymentCounts,
+      categoryRevenue: categoryRevenue,
+      bestSellingMedicines: bestSellingMedicines,
+    );
+  }
+
   /// Generates procurement / purchasing summary report for a given date range.
   Future<ProcurementSummary> getProcurementSummary({
     required DateTime startDate,
     required DateTime endDate,
   }) async {
     final poQuery = _db.select(_db.purchaseOrders)
-      ..where((tbl) =>
-          tbl.createdAt.isBiggerOrEqual(Variable(startDate)) &
-          tbl.createdAt.isSmallerOrEqual(Variable(endDate)));
+      ..where(
+        (tbl) =>
+            tbl.createdAt.isBiggerOrEqual(Variable(startDate)) &
+            tbl.createdAt.isSmallerOrEqual(Variable(endDate)),
+      );
     final pos = await poQuery.get();
 
     final supplierQuery = await _db.select(_db.suppliers).get();
@@ -115,15 +334,18 @@ class ReportRepository {
     for (final po in pos) {
       if (po.status != 'cancelled') {
         totalSpend += po.totalAmount;
-        final sName = supplierMap[po.supplierId] ?? 'Supplier #${po.supplierId}';
+        final sName =
+            supplierMap[po.supplierId] ?? 'Supplier #${po.supplierId}';
         supplierSpend[sName] = (supplierSpend[sName] ?? 0.0) + po.totalAmount;
       }
     }
 
     final batchesQuery = _db.select(_db.stockBatches)
-      ..where((tbl) =>
-          tbl.receivedDate.isBiggerOrEqual(Variable(startDate)) &
-          tbl.receivedDate.isSmallerOrEqual(Variable(endDate)));
+      ..where(
+        (tbl) =>
+            tbl.receivedDate.isBiggerOrEqual(Variable(startDate)) &
+            tbl.receivedDate.isSmallerOrEqual(Variable(endDate)),
+      );
     final batches = await batchesQuery.get();
 
     return ProcurementSummary(
@@ -140,23 +362,27 @@ class ReportRepository {
     required DateTime endDate,
   }) async {
     final shifts = await (_db.select(_db.cashierShifts)
-          ..where((tbl) =>
-              tbl.status.equals('closed') &
-              tbl.closedAt.isBiggerOrEqual(Variable(startDate)) &
-              tbl.closedAt.isSmallerOrEqual(Variable(endDate))))
+          ..where(
+            (tbl) =>
+                tbl.status.equals('closed') &
+                tbl.closedAt.isBiggerOrEqual(Variable(startDate)) &
+                tbl.closedAt.isSmallerOrEqual(Variable(endDate)),
+          ))
         .get();
 
     return shifts
         .where((s) => s.discrepancy != null && s.discrepancy != 0)
-        .map((s) => ShiftDiscrepancy(
-              shiftId: s.id,
-              cashierId: s.cashierId,
-              expectedCash: s.expectedCash ?? 0,
-              actualCash: s.actualCash ?? 0,
-              discrepancy: s.discrepancy ?? 0,
-              discrepancyReason: s.discrepancyReason,
-              closedAt: s.closedAt!,
-            ))
+        .map(
+          (s) => ShiftDiscrepancy(
+            shiftId: s.id,
+            cashierId: s.cashierId,
+            expectedCash: s.expectedCash ?? 0,
+            actualCash: s.actualCash ?? 0,
+            discrepancy: s.discrepancy ?? 0,
+            discrepancyReason: s.discrepancyReason,
+            closedAt: s.closedAt!,
+          ),
+        )
         .toList();
   }
 
@@ -177,10 +403,123 @@ class ReportRepository {
     }
   }
 
+  /// Exports the Best-Selling Medicines report to Excel and records the
+  /// export in the audit trail.
+  ///
+  /// [rows] must be the exact rows already rendered on screen (already
+  /// ranked by [getBestSellingMedicines]) so the exported file matches what
+  /// the user saw — this method never re-fetches or re-sorts.
+  Future<File> exportBestSellingMedicines({
+    required BestSellingMedicinesFilter filter,
+    required List<BestSellingMedicineRow> rows,
+    required int userId,
+    Directory? baseDirectoryOverride,
+  }) async {
+    final file =
+        await _excelReportService.exportAndSaveBestSellingMedicinesReport(
+      filter: filter,
+      rows: rows,
+      baseDirectoryOverride: baseDirectoryOverride,
+    );
+    final rankModeLabel = filter.rankMode == BestSellingRankMode.netQuantity
+        ? 'netQuantity'
+        : 'netRevenue';
+    await logExport(
+      userId: userId,
+      exportType: 'best_selling_medicines',
+      details: 'Period: ${filter.startDate.toIso8601String()} to '
+          '${filter.endDate.toIso8601String()}, rankMode: $rankModeLabel, '
+          'rows: ${rows.length}',
+    );
+    return file;
+  }
+
+  /// Saves the exact procurement data rendered by the report, then records
+  /// the successful export in the audit trail.
+  Future<File> exportProcurementReport({
+    required ProcurementSummary summary,
+    required DateTime startDate,
+    required DateTime endDate,
+    required int userId,
+    Directory? baseDirectoryOverride,
+  }) async {
+    final file = await _excelReportService.exportAndSaveProcurementReport(
+      summary: summary,
+      startDate: startDate,
+      endDate: endDate,
+      baseDirectoryOverride: baseDirectoryOverride,
+    );
+    await logExport(
+      userId: userId,
+      exportType: 'procurement_report',
+      details: 'Period: ${startDate.toIso8601String()} to '
+          '${endDate.toIso8601String()}, rows: ${summary.supplierSpendMap.length}',
+    );
+    return file;
+  }
+
+  /// Saves the exact cash movement rows rendered by the report, then records
+  /// the successful export in the audit trail.
+  Future<File> exportCashMovementReport({
+    required List<CashMovement> movements,
+    required DateTime startDate,
+    required DateTime endDate,
+    required int userId,
+    Directory? baseDirectoryOverride,
+  }) async {
+    final file = await _excelReportService.exportAndSaveCashMovementReport(
+      movements: movements,
+      startDate: startDate,
+      endDate: endDate,
+      baseDirectoryOverride: baseDirectoryOverride,
+    );
+    await logExport(
+      userId: userId,
+      exportType: 'cash_movement_report',
+      details: 'Period: ${startDate.toIso8601String()} to '
+          '${endDate.toIso8601String()}, rows: ${movements.length}',
+    );
+    return file;
+  }
+
+  /// Saves the exact classic-sales data already rendered by the report, then
+  /// records the successful export in the audit trail.
+  Future<File> exportSalesReport({
+    required SalesSummary summary,
+    required List<DetailedSaleRow> rows,
+    required DateTime startDate,
+    required DateTime endDate,
+    required int userId,
+    Directory? baseDirectoryOverride,
+  }) async {
+    final file = await _excelReportService.exportAndSaveReport(
+      summary: summary,
+      rows: rows,
+      startDate: startDate,
+      endDate: endDate,
+      baseDirectoryOverride: baseDirectoryOverride,
+    );
+    if (!await file.exists() || await file.length() == 0) {
+      throw FileSystemException(
+        'Sales report export was not saved.',
+        file.path,
+      );
+    }
+    await logExport(
+      userId: userId,
+      exportType: 'sales_report',
+      details: 'Period: ${startDate.toIso8601String()} to '
+          '${endDate.toIso8601String()}, transactions: '
+          '${summary.totalTransactions}, rows: ${rows.length}',
+    );
+    return file;
+  }
+
   /// Exports prescription sales log as CSV format for BPOM / Kemenkes compliance.
   Future<String> exportPrescriptionSalesCsv() async {
-    final txns = await (_db.select(_db.saleTransactions)
-          ..where((tbl) => tbl.hasPrescription.equals(true)))
+    final txns = await (_db.select(
+      _db.saleTransactions,
+    )..where((tbl) => tbl.hasPrescription.equals(true)))
         .get();
 
     final buffer = StringBuffer();
@@ -189,9 +528,7 @@ class ReportRepository {
     );
 
     for (final _ in txns) {
-      buffer.writeln(
-        ',,,"","",,',
-      );
+      buffer.writeln(',,,"","",,');
     }
 
     return buffer.toString();
@@ -203,20 +540,24 @@ class ReportRepository {
     required DateTime endDate,
   }) async {
     final txns = await (_db.select(_db.saleTransactions)
-          ..where((tbl) =>
-              tbl.createdAt.isBiggerOrEqual(Variable(startDate)) &
-              tbl.createdAt.isSmallerOrEqual(Variable(endDate))))
+          ..where(
+            (tbl) =>
+                tbl.createdAt.isBiggerOrEqual(Variable(startDate)) &
+                tbl.createdAt.isSmallerOrEqual(Variable(endDate)),
+          ))
         .get();
 
     final rows = <DetailedSaleRow>[];
     for (final txn in txns) {
-      final items = await (_db.select(_db.saleItems)
-            ..where((tbl) => tbl.transactionId.equals(txn.id)))
+      final items = await (_db.select(
+        _db.saleItems,
+      )..where((tbl) => tbl.transactionId.equals(txn.id)))
           .get();
 
       for (final item in items) {
-        final product = await (_db.select(_db.products)
-              ..where((tbl) => tbl.id.equals(item.productId)))
+        final product = await (_db.select(
+          _db.products,
+        )..where((tbl) => tbl.id.equals(item.productId)))
             .getSingleOrNull();
 
         rows.add(
@@ -279,4 +620,9 @@ class DetailedSaleRow {
   final double subtotal;
 }
 
-
+class _BestSellingTotals {
+  int grossQuantity = 0;
+  int returnedQuantity = 0;
+  double grossRevenue = 0;
+  double refundedRevenue = 0;
+}

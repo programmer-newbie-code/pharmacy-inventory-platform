@@ -165,6 +165,23 @@ void main() {
     expect(restored, hasLength(1));
     expect(restored.single.barcode, '8990001');
   });
+
+  test('logs a failed restore without replacing existing data', () async {
+    final original = await backupService.exportDatabaseToJson();
+    final decoded = jsonDecode(original) as Map<String, dynamic>;
+    (decoded['data'] as Map<String, dynamic>)['products'] = [
+      {'id': 1},
+    ];
+
+    await expectLater(
+      backupService.restoreFromBackupData(jsonEncode(decoded)),
+      throwsA(isA<BackupValidationException>()),
+    );
+
+    final logs = await backupService.listBackupLogs();
+    expect(logs.first.destination, 'restore');
+    expect(logs.first.status, 'Failed');
+  });
 }
 
 Future<void> _seedEveryTable(AppDatabase db) async {

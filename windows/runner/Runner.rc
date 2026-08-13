@@ -89,13 +89,13 @@ BEGIN
     BEGIN
         BLOCK "040904e4"
         BEGIN
-            VALUE "CompanyName", "com.programmernewbiecode" "\0"
-            VALUE "FileDescription", "pharmacy_inventory_platform" "\0"
+            VALUE "CompanyName", "ProgrammerNewbie Studio" "\0"
+            VALUE "FileDescription", "PharmaLoka - Pharmacy Inventory Platform" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
             VALUE "InternalName", "pharmacy_inventory_platform" "\0"
-            VALUE "LegalCopyright", "Copyright (C) 2026 com.programmernewbiecode. All rights reserved." "\0"
+            VALUE "LegalCopyright", "Copyright (C) 2026 ProgrammerNewbie Studio. All rights reserved." "\0"
             VALUE "OriginalFilename", "pharmacy_inventory_platform.exe" "\0"
-            VALUE "ProductName", "pharmacy_inventory_platform" "\0"
+            VALUE "ProductName", "PharmaLoka - Pharmacy Inventory Platform" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"
         END
     END

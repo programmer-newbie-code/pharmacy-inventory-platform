@@ -143,5 +143,66 @@ void main() {
     final products = await container.read(productRepositoryProvider).listProducts();
     expect(products, hasLength(1));
     expect(products.first.name, 'Paracetamol Box Test');
+    // The drug-classification label is localized, but the stored value is a
+    // persisted regulatory category and must not change.
+    expect(products.first.category, 'Obat Bebas');
+  });
+
+  testWidgets('renders localized dialog strings in English, not Indonesian',
+      (tester) async {
+    final db = AppDatabase(NativeDatabase.memory());
+    addTearDown(db.close);
+    final container = ProviderContainer(
+      overrides: [databaseProvider.overrideWithValue(db)],
+    );
+    addTearDown(container.dispose);
+
+    await tester.pumpWidget(
+      UncontrolledProviderScope(
+        container: container,
+        child: const MaterialApp(
+          locale: Locale('en'),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: Scaffold(body: AddProductDialog()),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    // These were hard-coded Indonesian literals shown to English users.
+    expect(find.text('Tambah Produk Baru'), findsNothing);
+    expect(find.text('Add New Product'), findsOneWidget);
+    expect(find.text('Nama Produk *'), findsNothing);
+    expect(find.text('Product name *'), findsOneWidget);
+    expect(find.text('Golongan Obat'), findsNothing);
+    expect(find.text('Drug classification'), findsOneWidget);
+  });
+
+  testWidgets('keeps Indonesian dialog strings in the id locale',
+      (tester) async {
+    final db = AppDatabase(NativeDatabase.memory());
+    addTearDown(db.close);
+    final container = ProviderContainer(
+      overrides: [databaseProvider.overrideWithValue(db)],
+    );
+    addTearDown(container.dispose);
+
+    await tester.pumpWidget(
+      UncontrolledProviderScope(
+        container: container,
+        child: const MaterialApp(
+          locale: Locale('id'),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: Scaffold(body: AddProductDialog()),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Tambah Produk Baru'), findsOneWidget);
+    expect(find.text('Nama Produk *'), findsOneWidget);
+    expect(find.text('Golongan Obat'), findsOneWidget);
   });
 }

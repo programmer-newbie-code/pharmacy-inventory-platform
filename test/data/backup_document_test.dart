@@ -48,6 +48,22 @@ void main() {
     expect(document.data['csvImportLogs'], isEmpty);
   });
 
+  test('validates checksum-bearing documents and rejects tampering', () {
+    final source = jsonDecode(backup()) as Map<String, dynamic>;
+    final protected = BackupDocument.withIntegrity(source);
+
+    expect(
+      BackupDocument.parseAndValidate(jsonEncode(protected)).schemaVersion,
+      2,
+    );
+
+    (protected['counts'] as Map<String, dynamic>)['products'] = 1;
+    expect(
+      () => BackupDocument.parseAndValidate(jsonEncode(protected)),
+      throwsA(isA<BackupValidationException>()),
+    );
+  });
+
   test('accepts optional CSV import history rows', () {
     final document = BackupDocument.parseAndValidate(
       backup(changes: {

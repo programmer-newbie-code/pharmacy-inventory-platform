@@ -85,6 +85,26 @@ class CashierShiftRepository {
     return updated;
   }
 
+  Future<CashierShift> reviewShift({
+    required int shiftId,
+    required int reviewedBy,
+    String? reviewNote,
+  }) async {
+    return _db.transaction(() async {
+      final shift = await (_db.select(_db.cashierShifts)..where((tbl) => tbl.id.equals(shiftId))).getSingle();
+      if (shift.status != 'closed') throw StateError('Only closed shifts can be reviewed.');
+      final reviewer = await (_db.select(_db.users)..where((tbl) => tbl.id.equals(reviewedBy))).getSingle();
+      if (reviewer.role != 'admin') throw StateError('Only administrators can review shifts.');
+      final updated = shift.copyWith(
+        reviewedBy: Value(reviewedBy),
+        reviewedAt: Value(DateTime.now()),
+        reviewNote: Value(reviewNote == null || reviewNote.trim().isEmpty ? null : reviewNote.trim()),
+      );
+      await _db.update(_db.cashierShifts).replace(updated);
+      return updated;
+    });
+  }
+
   /// Records a cash in or cash out movement (e.g. Owner profit withdrawal / Prive, operational expense, bank deposit, top-up).
   Future<CashMovement> recordCashMovement({
     required int shiftId,

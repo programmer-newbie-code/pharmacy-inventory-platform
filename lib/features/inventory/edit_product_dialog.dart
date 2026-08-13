@@ -406,7 +406,7 @@ class _EditProductDialogState extends ConsumerState<EditProductDialog> {
               ),
               const SizedBox(height: 12),
               SwitchListTile(
-                title: const Text('Controlled Substance (Golongan Keras)'),
+                title: Text(l10n.controlledSubstance),
                 value: _isControlled,
                 onChanged: (val) => setState(() => _isControlled = val),
               ),

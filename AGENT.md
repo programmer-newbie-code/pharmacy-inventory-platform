@@ -11,6 +11,24 @@ installable on Windows (desktop) and Android. Full product context:
 [`docs/superpowers/specs/2026-07-08-pharmacy-inventory-platform-design.md`](docs/superpowers/specs/2026-07-08-pharmacy-inventory-platform-design.md).
 Read specs/plans on demand, not up front — token discipline.
 
+## Mandatory session startup and handoff
+
+Before changing the repository, every agent must:
+
+1. Fetch `origin` and inspect `origin/main`, open PRs, recently merged PRs, and
+   current/recent GitHub Actions runs.
+2. Read [`docs/superpowers/status/current-roadmap.md`](docs/superpowers/status/current-roadmap.md)
+   and the spec/plan linked for the next active increment.
+3. Resume an in-flight PR or post-merge main verification before starting
+   dependent work. Do not infer completion from stale plan checkboxes.
+4. Use implementation, tests, rendered behavior, PR state, and CI as evidence;
+   update the live roadmap after every merged increment.
+
+The approved product direction is defined by the
+[`cross-agent modernization spec`](docs/superpowers/specs/2026-08-12-cross-agent-modernization-roadmap.md)
+and its [`implementation roadmap`](docs/superpowers/plans/2026-08-12-cross-agent-modernization-roadmap.md).
+Detailed requirements belong there, not in this file.
+
 ## Stack
 
 Flutter (stable) · `drift` (SQLite) · `flutter_riverpod` · ARB-based i18n
@@ -61,7 +79,12 @@ Flutter (stable) · `drift` (SQLite) · `flutter_riverpod` · ARB-based i18n
 2. **Every change MUST go through a Pull Request (PR).**
    - Push feature branch to GitHub (`git push origin feat/xxx`)
    - Create PR (`gh pr create`)
-   - Wait for ALL GitHub Actions CI checks (`analyze-and-test`, `build-windows`, `build-android`, `secret-scan`, `verify-signatures`) to pass completely (100% GREEN)
+   - Wait for every applicable GitHub Actions check. Signature verification and
+     secret scan always run. Application, dependency, workflow, platform, asset,
+     or build changes must also pass `analyze-and-test`, `build-windows`, and
+     `build-android`. Pure documentation changes use the path classifier and may
+     skip those three expensive Flutter jobs; `docs_site/**` changes must build
+     and deploy GitHub Pages after merge.
    - Merge PR (`gh pr merge --squash`)
 3. **No exceptions unless the USER explicitly instructs to bypass in writing.** The AI agent must never decide on its own to push directly to `main` or skip PR/CI validation.
 4. **PR titles follow [react-spectrum's naming guide](https://github.com/adobe/react-spectrum/wiki/Pull-Request-Naming-Guide):**
@@ -69,8 +92,11 @@ Flutter (stable) · `drift` (SQLite) · `flutter_riverpod` · ARB-based i18n
    `fix(pos): correct FEFO batch selection when two batches share an expiry date`.
    Type is one of: `feat`, `fix`, `build`, `chore`, `docs`, `test`, `refactor`, `ci`,
    `localize`, `bump`, `revert`. Scope is optional.
-5. **CI must be fully green before merge** (`flutter analyze`, 80%+ coverage tests,
-   Windows build, Android build). Watch with `gh run watch`; if red, read the
+5. **Applicable CI must be fully green before merge.** App-affecting changes require
+   `flutter analyze`, 80%+ coverage tests, Windows build, and Android build;
+   documentation-only changes require the always-on security/signature checks and
+   path classification, with expensive Flutter jobs intentionally skipped. Watch
+   with `gh run watch`; if red, read the
    exact failing log (`gh run view <run-id> --log-failed`) and fix the specific
    reported error — don't guess broadly.
 6. Use `context7` for current library/API docs when unsure — training data may be

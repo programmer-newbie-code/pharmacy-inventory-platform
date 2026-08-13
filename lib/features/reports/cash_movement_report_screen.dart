@@ -5,11 +5,11 @@ import '../../core/app_theme.dart';
 import '../../core/formatters.dart';
 import '../../core/providers.dart';
 import '../../data/database.dart';
+import '../auth/auth_session.dart';
 import '../../l10n/app_localizations.dart';
 
-final cashMovementsFutureProvider =
-    FutureProvider.family.autoDispose<List<CashMovement>, DateTimeRange>(
-        (ref, range) async {
+final cashMovementsFutureProvider = FutureProvider.family
+    .autoDispose<List<CashMovement>, DateTimeRange>((ref, range) async {
   final repo = ref.watch(cashierShiftRepositoryProvider);
   return repo.getCashMovementsInRange(
     startDate: range.start,
@@ -28,6 +28,7 @@ class CashMovementReportScreen extends ConsumerStatefulWidget {
 class _CashMovementReportScreenState
     extends ConsumerState<CashMovementReportScreen> {
   late DateTimeRange _selectedDateRange;
+  bool _isExporting = false;
 
   @override
   void initState() {
@@ -48,6 +49,41 @@ class _CashMovementReportScreenState
     );
     if (picked != null) {
       setState(() => _selectedDateRange = picked);
+    }
+  }
+
+  Future<void> _export(List<CashMovement> movements) async {
+    if (movements.isEmpty || _isExporting) return;
+
+    final l10n = AppLocalizations.of(context)!;
+    setState(() => _isExporting = true);
+    try {
+      final file =
+          await ref.read(reportRepositoryProvider).exportCashMovementReport(
+                movements: movements,
+                startDate: _selectedDateRange.start,
+                endDate: _selectedDateRange.end,
+                userId: ref.read(authSessionProvider)?.id ?? 1,
+              );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(l10n.exportReportSaved(file.path)),
+            backgroundColor: AppTheme.successColor,
+          ),
+        );
+      }
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(l10n.exportReportFailed),
+            backgroundColor: AppTheme.dangerColor,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isExporting = false);
     }
   }
 
@@ -74,9 +110,7 @@ class _CashMovementReportScreenState
         ref.watch(cashMovementsFutureProvider(_selectedDateRange));
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(l10n.cashMovementReportTitle),
-      ),
+      appBar: AppBar(title: Text(l10n.cashMovementReportTitle)),
       body: Column(
         children: [
           // Filter Bar
@@ -100,7 +134,7 @@ class _CashMovementReportScreenState
                   key: const Key('changeCashMovementDateRangeBtn'),
                   onPressed: _selectDateRange,
                   icon: const Icon(Icons.filter_alt),
-                  label: const Text('Filter Date'),
+                  label: Text(l10n.filterDate),
                 ),
               ],
             ),
@@ -163,18 +197,43 @@ class _CashMovementReportScreenState
                       const SizedBox(height: 24),
 
                       // History Table
-                      Text(
-                        l10n.movementHistoryTitle,
-                        style: const TextStyle(
-                            fontSize: 18, fontWeight: FontWeight.bold),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            l10n.movementHistoryTitle,
+                            style: const TextStyle(
+                                fontSize: 18, fontWeight: FontWeight.bold),
+                          ),
+                          IconButton(
+                            key: const Key('exportCashMovementReportBtn'),
+                            tooltip: _isExporting
+                                ? l10n.exportingCashMovement
+                                : movements.isEmpty
+                                    ? l10n.exportCashMovementEmpty
+                                    : l10n.exportCashMovementTooltip,
+                            onPressed: movements.isEmpty || _isExporting
+                                ? null
+                                : () => _export(movements),
+                            icon: _isExporting
+                                ? const SizedBox(
+                                    height: 20,
+                                    width: 20,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                    ),
+                                  )
+                                : const Icon(Icons.download),
+                          ),
+                        ],
                       ),
                       const SizedBox(height: 12),
                       Card(
                         child: movements.isEmpty
-                            ? const Padding(
-                                padding: EdgeInsets.all(24.0),
+                            ? Padding(
+                                padding: const EdgeInsets.all(24.0),
                                 child: Center(
-                                  child: Text('Belum ada transaksi arus kas pada periode ini.'),
+                                  child: Text(l10n.cashMovementEmpty),
                                 ),
                               )
                             : ListView.separated(
@@ -227,7 +286,7 @@ class _CashMovementReportScreenState
                 );
               },
               loading: () => const Center(child: CircularProgressIndicator()),
-              error: (err, _) => Center(child: Text('Error: $err')),
+              error: (_, __) => Center(child: Text(l10n.reportsLoadError)),
             ),
           ),
         ],

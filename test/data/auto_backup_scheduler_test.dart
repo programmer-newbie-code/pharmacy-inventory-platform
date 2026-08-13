@@ -1,3 +1,6 @@
+import 'dart:io';
+
+import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -14,7 +17,7 @@ void main() {
   late GoogleDriveBackupService driveBackupService;
 
   setUp(() {
-    db = AppDatabase.defaultConnection();
+    db = AppDatabase(NativeDatabase.memory());
     backupService = BackupService(db);
     driveBackupService = GoogleDriveBackupService(db);
   });
@@ -103,6 +106,38 @@ void main() {
   });
 
   group('AutoBackupScheduler timer lifecycle', () {
+    test('logs a failed Drive attempt when an overdue run has no session',
+        () async {
+      final tempDir = await Directory.systemTemp.createTemp('auto-backup-test');
+      addTearDown(() => tempDir.delete(recursive: true));
+      SharedPreferences.setMockInitialValues({
+        'autoBackupLastRunAt': DateTime.now()
+            .subtract(const Duration(hours: 25))
+            .millisecondsSinceEpoch,
+        'autoBackupDriveEnabled': true,
+      });
+      final prefs = await SharedPreferences.getInstance();
+
+      final scheduler = AutoBackupScheduler(
+        backupService: backupService,
+        driveBackupService: driveBackupService,
+        prefs: prefs,
+        backupDirectoryProvider: () async => tempDir,
+      );
+
+      await scheduler.start();
+      scheduler.stop();
+
+      expect(await scheduler.getLastBackupTime(), isNotNull);
+      final logs = await db.select(db.backupLogs).get();
+      expect(
+        logs.any(
+          (log) => log.destination == 'drive' && log.status == 'Failed',
+        ),
+        isTrue,
+      );
+    });
+
     test('start does not run when disabled', () async {
       SharedPreferences.setMockInitialValues({'autoBackupEnabled': false});
       final prefs = await SharedPreferences.getInstance();
@@ -153,7 +188,8 @@ void main() {
       expect(scheduler.isActive, isFalse);
     });
 
-    test('getNextBackupTime returns future time when active and last run is set',
+    test(
+        'getNextBackupTime returns future time when active and last run is set',
         () async {
       final now = DateTime.now();
       SharedPreferences.setMockInitialValues({
