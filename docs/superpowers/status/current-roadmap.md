@@ -2,17 +2,15 @@
 
 **Last updated:** 2026-08-13
 
-**Verified main:** `81110a6` (`feat(brand): introduce PharmaLoka identity (#156)`)
+**Verified main:** `48d454f` (`localize(suppliers): extract hardcoded user-facing strings to ARB (#160)`)
 
-**Verified main CI:** run `31654201784` passed for `81110a6`, including
-analyze/test, 80% coverage, Windows, Android, signature, secret scan, and GitHub
-Pages deployment.
+**Verified main CI:** run `31657666877` passed for PR #160, including
+analyze/test, Windows, Android, signature, secret scan.
 
 **Open PR at audit:** none
 
-**Next increment:** Localization sweep slice 2 (`features/suppliers`) per
-`docs/superpowers/plans/2026-08-12-feature-localization-sweep.md`. PharmaLoka
-professional branding and icon integration shipped in #156.
+**Next increment:** Localization sweep slice 3 (`features/inventory`) per
+`docs/superpowers/plans/2026-08-12-feature-localization-sweep.md`. Slice 2 (`features/suppliers`) shipped in #160.
 
 This is the stable handoff file. Update it after every merged increment. Current
 GitHub and implementation evidence overrides this file if it becomes stale.
@@ -34,7 +32,7 @@ GitHub and implementation evidence overrides this file if it becomes stale.
 
 | Item | Status | Evidence / next action |
 | --- | --- | --- |
-| Branch/PR/CI workflow | Shipped | `AGENT.md`; PR #151 and main run `31572670200` are green. Continue enforcing it. |
+| Branch/PR/CI workflow | Shipped | `AGENT.md`; PR #160 and main run `31657666877` are green. Continue enforcing it. |
 | Cross-agent handoff | Shipped | PR #146 added the canonical spec, plan, live status, and startup routing; main run `31555388676` is green. |
 | Release automation | Partial | Signed `v*` tags create Windows/Android artifacts; final roadmap release remains pending. |
 
@@ -42,6 +40,7 @@ GitHub and implementation evidence overrides this file if it becomes stale.
 
 | PR | Shipped outcome |
 | --- | --- |
+| #160 | Localization sweep slice 2 (`features/suppliers`): extracted 53 hardcoded strings across `supplier_list_screen.dart`, `supplier_detail_screen.dart`, and `purchase_order_screen.dart` to ARB. Total codebase hardcoded strings reduced from 169 to 116. Main run `31657666877` is green. |
 | #156 | PharmaLoka Option A (Loka Bloom) shipped as a canonical SVG with reproducible Windows, Android adaptive/legacy, web, docs, MSIX, and Play Store exports. Compact surfaces use `PharmaLoka`; descriptive surfaces use `PharmaLoka — Pharmacy Inventory Platform`; stable technical identities remain unchanged. Flutter 3.47 toolchain requirements are pinned (AGP 8.11.1, Kotlin 2.2.20). Main run `31654201784` is green. |
 | #153-#154 | Localization sweep: spec, plan, and `scripts/audit_hardcoded_strings.py`, then slice 1 fixing all 23 strings that rendered Indonesian to English users. Total hardcoded strings 198 to 169. Drug-classification stored values pinned by test; `lib/data/` still imports no localization. |
 | #150-#151 | Adaptive shell correctness. Restored logout/language/help/branding, which were unreachable in production because they lived in a `HomeScreen` `AppBar` that never rendered; deleted ~250 lines of unreachable shell; fixed the no-op sidebar Dashboard item, the split navigation model, and mobile selected-index; made the two-tier width split explicit; localized the last shell strings. 255 tests, coverage 80.8%. |
@@ -66,7 +65,7 @@ GitHub and implementation evidence overrides this file if it becomes stale.
 | 1 | ProgrammerNewbie Studio branding and icon | Shipped | #156 delivered the owner-approved Option A canonical SVG, deterministic platform exports, adaptive Android icon, final size proof, and PharmaLoka naming hierarchy. Post-merge main run `31654201784` is green. |
 | 2 | Windows desktop modernization | Correctness shipped (#151); visual refinement pending | Sidebar chrome now owns navigation and global actions, with tests at 1366x768, 1920x1080, and the 1023/1024 boundary, plus `Tab` traversal and 2.0 text scale. Remaining: collapsible sidebar, top context bar, density, theme tokens — all need rendered comparison and owner approval. |
 | 3 | Android mobile modernization | Correctness shipped (#151); flow review pending | Bottom bar and More sheet now report selection correctly and expose the global actions. Remaining: task-frequency, one-handed reach, high-frequency POS/scanner flow, and real-device text-scale review. |
-| 4 | Accessibility/localization/docs | In progress (slice 1 of 7 shipped) | #153 added the audit scan and sliced plan; #154 closed the mixed-language defect. 169 hardcoded strings remain: suppliers 53, inventory 34, pos 24, patients 19, compounding 18, users 10, reports 4, data 3, alerts 2, settings 1, main 1. Screen-reader, contrast, focus, and text-scale auditing plus docs-site responsive verification remain separate concerns. |
+| 4 | Accessibility/localization/docs | In progress (slice 2 of 7 shipped) | #153 added audit scan; #154 fixed mixed-language defect; #160 localized suppliers (53 strings). 116 hardcoded strings remain: inventory 49, pos 24, patients 19, compounding 18, users 10, reports 4, data 3, alerts 2, settings 1, main 1. Screen-reader, contrast, focus, and text-scale auditing plus docs-site responsive verification remain separate concerns. |
 | 5 | Google Play readiness | Partial / externally blocked | Application ID and release CI exist; final identity/signing/store/policy package remains. Owner account verification and publication are external. |
 | 6 | Critical correctness | Shipped (this instance); monitor for new evidence | PR #148 fixed the `purchase_receiving_screen.dart` `authSessionProvider?.id ?? 1` fallback and localized the screen. No other confirmed critical-correctness item is open — reopen this priority only if new evidence reproduces a defect. |
 
