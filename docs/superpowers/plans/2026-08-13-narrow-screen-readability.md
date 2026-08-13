@@ -181,6 +181,21 @@ arithmetic one may already pass, which is fine, it guards a regression.
 - [ ] Update `docs/superpowers/status/current-roadmap.md` with the merged
   evidence and record that owner verification on the Vivo V23e is outstanding.
 
+## Known issues found during implementation
+
+- **Add/edit product dialog overflows by 48px at 2.0 text scale.** The form
+  content is already inside a `SingleChildScrollView`, so the overflow is in the
+  dialog chrome (title, fixed `contentPadding`, actions), not the fields this
+  increment changed. Fixing it alters the dialog's own structure and needs owner
+  review of the rendered result.
+- **`expectNotTruncated` must not be used on `InputDecoration` labels.**
+  `find.text` on a field label resolves to a `Text` whose nearest
+  `RenderParagraph` belongs to the decoration subtree, which reported an
+  identical 310.67px slot and a spurious truncation for both a 34-character and
+  a 12-character label. Use `expectNoOverflow` plus a presence assertion there,
+  and reserve `expectNotTruncated` for plain `Text` such as list rows. This cost
+  three CI cycles to identify; the limitation is now documented in the helper.
+
 ## Later slices, not this PR
 
 Seventeen screens still have zero overflow protection: patients, suppliers,

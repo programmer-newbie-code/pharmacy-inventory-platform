@@ -59,6 +59,13 @@ void expectNoOverflow(WidgetTester tester, {String? reason}) {
 
 /// Fails if the text found by [finder] was truncated or ellipsised as laid out.
 ///
+/// **Only valid for plain `Text` widgets.** Do not point this at an
+/// `InputDecoration` label: `find.text` there resolves to a `Text` whose nearest
+/// `RenderParagraph` belongs to the decoration subtree, which reported an
+/// identical slot width and a spurious truncation for both a 34-character and a
+/// 12-character label. Use [expectNoOverflow] plus a presence assertion for
+/// form-field labels instead.
+///
 /// Asks the `RenderParagraph` itself via `didExceedMaxLines`, which is
 /// documented as "whether the text was truncated or ellipsized as laid out".
 /// That is the real rendered outcome, so it needs no assumptions about font
