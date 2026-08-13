@@ -7,6 +7,7 @@ import 'package:pharmacy_inventory_platform/core/providers.dart';
 import 'package:pharmacy_inventory_platform/data/database.dart';
 import 'package:pharmacy_inventory_platform/data/sale_repository.dart';
 import 'package:pharmacy_inventory_platform/features/pos/return_screen.dart';
+import 'package:pharmacy_inventory_platform/l10n/app_localizations.dart';
 
 void main() {
   testWidgets('renders ReturnScreen, searches sale, and processes return', (tester) async {
@@ -79,6 +80,8 @@ void main() {
       UncontrolledProviderScope(
         container: container,
         child: const MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
           home: ReturnScreen(),
         ),
       ),
@@ -177,6 +180,8 @@ void main() {
       UncontrolledProviderScope(
         container: container,
         child: const MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
           home: ReturnScreen(),
         ),
       ),
@@ -188,7 +193,7 @@ void main() {
     await tester.tap(find.byKey(const Key('browseRecentTxnsBtn')));
     await tester.pumpAndSettle();
 
-    expect(find.text('Select Recent Sale Transaction'), findsOneWidget);
+    expect(find.text('Browse Recent Sales'), findsOneWidget);
     expect(find.byKey(Key('recentTxnTile_${txn.id}')), findsOneWidget);
 
     await tester.tap(find.byKey(Key('recentTxnTile_${txn.id}')));

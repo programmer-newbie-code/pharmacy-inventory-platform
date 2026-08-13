@@ -244,7 +244,7 @@ class _PosScreenState extends ConsumerState<PosScreen> {
               keyboardType: TextInputType.number,
               decoration: InputDecoration(
                 labelText: l10n.posOpeningBalanceLabel,
-                prefixText: 'Rp ',
+                prefixText: l10n.currencyPrefix,
               ),
             ),
           ],
