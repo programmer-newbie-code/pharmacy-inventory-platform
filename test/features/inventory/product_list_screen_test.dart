@@ -65,8 +65,8 @@ void main() {
     await tester.tap(find.byKey(Key('editProdBtn_${product.id}')));
     await tester.pumpAndSettle();
 
-    expect(find.text('Edit Product Details'), findsOneWidget);
-    await tester.tap(find.text('Cancel'));
+    expect(find.text('Edit Detail Produk'), findsOneWidget);
+    await tester.tap(find.text('Batal'));
     await tester.pumpAndSettle();
 
     await tester.tap(find.byKey(Key('addBatchBtn_${product.id}')));

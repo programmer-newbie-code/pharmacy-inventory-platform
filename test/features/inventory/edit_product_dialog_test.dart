@@ -60,7 +60,7 @@ void main() {
 
     await tester.pumpAndSettle();
 
-    expect(find.text('Edit Product Details'), findsOneWidget);
+    expect(find.text('Edit Detail Produk'), findsOneWidget);
     expect(find.byKey(const Key('saveEditProductBtn')), findsOneWidget);
 
     // Edit product name
