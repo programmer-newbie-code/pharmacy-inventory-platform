@@ -88,7 +88,7 @@ step uploading `build/symbols/`:
 - name: Upload Android debug symbols (private)
   uses: actions/upload-artifact@v4
   with:
-    name: android-debug-symbols-${{ github.ref_name }}
+    name: android-debug-symbols-${{ github.run_number }}
     path: build/symbols/
     retention-days: 90
 ```
@@ -105,7 +105,7 @@ visible in the Actions tab to repo collaborators, never public.
 
 **Step 1:** Add a short note: after a tagged release build, the Android debug
 symbols needed to decode a future obfuscated crash stack trace are attached to
-that tag's CI run as a private artifact (`android-debug-symbols-<tag>`),
+that tag's CI run as a private artifact (`android-debug-symbols-<run-number>`),
 retained 90 days. If a crash needs decoding after that window, re-run the
 build from the tagged commit to regenerate matching symbols.
 
