@@ -85,14 +85,15 @@ class _UserManagementScreenState extends ConsumerState<UserManagementScreen> {
                   initialValue: selectedRole,
                   decoration: InputDecoration(labelText: l10n.roleLabel),
                   items: [
-                    const DropdownMenuItem(
-                        value: 'admin', child: Text('Admin')),
-                    const DropdownMenuItem(
-                        value: 'inventory', child: Text('Inventory')),
+                    DropdownMenuItem(
+                        value: 'admin', child: Text(l10n.roleAdmin)),
+                    DropdownMenuItem(
+                        value: 'inventory',
+                        child: Text(l10n.roleInventoryStaff)),
                     DropdownMenuItem(
                         value: 'kasir', child: Text(l10n.roleCashier)),
-                    const DropdownMenuItem(
-                        value: 'audit', child: Text('Auditor')),
+                    DropdownMenuItem(
+                        value: 'audit', child: Text(l10n.roleAuditor)),
                   ],
                   onChanged: (val) {
                     if (val != null) {
@@ -126,7 +127,7 @@ class _UserManagementScreenState extends ConsumerState<UserManagementScreen> {
                   if (ctx.mounted) Navigator.of(ctx).pop();
                 }
               },
-              child: const Text('Save'),
+              child: Text(l10n.saveButton),
             ),
           ],
         ),
@@ -168,7 +169,7 @@ class _UserManagementScreenState extends ConsumerState<UserManagementScreen> {
                 if (ctx.mounted) Navigator.of(ctx).pop();
               }
             },
-            child: const Text('Save'),
+            child: Text(l10n.saveButton),
           ),
         ],
       ),
@@ -188,11 +189,11 @@ class _UserManagementScreenState extends ConsumerState<UserManagementScreen> {
             initialValue: newRole,
             decoration: InputDecoration(labelText: l10n.roleLabel),
             items: [
-              const DropdownMenuItem(value: 'admin', child: Text('Admin')),
-              const DropdownMenuItem(
-                  value: 'inventory', child: Text('Inventory')),
+              DropdownMenuItem(value: 'admin', child: Text(l10n.roleAdmin)),
+              DropdownMenuItem(
+                  value: 'inventory', child: Text(l10n.roleInventoryStaff)),
               DropdownMenuItem(value: 'kasir', child: Text(l10n.roleCashier)),
-              const DropdownMenuItem(value: 'audit', child: Text('Auditor')),
+              DropdownMenuItem(value: 'audit', child: Text(l10n.roleAuditor)),
             ],
             onChanged: (val) {
               if (val != null) {
@@ -215,7 +216,7 @@ class _UserManagementScreenState extends ConsumerState<UserManagementScreen> {
                 ref.invalidate(usersListFutureProvider);
                 if (ctx.mounted) Navigator.of(ctx).pop();
               },
-              child: const Text('Save'),
+              child: Text(l10n.saveButton),
             ),
           ],
         ),
@@ -271,12 +272,12 @@ class _UserManagementScreenState extends ConsumerState<UserManagementScreen> {
                   size: 64, color: AppTheme.dangerColor.withAlpha(150)),
               const SizedBox(height: 16),
               Text(
-                'Akses Ditolak',
+                l10n.userAccessDeniedTitle,
                 style: Theme.of(context).textTheme.headlineSmall,
               ),
               const SizedBox(height: 8),
               Text(
-                'Manajemen karyawan hanya dapat diakses oleh Admin.',
+                l10n.userAccessDeniedMessage,
                 style: TextStyle(color: Colors.grey.shade600),
               ),
             ],
@@ -300,8 +301,7 @@ class _UserManagementScreenState extends ConsumerState<UserManagementScreen> {
       body: usersAsync.when(
         data: (users) {
           if (users.isEmpty) {
-            return const Center(
-                child: Text('No employee accounts registered.'));
+            return Center(child: Text(l10n.noEmployeeAccounts));
           }
           return ListView.builder(
             padding: const EdgeInsets.all(16),
@@ -326,7 +326,8 @@ class _UserManagementScreenState extends ConsumerState<UserManagementScreen> {
                     user.username,
                     style: const TextStyle(fontWeight: FontWeight.bold),
                   ),
-                  subtitle: Text('Role: ${user.role.toUpperCase()}'),
+                  subtitle:
+                      Text(l10n.userRoleSubtitle(user.role.toUpperCase())),
                   trailing: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [

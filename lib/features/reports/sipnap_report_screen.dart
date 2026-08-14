@@ -44,7 +44,7 @@ class _SipnapReportScreenState extends ConsumerState<SipnapReportScreen> {
     final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('SIPNAP Monthly Report (Kemenkes RI)'),
+        title: Text(l10n.sipnapReportTitle),
         actions: [
           IconButton(
             key: const Key('refreshSipnapReportBtn'),
@@ -63,14 +63,14 @@ class _SipnapReportScreenState extends ConsumerState<SipnapReportScreen> {
               children: [
                 const Icon(Icons.calendar_month),
                 const SizedBox(width: 8),
-                const Text('Period: '),
+                Text(l10n.sipnapPeriodLabel),
                 DropdownButton<int>(
                   value: _selectedMonth,
                   items: List.generate(
                     12,
                     (idx) => DropdownMenuItem(
                       value: idx + 1,
-                      child: Text('Month ${idx + 1}'),
+                      child: Text(l10n.sipnapMonthOption(idx + 1)),
                     ),
                   ),
                   onChanged: (val) {
@@ -102,7 +102,7 @@ class _SipnapReportScreenState extends ConsumerState<SipnapReportScreen> {
                 ElevatedButton.icon(
                   key: const Key('exportSipnapExcelBtn'),
                   icon: const Icon(Icons.file_download),
-                  label: const Text('Export Excel'),
+                  label: Text(l10n.sipnapExportExcelButton),
                   onPressed: _reportRows.isEmpty
                       ? null
                       : () async {
@@ -117,9 +117,8 @@ class _SipnapReportScreenState extends ConsumerState<SipnapReportScreen> {
                           );
                           if (!mounted) return;
                           messenger.showSnackBar(
-                            const SnackBar(
-                              content:
-                                  Text('SIPNAP Excel report generated!'),
+                            SnackBar(
+                              content: Text(l10n.sipnapExcelGenerated),
                             ),
                           );
                         },
@@ -131,9 +130,9 @@ class _SipnapReportScreenState extends ConsumerState<SipnapReportScreen> {
             child: _isLoading
                 ? const Center(child: CircularProgressIndicator())
                 : _reportRows.isEmpty
-                    ? const Center(
+                    ? Center(
                         child: Text(
-                          'No controlled substances (Narkotika/Psikotropika) found.',
+                          l10n.sipnapNoControlledDrugsFound,
                         ),
                       )
                     : SingleChildScrollView(

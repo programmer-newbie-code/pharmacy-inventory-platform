@@ -101,4 +101,49 @@ void main() {
     await tester.tap(find.byKey(const Key('filterYearChip')));
     await tester.pumpAndSettle();
   });
+
+  testWidgets('renders the procurement report nav button copy in English',
+      (tester) async {
+    final container = ProviderContainer(
+      overrides: [
+        databaseProvider.overrideWithValue(database),
+      ],
+    );
+    addTearDown(container.dispose);
+
+    await tester.pumpWidget(
+      UncontrolledProviderScope(
+        container: container,
+        child: const MaterialApp(
+          localizationsDelegates: [
+            AppLocalizations.delegate,
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
+          supportedLocales: AppLocalizations.supportedLocales,
+          locale: Locale('en'),
+          home: ReportsScreen(),
+        ),
+      ),
+    );
+
+    await tester.pumpAndSettle();
+
+    await tester.dragUntilVisible(
+      find.byKey(const Key('navProcurementReportBtn')),
+      find.byType(SingleChildScrollView),
+      const Offset(0, -200),
+    );
+
+    // This button's label was a hardcoded Indonesian literal that rendered
+    // wrong in the English locale; it now renders from ARB via
+    // l10n.procurementReportTitle, matching the same key used by the
+    // procurement report screen's own AppBar title.
+    expect(find.text('Procurement & Stocking Report'), findsOneWidget);
+    expect(
+      find.text('Laporan Pembelian & Stok (Procurement)'),
+      findsNothing,
+    );
+  });
 }
