@@ -183,6 +183,15 @@ arithmetic one may already pass, which is fine, it guards a regression.
 
 ## Known issues found during implementation
 
+- **The whole `PosScreen` overflows at 2.0 text scale, independent of the cart
+  tile this increment touched.** The 'Shopping Cart' header `Row`
+  (`pos_screen.dart:504`), a `Column` (`pos_screen.dart:539`), and a
+  `DropdownButton` (`pos_screen.dart:784`) all overflow before the cart tile
+  layout is even reached. This is a pre-existing, screen-wide text-scale
+  defect, not something Task 4 introduced or can fix in isolation. Recorded
+  here for a separate increment; Task 4's own test consumes the known
+  exceptions and asserts only that the cart tile it changed still builds and
+  the quantity control remains reachable.
 - **Add/edit product dialog overflows by 48px at 2.0 text scale.** The form
   content is already inside a `SingleChildScrollView`, so the overflow is in the
   dialog chrome (title, fixed `contentPadding`, actions), not the fields this
