@@ -545,5 +545,9 @@
   "baseUnitHint": "mis. tablet, kapsul",
   "purchaseUnitHint": "mis. box, dus",
   "costPricePerBaseUnitHint": "per 1 tablet / pcs",
-  "pricePerPurchaseUnitHint": "per 1 box / dus"
+  "pricePerPurchaseUnitHint": "per 1 box / dus",
+  "editCartQuantityTooltip": "Ubah jumlah",
+  "increaseQuantityTooltip": "Tambah jumlah",
+  "decreaseQuantityTooltip": "Kurangi jumlah",
+  "removeCartItemTooltip": "Hapus dari keranjang"
 }

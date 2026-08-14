@@ -10,6 +10,8 @@ import 'package:pharmacy_inventory_platform/data/stock_batch_repository.dart';
 import 'package:pharmacy_inventory_platform/features/pos/pos_screen.dart';
 import 'package:pharmacy_inventory_platform/l10n/app_localizations.dart';
 
+import '../../support/layout_harness.dart';
+
 void main() {
   testWidgets(
       'uses the focused barcode field instead of camera scanning on Windows',
@@ -291,5 +293,161 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('2 box + 5 tablet'), findsOneWidget);
+  });
+
+  group('narrow screen readability', () {
+    Future<int> seedLongNameProduct(AppDatabase db) {
+      return ProductRepository(db).createProduct(
+        barcode: '8999999999998',
+        internalCode: 'AMX-LONG',
+        // The longest name in the bundled catalog
+        // (assets/data/indonesian_drugs.csv): 33 characters.
+        name: 'Polymyxin B + Neomycin Tetes Mata',
+        activeIngredient: 'Polymyxin B',
+        ingredientPct: 100.0,
+        baseUnit: 'botol',
+        purchaseUnit: 'dus',
+        unitsPerPurchaseUnit: 12,
+        costPricePerBaseUnit: 5000.0,
+        marginPct: 20.0,
+        reorderThreshold: 10,
+        category: 'Obat Bebas',
+        createdBy: 'admin',
+      );
+    }
+
+    testWidgets(
+        'a long product name in the cart does not overflow on the owner phone',
+        (tester) async {
+      useSurface(tester, kOwnerPhone);
+      final db = AppDatabase(NativeDatabase.memory());
+      addTearDown(db.close);
+      final prodId = await seedLongNameProduct(db);
+
+      final container = ProviderContainer(
+        overrides: [databaseProvider.overrideWithValue(db)],
+      );
+      addTearDown(container.dispose);
+
+      await tester.pumpWidget(
+        UncontrolledProviderScope(
+          container: container,
+          child: MaterialApp(
+            locale: const Locale('id'),
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            home: const PosScreen(),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byKey(Key('addToCart_$prodId')));
+      await tester.pumpAndSettle();
+
+      expectNoOverflow(tester);
+      final nameFinder = find.text('Polymyxin B + Neomycin Tetes Mata');
+      expect(nameFinder, findsOneWidget);
+      expectNotTruncated(tester, nameFinder);
+    });
+
+    testWidgets('the quantity control has an explicit icon and a tooltip',
+        (tester) async {
+      useSurface(tester, kOwnerPhone);
+      final db = AppDatabase(NativeDatabase.memory());
+      addTearDown(db.close);
+      final productRepo = ProductRepository(db);
+      final prodId = await productRepo.createProduct(
+        barcode: '8999999999997',
+        internalCode: 'PAR-BOX2',
+        name: 'Paracetamol Box',
+        activeIngredient: 'Paracetamol',
+        ingredientPct: 100.0,
+        baseUnit: 'tablet',
+        purchaseUnit: 'box',
+        unitsPerPurchaseUnit: 100,
+        costPricePerBaseUnit: 100.0,
+        marginPct: 20.0,
+        reorderThreshold: 10,
+        category: 'Obat Bebas',
+        createdBy: 'admin',
+      );
+
+      final container = ProviderContainer(
+        overrides: [databaseProvider.overrideWithValue(db)],
+      );
+      addTearDown(container.dispose);
+
+      await tester.pumpWidget(
+        UncontrolledProviderScope(
+          container: container,
+          child: MaterialApp(
+            locale: const Locale('id'),
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            home: const PosScreen(),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byKey(Key('addToCart_$prodId')));
+      await tester.pumpAndSettle();
+
+      final quantityControl = find.byKey(const Key('editCartQty_0'));
+      expect(quantityControl, findsOneWidget);
+      // An explicit affordance, not just text: an edit icon inside the
+      // control, and a Tooltip wrapping it.
+      expect(
+        find.descendant(of: quantityControl, matching: find.byIcon(Icons.edit)),
+        findsOneWidget,
+      );
+      final tooltipFinder = find.ancestor(
+        of: quantityControl,
+        matching: find.byType(Tooltip),
+      );
+      expect(tooltipFinder, findsOneWidget);
+      expect(
+        tester.widget<Tooltip>(tooltipFinder).message,
+        isNotNull,
+      );
+
+      await tester.ensureVisible(quantityControl);
+      await tester.tap(quantityControl);
+      await tester.pumpAndSettle();
+      expect(find.byKey(const Key('inputBoxQty')), findsOneWidget);
+    });
+
+    testWidgets('survives 2.0 text scale with a long name in the cart',
+        (tester) async {
+      useSurface(tester, kOwnerPhone);
+      final db = AppDatabase(NativeDatabase.memory());
+      addTearDown(db.close);
+      final prodId = await seedLongNameProduct(db);
+
+      final container = ProviderContainer(
+        overrides: [databaseProvider.overrideWithValue(db)],
+      );
+      addTearDown(container.dispose);
+
+      await tester.pumpWidget(
+        UncontrolledProviderScope(
+          container: container,
+          child: MaterialApp(
+            builder: textScaleBuilder(2.0),
+            locale: const Locale('id'),
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            home: const PosScreen(),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byKey(Key('addToCart_$prodId')));
+      await tester.pumpAndSettle();
+
+      expectNoOverflow(tester);
+    });
   });
 }

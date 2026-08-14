@@ -545,5 +545,9 @@
   "baseUnitHint": "e.g. tablet, kapsul",
   "purchaseUnitHint": "e.g. box, dus",
   "costPricePerBaseUnitHint": "per 1 tablet / pcs",
-  "pricePerPurchaseUnitHint": "per 1 box / pack"
+  "pricePerPurchaseUnitHint": "per 1 box / pack",
+  "editCartQuantityTooltip": "Edit quantity",
+  "increaseQuantityTooltip": "Increase quantity",
+  "decreaseQuantityTooltip": "Decrease quantity",
+  "removeCartItemTooltip": "Remove from cart"
 }
