@@ -332,11 +332,11 @@ void main() {
       await tester.pumpWidget(
         UncontrolledProviderScope(
           container: container,
-          child: MaterialApp(
-            locale: const Locale('id'),
+          child: const MaterialApp(
+            locale: Locale('id'),
             localizationsDelegates: AppLocalizations.localizationsDelegates,
             supportedLocales: AppLocalizations.supportedLocales,
-            home: const PosScreen(),
+            home: PosScreen(),
           ),
         ),
       );
@@ -381,11 +381,11 @@ void main() {
       await tester.pumpWidget(
         UncontrolledProviderScope(
           container: container,
-          child: MaterialApp(
-            locale: const Locale('id'),
+          child: const MaterialApp(
+            locale: Locale('id'),
             localizationsDelegates: AppLocalizations.localizationsDelegates,
             supportedLocales: AppLocalizations.supportedLocales,
-            home: const PosScreen(),
+            home: PosScreen(),
           ),
         ),
       );

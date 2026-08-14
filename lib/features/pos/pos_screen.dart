@@ -658,7 +658,7 @@ class _PosScreenState extends ConsumerState<PosScreen> {
                                                       ),
                                                     ),
                                                     const SizedBox(width: 4),
-                                                    Icon(Icons.edit,
+                                                    const Icon(Icons.edit,
                                                         size: 14,
                                                         color: AppTheme
                                                             .primaryColor),
