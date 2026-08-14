@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.8.1
+
+- Fixes truncated field labels and product names that were hard to read on
+  smaller phone screens.
+- Makes the point-of-sale quantity editor easier to find and use when
+  entering an exact box-and-unit amount.
+- Shrinks and obfuscates the Android release build to reduce download size
+  and raise the difficulty of reverse engineering.
+
 ## 1.8.0
 
 - Restores the sign-out, language, help, and pharmacy-branding actions. They
