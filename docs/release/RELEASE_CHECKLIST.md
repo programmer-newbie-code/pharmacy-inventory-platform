@@ -51,12 +51,13 @@
 
 Each Android release build produces Dart obfuscation symbols
 (`--split-debug-info`). They are uploaded as a **private** CI artifact named
-`android-debug-symbols-<tag>`, retained for 90 days, and attached only to
+`android-debug-symbols-<run-number>`, retained for 90 days, and attached only to
 that build's GitHub Actions run — never to the public GitHub Release.
 
-- [ ] If a crash report ever needs decoding, download the matching
-  `android-debug-symbols-<tag>` artifact from that tag's Actions run and use
-  `flutter symbolize`.
+- [ ] If a crash report ever needs decoding, find the matching CI run for that
+  release (the `<run-number>` matches the GitHub Actions run number for the
+  tag build) and download its `android-debug-symbols-<run-number>` artifact,
+  then use `flutter symbolize`.
 - [ ] If more than 90 days have passed and the artifact has expired,
   re-run the build from the tagged commit to regenerate matching symbols
   rather than assuming the artifact is still available.
