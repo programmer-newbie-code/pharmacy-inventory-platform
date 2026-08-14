@@ -36,14 +36,25 @@ class _ReceiptDialogState extends ConsumerState<ReceiptDialog> {
 
   Future<String> _saveReceipt() async {
     if (widget.saveReceipt != null) return widget.saveReceipt!();
+    final l10n = AppLocalizations.of(context)!;
     final pdfService = ref.read(receiptPdfServiceProvider);
     final pdfBytes = await pdfService.generateReceiptPdf(
       transaction: widget.transaction,
       items: widget.items,
       productsMap: widget.productsMap,
-      poweredByAttribution: AppLocalizations.of(context)!.poweredByAttribution,
-      priceColumnLabel: AppLocalizations.of(context)!.receiptColPrice,
-      totalColumnLabel: AppLocalizations.of(context)!.receiptColTotal,
+      poweredByAttribution: l10n.poweredByAttribution,
+      priceColumnLabel: l10n.receiptColPrice,
+      totalColumnLabel: l10n.receiptColTotal,
+      txnNoLabel: l10n.receiptPdfTxnNoLabel,
+      dateLabel: l10n.receiptPdfDateLabel,
+      cashierLabel: l10n.receiptPdfCashierLabel,
+      paymentMethodLabel: l10n.receiptPdfPaymentMethodLabel,
+      doctorLabel: l10n.receiptPdfDoctorLabel,
+      patientLabel: l10n.receiptPdfPatientLabel,
+      itemColumnLabel: l10n.receiptPdfItemColumn,
+      qtyColumnLabel: l10n.receiptPdfQtyColumn,
+      totalRowLabel: l10n.receiptPdfTotalRowLabel,
+      footerMessage: l10n.receiptPdfFooterMessage,
     );
     final storageService = ref.read(receiptStorageServiceProvider);
     final savedFile = await storageService.saveReceiptPdf(
@@ -56,14 +67,25 @@ class _ReceiptDialogState extends ConsumerState<ReceiptDialog> {
 
   Future<void> _printReceipt() async {
     if (widget.printReceipt != null) return widget.printReceipt!();
+    final l10n = AppLocalizations.of(context)!;
     final pdfService = ref.read(receiptPdfServiceProvider);
     final pdfBytes = await pdfService.generateReceiptPdf(
       transaction: widget.transaction,
       items: widget.items,
       productsMap: widget.productsMap,
-      poweredByAttribution: AppLocalizations.of(context)!.poweredByAttribution,
-      priceColumnLabel: AppLocalizations.of(context)!.receiptColPrice,
-      totalColumnLabel: AppLocalizations.of(context)!.receiptColTotal,
+      poweredByAttribution: l10n.poweredByAttribution,
+      priceColumnLabel: l10n.receiptColPrice,
+      totalColumnLabel: l10n.receiptColTotal,
+      txnNoLabel: l10n.receiptPdfTxnNoLabel,
+      dateLabel: l10n.receiptPdfDateLabel,
+      cashierLabel: l10n.receiptPdfCashierLabel,
+      paymentMethodLabel: l10n.receiptPdfPaymentMethodLabel,
+      doctorLabel: l10n.receiptPdfDoctorLabel,
+      patientLabel: l10n.receiptPdfPatientLabel,
+      itemColumnLabel: l10n.receiptPdfItemColumn,
+      qtyColumnLabel: l10n.receiptPdfQtyColumn,
+      totalRowLabel: l10n.receiptPdfTotalRowLabel,
+      footerMessage: l10n.receiptPdfFooterMessage,
     );
     await Printing.layoutPdf(
       onLayout: (_) => pdfBytes,
@@ -132,29 +154,36 @@ class _ReceiptDialogState extends ConsumerState<ReceiptDialog> {
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              'Apotek Inventory Platform',
+              l10n.receiptAppName,
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.bold,
                   ),
             ),
             const Divider(),
-            Text('Txn No: ${widget.transaction.txnNo}'),
+            Text(l10n.receiptTxnNoLine(widget.transaction.txnNo)),
             Text(
-                'Date: ${widget.transaction.createdAt.toIso8601String().replaceAll('T', ' ').substring(0, 16)}'),
-            Text('Payment Method: ${widget.transaction.paymentMethod}'),
+              l10n.receiptDateLine(
+                widget.transaction.createdAt
+                    .toIso8601String()
+                    .replaceAll('T', ' ')
+                    .substring(0, 16),
+              ),
+            ),
+            Text(l10n.receiptPaymentMethodLine(widget.transaction.paymentMethod)),
             if (widget.transaction.patientName != null)
-              Text('Patient: ${widget.transaction.patientName}'),
+              Text(l10n.receiptPatientLine(widget.transaction.patientName!)),
             if (widget.transaction.doctorName != null)
-              Text('Doctor: ${widget.transaction.doctorName}'),
+              Text(l10n.receiptDoctorLine(widget.transaction.doctorName!)),
             const SizedBox(height: 12),
-            const Text(
-              'Items:',
-              style: TextStyle(fontWeight: FontWeight.bold),
+            Text(
+              l10n.receiptItemsHeading,
+              style: const TextStyle(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 4),
             ...widget.items.map((item) {
               final prod = widget.productsMap[item.productId];
-              final name = prod?.name ?? 'Product #${item.productId}';
+              final name =
+                  prod?.name ?? l10n.receiptItemFallbackName(item.productId);
               return Padding(
                 padding: const EdgeInsets.symmetric(vertical: 2.0),
                 child: Row(
@@ -173,9 +202,9 @@ class _ReceiptDialogState extends ConsumerState<ReceiptDialog> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text(
-                  'TOTAL PAID:',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                Text(
+                  l10n.receiptTotalPaidLabel,
+                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                 ),
                 Text(
                   'Rp ${widget.transaction.totalAmount.toStringAsFixed(0)}',

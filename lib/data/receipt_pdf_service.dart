@@ -18,6 +18,16 @@ class ReceiptPdfService {
     String poweredByAttribution = 'Powered by Programmer Newbie',
     String priceColumnLabel = 'Harga',
     String totalColumnLabel = 'Total',
+    String txnNoLabel = 'No. Transaksi',
+    String dateLabel = 'Tanggal',
+    String cashierLabel = 'Kasir',
+    String paymentMethodLabel = 'Pembayaran',
+    String doctorLabel = 'Dokter',
+    String patientLabel = 'Pasien',
+    String itemColumnLabel = 'Item',
+    String qtyColumnLabel = 'Qty',
+    String totalRowLabel = 'TOTAL',
+    String footerMessage = '-- Terima Kasih --\nSemoga Lekas Sembuh!',
   }) async {
     final pdf = pw.Document();
 
@@ -58,17 +68,17 @@ class ReceiptPdfService {
               pw.Divider(thickness: 1),
 
               // Transaction Info
-              pw.Text('No. Transaksi: ${transaction.txnNo}', style: const pw.TextStyle(fontSize: 8)),
+              pw.Text('$txnNoLabel: ${transaction.txnNo}', style: const pw.TextStyle(fontSize: 8)),
               pw.Text(
-                'Tanggal: ${transaction.createdAt.toIso8601String().split('T').first} ${transaction.createdAt.toIso8601String().split('T').last.substring(0, 5)}',
+                '$dateLabel: ${transaction.createdAt.toIso8601String().split('T').first} ${transaction.createdAt.toIso8601String().split('T').last.substring(0, 5)}',
                 style: const pw.TextStyle(fontSize: 8),
               ),
-              pw.Text('Kasir: $cashierName', style: const pw.TextStyle(fontSize: 8)),
-              pw.Text('Pembayaran: ${transaction.paymentMethod}', style: const pw.TextStyle(fontSize: 8)),
+              pw.Text('$cashierLabel: $cashierName', style: const pw.TextStyle(fontSize: 8)),
+              pw.Text('$paymentMethodLabel: ${transaction.paymentMethod}', style: const pw.TextStyle(fontSize: 8)),
               if (transaction.hasPrescription) ...[
                 pw.SizedBox(height: 4),
-                pw.Text('Dokter: ${transaction.doctorName ?? "-"}', style: const pw.TextStyle(fontSize: 8)),
-                pw.Text('Pasien: ${transaction.patientName ?? "-"}', style: const pw.TextStyle(fontSize: 8)),
+                pw.Text('$doctorLabel: ${transaction.doctorName ?? "-"}', style: const pw.TextStyle(fontSize: 8)),
+                pw.Text('$patientLabel: ${transaction.patientName ?? "-"}', style: const pw.TextStyle(fontSize: 8)),
               ],
               pw.Divider(thickness: 0.5),
 
@@ -83,8 +93,8 @@ class ReceiptPdfService {
                 children: [
                   pw.TableRow(
                     children: [
-                      pw.Text('Item', style: pw.TextStyle(fontSize: 8, fontWeight: pw.FontWeight.bold)),
-                      pw.Text('Qty', style: pw.TextStyle(fontSize: 8, fontWeight: pw.FontWeight.bold)),
+                      pw.Text(itemColumnLabel, style: pw.TextStyle(fontSize: 8, fontWeight: pw.FontWeight.bold)),
+                      pw.Text(qtyColumnLabel, style: pw.TextStyle(fontSize: 8, fontWeight: pw.FontWeight.bold)),
                       pw.Text(priceColumnLabel, style: pw.TextStyle(fontSize: 8, fontWeight: pw.FontWeight.bold)),
                       pw.Text(totalColumnLabel, style: pw.TextStyle(fontSize: 8, fontWeight: pw.FontWeight.bold)),
                     ],
@@ -109,7 +119,7 @@ class ReceiptPdfService {
               pw.Row(
                 mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
                 children: [
-                  pw.Text('TOTAL', style: pw.TextStyle(fontSize: 10, fontWeight: pw.FontWeight.bold)),
+                  pw.Text(totalRowLabel, style: pw.TextStyle(fontSize: 10, fontWeight: pw.FontWeight.bold)),
                   pw.Text(
                     'Rp ${transaction.totalAmount.toStringAsFixed(0)}',
                     style: pw.TextStyle(fontSize: 10, fontWeight: pw.FontWeight.bold),
@@ -121,7 +131,7 @@ class ReceiptPdfService {
               // Footer & Barcode
               pw.Center(
                 child: pw.Text(
-                  '-- Terima Kasih --\nSemoga Lekas Sembuh!',
+                  footerMessage,
                   textAlign: pw.TextAlign.center,
                   style: const pw.TextStyle(fontSize: 8),
                 ),
