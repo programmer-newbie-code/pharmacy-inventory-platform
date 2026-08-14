@@ -554,74 +554,137 @@ class _PosScreenState extends ConsumerState<PosScreen> {
                             itemCount: _cart.length,
                             itemBuilder: (ctx, idx) {
                               final item = _cart[idx];
+                              final quantityLabel = item
+                                              .product.unitsPerPurchaseUnit >
+                                          1 &&
+                                      item.qtyBaseUnit >=
+                                          item.product.unitsPerPurchaseUnit
+                                  ? '${item.qtyBaseUnit ~/ item.product.unitsPerPurchaseUnit} ${item.product.purchaseUnit}'
+                                      '${item.qtyBaseUnit % item.product.unitsPerPurchaseUnit > 0 ? " + ${item.qtyBaseUnit % item.product.unitsPerPurchaseUnit} ${item.product.baseUnit}" : ""}'
+                                  : '${item.qtyBaseUnit} ${item.product.baseUnit}';
+
+                              // The name gets its own full-width line. The
+                              // quantity control, price, and remove action
+                              // move to a second line below instead of
+                              // sharing trailing with the name: on a 393dp
+                              // phone the name previously got only ~116dp
+                              // once trailing's two IconButtons, the subtotal
+                              // text, and a delete icon were all subtracted.
+                              //
+                              // The box/base-unit quantity dialog already
+                              // existed (from an earlier increment) but its
+                              // only trigger was plain bold text with no
+                              // icon, border, or tooltip, so it read as a
+                              // label rather than a control. It now has an
+                              // explicit edit icon and a tooltip.
                               return Card(
                                 margin: const EdgeInsets.only(bottom: 8),
-                                child: ListTile(
-                                  key: Key('cartTile_$idx'),
-                                  title: Text(
-                                    item.product.name,
-                                    style: const TextStyle(
-                                        fontWeight: FontWeight.bold),
-                                  ),
-                                  subtitle: Column(
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 16, vertical: 8),
+                                  child: Column(
+                                    key: Key('cartTile_$idx'),
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
                                     children: [
+                                      Row(
+                                        children: [
+                                          Expanded(
+                                            child: Text(
+                                              item.product.name,
+                                              style: const TextStyle(
+                                                  fontWeight:
+                                                      FontWeight.bold),
+                                            ),
+                                          ),
+                                          IconButton(
+                                            key: Key('removeCart_$idx'),
+                                            icon: const Icon(
+                                                Icons.delete_outline,
+                                                color: AppTheme.dangerColor),
+                                            tooltip:
+                                                l10n.removeCartItemTooltip,
+                                            onPressed: () =>
+                                                _removeFromCart(idx),
+                                          ),
+                                        ],
+                                      ),
                                       Text(
                                         '${formatIdr(item.unitPrice)} / ${item.product.baseUnit}',
+                                        style: TextStyle(
+                                            color: Colors.grey.shade700),
                                       ),
-                                      InkWell(
-                                        key: Key('editCartQty_$idx'),
-                                        onTap: () =>
-                                            _showEditCartItemDialog(idx),
-                                        child: Text(
-                                          item.product.unitsPerPurchaseUnit >
-                                                      1 &&
-                                                  item.qtyBaseUnit >=
-                                                      item.product
-                                                          .unitsPerPurchaseUnit
-                                              ? '${item.qtyBaseUnit ~/ item.product.unitsPerPurchaseUnit} ${item.product.purchaseUnit}'
-                                                  '${item.qtyBaseUnit % item.product.unitsPerPurchaseUnit > 0 ? " + ${item.qtyBaseUnit % item.product.unitsPerPurchaseUnit} ${item.product.baseUnit}" : ""}'
-                                              : '${item.qtyBaseUnit} ${item.product.baseUnit}',
-                                          style: const TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                            color: AppTheme.primaryColor,
+                                      const SizedBox(height: 4),
+                                      Wrap(
+                                        crossAxisAlignment:
+                                            WrapCrossAlignment.center,
+                                        spacing: 4,
+                                        runSpacing: 4,
+                                        children: [
+                                          IconButton(
+                                            icon: const Icon(
+                                                Icons.remove_circle_outline,
+                                                size: 20),
+                                            tooltip:
+                                                l10n.decreaseQuantityTooltip,
+                                            onPressed: () =>
+                                                _updateQuantity(idx, -1),
                                           ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  trailing: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      IconButton(
-                                        icon: const Icon(
-                                            Icons.remove_circle_outline,
-                                            size: 20),
-                                        onPressed: () =>
-                                            _updateQuantity(idx, -1),
-                                      ),
-                                      const SizedBox(width: 8),
-                                      IconButton(
-                                        icon: const Icon(
-                                            Icons.add_circle_outline,
-                                            size: 20),
-                                        onPressed: () =>
-                                            _updateQuantity(idx, 1),
-                                      ),
-                                      const SizedBox(width: 8),
-                                      Text(
-                                        formatIdr(item.subtotal),
-                                        style: const TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          color: AppTheme.primaryColor,
-                                        ),
-                                      ),
-                                      IconButton(
-                                        key: Key('removeCart_$idx'),
-                                        icon: const Icon(Icons.delete_outline,
-                                            color: AppTheme.dangerColor),
-                                        onPressed: () => _removeFromCart(idx),
+                                          InkWell(
+                                            key: Key('editCartQty_$idx'),
+                                            onTap: () =>
+                                                _showEditCartItemDialog(idx),
+                                            borderRadius:
+                                                BorderRadius.circular(8),
+                                            child: Tooltip(
+                                              message: l10n
+                                                  .editCartQuantityTooltip,
+                                              child: Padding(
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                        horizontal: 8,
+                                                        vertical: 4),
+                                                child: Row(
+                                                  mainAxisSize:
+                                                      MainAxisSize.min,
+                                                  children: [
+                                                    Text(
+                                                      quantityLabel,
+                                                      style: const TextStyle(
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                        color: AppTheme
+                                                            .primaryColor,
+                                                      ),
+                                                    ),
+                                                    const SizedBox(width: 4),
+                                                    const Icon(Icons.edit,
+                                                        size: 14,
+                                                        color: AppTheme
+                                                            .primaryColor),
+                                                  ],
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                          IconButton(
+                                            icon: const Icon(
+                                                Icons.add_circle_outline,
+                                                size: 20),
+                                            tooltip:
+                                                l10n.increaseQuantityTooltip,
+                                            onPressed: () =>
+                                                _updateQuantity(idx, 1),
+                                          ),
+                                          const SizedBox(width: 8),
+                                          Text(
+                                            formatIdr(item.subtotal),
+                                            style: const TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              color: AppTheme.primaryColor,
+                                            ),
+                                          ),
+                                        ],
                                       ),
                                     ],
                                   ),

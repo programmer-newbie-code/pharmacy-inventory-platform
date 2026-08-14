@@ -236,42 +236,23 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen> {
                                     color: AppTheme.primaryColor)
                                 : null,
                           ),
-                          title: Row(
-                            children: [
-                              Expanded(
-                                child: Text(
-                                  prod.name,
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 15,
-                                  ),
-                                ),
-                              ),
-                              if (prod.isControlled)
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 8,
-                                    vertical: 2,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: AppTheme.golonganKeras.withAlpha(25),
-                                    borderRadius: BorderRadius.circular(6),
-                                    border: Border.all(
-                                      color: AppTheme.golonganKeras.withAlpha(
-                                        80,
-                                      ),
-                                    ),
-                                  ),
-                                  child: Text(
-                                    l10n.obatKeras,
-                                    style: const TextStyle(
-                                      color: AppTheme.golonganKeras,
-                                      fontSize: 11,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                ),
-                            ],
+                          // The name gets the tile's full width and wraps to
+                          // however many lines it needs, with no cap and no
+                          // ellipsis. A fixed maxLines: 2 was tried first, but
+                          // even after moving both the 'Obat Keras' badge and
+                          // the trailing action icons out of this row, the
+                          // longest real catalog entry ('Polymyxin B +
+                          // Neomycin Tetes Mata', 33 characters) still did not
+                          // fit in 2 lines at the measured 277px width. The
+                          // owner chose correctness over a fixed row height: a
+                          // dispensed medicine's name must never be partially
+                          // hidden.
+                          title: Text(
+                            prod.name,
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 15,
+                            ),
                           ),
                           subtitle: Padding(
                             padding: const EdgeInsets.only(top: 6),
@@ -279,6 +260,31 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen> {
                               spacing: 8,
                               runSpacing: 4,
                               children: [
+                                if (prod.isControlled)
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 8,
+                                      vertical: 2,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color:
+                                          AppTheme.golonganKeras.withAlpha(25),
+                                      borderRadius: BorderRadius.circular(6),
+                                      border: Border.all(
+                                        color: AppTheme.golonganKeras.withAlpha(
+                                          80,
+                                        ),
+                                      ),
+                                    ),
+                                    child: Text(
+                                      l10n.obatKeras,
+                                      style: const TextStyle(
+                                        color: AppTheme.golonganKeras,
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ),
                                 Text(
                                   prod.barcode,
                                   style: TextStyle(color: Colors.grey.shade700),
@@ -295,59 +301,82 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen> {
                                   '•',
                                   style: TextStyle(color: Colors.grey.shade400),
                                 ),
-                                Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Text(
-                                      '${l10n.stockLabel}: ',
-                                      style: const TextStyle(
-                                        fontWeight: FontWeight.w500,
+                                // A single RichText, not a nested Row: Wrap
+                                // constrains each child to its own max width,
+                                // and an atomic Row cannot reflow internally,
+                                // so it overflowed by 69dp once the name's
+                                // 2-line wrap left this run narrower than
+                                // 'Stok: 20 kapsul' at bold weight needs.
+                                // RichText keeps the two-weight styling in one
+                                // flowable Wrap child instead.
+                                RichText(
+                                  text: TextSpan(
+                                    style: DefaultTextStyle.of(ctx).style,
+                                    children: [
+                                      TextSpan(
+                                        text: '${l10n.stockLabel}: ',
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.w500,
+                                        ),
                                       ),
-                                    ),
-                                    Text(
-                                      '$stock ${prod.baseUnit}',
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        color: isLow
-                                            ? AppTheme.warningColor
-                                            : AppTheme.successColor,
-                                      ),
-                                    ),
-                                    if (isLow) ...[
-                                      const SizedBox(width: 4),
-                                      const Icon(
-                                        Icons.warning_amber_rounded,
-                                        size: 16,
-                                        color: AppTheme.warningColor,
+                                      TextSpan(
+                                        text: '$stock ${prod.baseUnit}',
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          color: isLow
+                                              ? AppTheme.warningColor
+                                              : AppTheme.successColor,
+                                        ),
                                       ),
                                     ],
-                                  ],
+                                  ),
                                 ),
+                                if (isLow)
+                                  const Icon(
+                                    Icons.warning_amber_rounded,
+                                    size: 16,
+                                    color: AppTheme.warningColor,
+                                  ),
+                                // Actions moved here from `trailing`, which
+                                // previously reserved ~96dp on every row for
+                                // two full-size IconButtons. Even the longest
+                                // real catalog name (33 characters) did not
+                                // fit the name in 2 lines once that space was
+                                // taken from a 393dp-wide phone. They join the
+                                // Wrap as compact icon-only buttons instead.
+                                if (canCreate) ...[
+                                  InkWell(
+                                    key: Key('editProdBtn_${prod.id}'),
+                                    onTap: () => _openEditProduct(prod),
+                                    borderRadius: BorderRadius.circular(16),
+                                    child: Tooltip(
+                                      message: l10n.editProductTooltip,
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(4),
+                                        child: Icon(Icons.edit_outlined,
+                                            size: 18,
+                                            color: Colors.grey.shade700),
+                                      ),
+                                    ),
+                                  ),
+                                  InkWell(
+                                    key: Key('addBatchBtn_${prod.id}'),
+                                    onTap: () => _openAddBatch(prod),
+                                    borderRadius: BorderRadius.circular(16),
+                                    child: Tooltip(
+                                      message: l10n.receiveStock,
+                                      child: const Padding(
+                                        padding: EdgeInsets.all(4),
+                                        child: Icon(Icons.add_shopping_cart,
+                                            size: 18,
+                                            color: AppTheme.primaryColor),
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ],
                             ),
                           ),
-                          trailing: canCreate
-                              ? Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    IconButton(
-                                      key: Key('editProdBtn_${prod.id}'),
-                                      icon: const Icon(Icons.edit_outlined),
-                                      tooltip: l10n.editProductTooltip,
-                                      onPressed: () => _openEditProduct(prod),
-                                    ),
-                                    IconButton(
-                                      key: Key('addBatchBtn_${prod.id}'),
-                                      icon: const Icon(
-                                        Icons.add_shopping_cart,
-                                        color: AppTheme.primaryColor,
-                                      ),
-                                      tooltip: l10n.receiveStock,
-                                      onPressed: () => _openAddBatch(prod),
-                                    ),
-                                  ],
-                                )
-                              : null,
                         ),
                       );
                     },

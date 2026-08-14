@@ -8,6 +8,14 @@ import 'package:pharmacy_inventory_platform/data/product_repository.dart';
 import 'package:pharmacy_inventory_platform/features/inventory/product_list_screen.dart';
 import 'package:pharmacy_inventory_platform/l10n/app_localizations.dart';
 
+import '../../support/layout_harness.dart';
+
+// The longest name in the bundled catalog
+// (assets/data/indonesian_drugs.csv) is 'Polymyxin B + Neomycin Tetes Mata'
+// at 33 characters, so that is the realistic worst case for this app rather
+// than an invented longer string.
+const _longProductName = 'Polymyxin B + Neomycin Tetes Mata';
+
 void main() {
   testWidgets('renders product list screen and opens add product dialog', (
     tester,
@@ -125,5 +133,107 @@ void main() {
     await tester.tap(find.byKey(const Key('clearSearchEmptyStateBtn')));
     await tester.pumpAndSettle();
     expect(find.text('Paracetamol Syrup'), findsOneWidget);
+  });
+
+  testWidgets(
+      'a long controlled-drug name wraps instead of truncating on the owner phone',
+      (tester) async {
+    useSurface(tester, kOwnerPhone);
+
+    final db = AppDatabase(NativeDatabase.memory());
+    addTearDown(db.close);
+
+    final productRepo = ProductRepository(db);
+    // Long enough to have needed ~175dp+ against the ~179dp the row used to
+    // leave once the 'Obat Keras' badge and edit icon took their share.
+    final productId = await productRepo.createProduct(
+      barcode: '8990000000099',
+      internalCode: 'AMX-500',
+      name: _longProductName,
+      activeIngredient: 'Amoxicillin',
+      ingredientPct: 100.0,
+      baseUnit: 'kapsul',
+      purchaseUnit: 'strip',
+      unitsPerPurchaseUnit: 10,
+      costPricePerBaseUnit: 1500.0,
+      marginPct: 20.0,
+      reorderThreshold: 20,
+      isControlled: true,
+      category: 'Obat Keras',
+      createdBy: 'admin',
+    );
+
+    final container = ProviderContainer(
+      overrides: [databaseProvider.overrideWithValue(db)],
+    );
+    addTearDown(container.dispose);
+
+    await tester.pumpWidget(
+      UncontrolledProviderScope(
+        container: container,
+        child: const MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: ProductListScreen(),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expectNoOverflow(tester);
+
+    final nameFinder = find.text(_longProductName);
+    expect(nameFinder, findsOneWidget);
+    expectNotTruncated(tester, nameFinder);
+    // Actions moved out of `trailing` into this row; confirm they are still
+    // present and tappable at this width.
+    expect(find.byKey(Key('editProdBtn_$productId')), findsOneWidget);
+    expect(find.byKey(Key('addBatchBtn_$productId')), findsOneWidget);
+  });
+
+  testWidgets('survives 2.0 text scale with a long name on the owner phone',
+      (tester) async {
+    useSurface(tester, kOwnerPhone);
+
+    final db = AppDatabase(NativeDatabase.memory());
+    addTearDown(db.close);
+
+    final productRepo = ProductRepository(db);
+    await productRepo.createProduct(
+      barcode: '8990000000098',
+      internalCode: 'AMX-501',
+      name: _longProductName,
+      activeIngredient: 'Amoxicillin',
+      ingredientPct: 100.0,
+      baseUnit: 'kapsul',
+      purchaseUnit: 'strip',
+      unitsPerPurchaseUnit: 10,
+      costPricePerBaseUnit: 1500.0,
+      marginPct: 20.0,
+      reorderThreshold: 20,
+      isControlled: true,
+      category: 'Obat Keras',
+      createdBy: 'admin',
+    );
+
+    final container = ProviderContainer(
+      overrides: [databaseProvider.overrideWithValue(db)],
+    );
+    addTearDown(container.dispose);
+
+    await tester.pumpWidget(
+      UncontrolledProviderScope(
+        container: container,
+        child: MaterialApp(
+          builder: textScaleBuilder(2.0),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: const ProductListScreen(),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expectNoOverflow(tester);
   });
 }

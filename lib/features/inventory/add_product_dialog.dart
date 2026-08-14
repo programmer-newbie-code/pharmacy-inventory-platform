@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 
+import '../../core/adaptive_field_pair.dart';
 import '../../core/app_theme.dart';
 import '../../core/formatters.dart';
 import '../../core/providers.dart';
@@ -397,32 +398,27 @@ class _AddProductDialogState extends ConsumerState<AddProductDialog> {
                 const SizedBox(height: 8),
 
                 // ── Units row ───────────────────────────────────────────────
-                Row(
-                  children: [
-                    Expanded(
-                      child: EditableUnitDropdown(
-                        widgetKey: const Key('baseUnitDropdown'),
-                        controller: _baseUnitController,
-                        labelText: l10n.baseUnitLabel,
-                        defaultOptions: defaultBaseUnits,
-                        validator: (v) =>
-                            (v == null || v.trim().isEmpty) ? 'Wajib' : null,
-                        onChanged: (_) => setState(() {}),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: EditableUnitDropdown(
-                        widgetKey: const Key('purchaseUnitDropdown'),
-                        controller: _purchaseUnitController,
-                        labelText: l10n.purchaseUnitLabel,
-                        defaultOptions: defaultPurchaseUnits,
-                        validator: (v) =>
-                            (v == null || v.trim().isEmpty) ? 'Wajib' : null,
-                        onChanged: (_) => setState(() {}),
-                      ),
-                    ),
-                  ],
+                AdaptiveFieldPair(
+                  first: EditableUnitDropdown(
+                    widgetKey: const Key('baseUnitDropdown'),
+                    controller: _baseUnitController,
+                    labelText: l10n.baseUnitLabel,
+                    helperText: l10n.baseUnitHint,
+                    defaultOptions: defaultBaseUnits,
+                    validator: (v) =>
+                        (v == null || v.trim().isEmpty) ? 'Wajib' : null,
+                    onChanged: (_) => setState(() {}),
+                  ),
+                  second: EditableUnitDropdown(
+                    widgetKey: const Key('purchaseUnitDropdown'),
+                    controller: _purchaseUnitController,
+                    labelText: l10n.purchaseUnitLabel,
+                    helperText: l10n.purchaseUnitHint,
+                    defaultOptions: defaultPurchaseUnits,
+                    validator: (v) =>
+                        (v == null || v.trim().isEmpty) ? 'Wajib' : null,
+                    onChanged: (_) => setState(() {}),
+                  ),
                 ),
                 const SizedBox(height: 12),
                 TextFormField(
@@ -441,40 +437,34 @@ class _AddProductDialogState extends ConsumerState<AddProductDialog> {
                 const SizedBox(height: 12),
 
                 // ── Price row (Dual Box vs Tablet Calculation) ───────────────
-                Row(
-                  children: [
-                    Expanded(
-                      child: TextFormField(
-                        key: const Key('purchaseUnitPriceInput'),
-                        controller: _purchaseUnitPriceController,
-                        decoration: InputDecoration(
-                          labelText: l10n.pricePerPurchaseUnitLabel,
-                          prefixText: l10n.currencyPrefix,
-                          border: const OutlineInputBorder(),
-                        ),
-                        keyboardType: TextInputType.number,
-                        onChanged: _onPurchasePriceChanged,
-                      ),
+                AdaptiveFieldPair(
+                  first: TextFormField(
+                    key: const Key('purchaseUnitPriceInput'),
+                    controller: _purchaseUnitPriceController,
+                    decoration: InputDecoration(
+                      labelText: l10n.pricePerPurchaseUnitLabel,
+                      helperText: l10n.pricePerPurchaseUnitHint,
+                      prefixText: l10n.currencyPrefix,
+                      border: const OutlineInputBorder(),
                     ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: TextFormField(
-                        key: const Key('costPricePerBaseUnitInput'),
-                        controller: _costPriceController,
-                        decoration: InputDecoration(
-                          labelText: l10n.costPricePerBaseUnitLabel,
-                          prefixText: l10n.currencyPrefix,
-                          border: const OutlineInputBorder(),
-                        ),
-                        keyboardType: TextInputType.number,
-                        onChanged: _onBasePriceChanged,
-                        validator: (v) =>
-                            (v == null || double.tryParse(v) == null)
-                                ? l10n.fieldRequired
-                                : null,
-                      ),
+                    keyboardType: TextInputType.number,
+                    onChanged: _onPurchasePriceChanged,
+                  ),
+                  second: TextFormField(
+                    key: const Key('costPricePerBaseUnitInput'),
+                    controller: _costPriceController,
+                    decoration: InputDecoration(
+                      labelText: l10n.costPricePerBaseUnitLabel,
+                      helperText: l10n.costPricePerBaseUnitHint,
+                      prefixText: l10n.currencyPrefix,
+                      border: const OutlineInputBorder(),
                     ),
-                  ],
+                    keyboardType: TextInputType.number,
+                    onChanged: _onBasePriceChanged,
+                    validator: (v) => (v == null || double.tryParse(v) == null)
+                        ? l10n.fieldRequired
+                        : null,
+                  ),
                 ),
                 const SizedBox(height: 8),
 
@@ -529,31 +519,24 @@ class _AddProductDialogState extends ConsumerState<AddProductDialog> {
                 }),
                 const SizedBox(height: 12),
 
-                Row(
-                  children: [
-                    Expanded(
-                      child: TextFormField(
-                        controller: _marginPctController,
-                        decoration: InputDecoration(
-                          labelText: l10n.marginPctLabel,
-                          suffixText: '%',
-                          border: const OutlineInputBorder(),
-                        ),
-                        keyboardType: TextInputType.number,
-                      ),
+                AdaptiveFieldPair(
+                  first: TextFormField(
+                    controller: _marginPctController,
+                    decoration: InputDecoration(
+                      labelText: l10n.marginPctLabel,
+                      suffixText: '%',
+                      border: const OutlineInputBorder(),
                     ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: TextFormField(
-                        controller: _reorderThresholdController,
-                        decoration: InputDecoration(
-                          labelText: l10n.minStockLabel,
-                          border: const OutlineInputBorder(),
-                        ),
-                        keyboardType: TextInputType.number,
-                      ),
+                    keyboardType: TextInputType.number,
+                  ),
+                  second: TextFormField(
+                    controller: _reorderThresholdController,
+                    decoration: InputDecoration(
+                      labelText: l10n.minStockLabel,
+                      border: const OutlineInputBorder(),
                     ),
-                  ],
+                    keyboardType: TextInputType.number,
+                  ),
                 ),
                 const SizedBox(height: 8),
 

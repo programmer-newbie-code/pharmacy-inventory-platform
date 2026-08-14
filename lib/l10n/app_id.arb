@@ -151,7 +151,7 @@
   "restock": "Restok",
   "supplierDirectory": "Direktori Supplier",
   "addSupplier": "Tambah Supplier Baru",
-  "addFirstSupplier": "Tambah Supplier Pertama",
+  "addFirstSupplier": "Tambah Pemasok Pertama",
   "noSuppliers": "Belum ada supplier.",
   "purchaseOrders": "Pesanan Pembelian & Reorder",
   "createPO": "Buat Pesanan Pembelian",
@@ -174,12 +174,7 @@
   "importCsvHint": "Tempel atau edit baris CSV di bawah:",
   "importProducts": "Impor Produk",
   "importSuccess": "Berhasil mengimpor {count} produk ({failed} gagal).",
-  "@importSuccess": {
-    "placeholders": {
-      "count": {"type": "int"},
-      "failed": {"type": "int"}
-    }
-  },
+  "@importSuccess": {"placeholders": {"count": {"type": "int"}, "failed": {"type": "int"}}},
   "saveBranding": "Simpan Branding",
   "transactions": "Transaksi",
   "items": "item",
@@ -256,13 +251,13 @@
   "catalogCheckFailed": "Gagal memeriksa pembaruan katalog. Periksa koneksi Anda.",
   "catalogUpdateSuccess": "Katalog obat berhasil diperbarui.",
   "catalogUpdateFailed": "Gagal mengunduh pembaruan katalog. Coba lagi.",
-  "pricePerPurchaseUnitLabel": "Harga Beli per Satuan Beli (1 Box/Dus)",
-  "costPricePerBaseUnitLabel": "HPP per Satuan Dasar (1 Tablet/Pcs)",
+  "pricePerPurchaseUnitLabel": "Harga Beli per Satuan Beli",
+  "costPricePerBaseUnitLabel": "HPP per Satuan Dasar",
   "conversionBreakdownHint": "1 {purchaseUnit} ({units} {baseUnit}) = Rp {purchasePrice} → Rp {basePrice} / {baseUnit}",
   "@conversionBreakdownHint": {"placeholders": {"purchaseUnit": {}, "units": {"type": "int"}, "baseUnit": {}, "purchasePrice": {}, "basePrice": {}}},
   "unitsPerPurchaseUnitLabel": "Isi per Satuan Beli",
-  "baseUnitLabel": "Satuan Dasar (mis. tablet, kapsul)",
-  "purchaseUnitLabel": "Satuan Beli (mis. box, dus)",
+  "baseUnitLabel": "Satuan Dasar",
+  "purchaseUnitLabel": "Satuan Beli",
   "cashMovementTitle": "Catat Arus Kas / Prive Owner",
   "cashOutLabel": "Tarik Kas (Out)",
   "cashInLabel": "Tambah Kas (In)",
@@ -294,11 +289,7 @@
   "filterCustom": "Rentang Tanggal Custom",
   "saveReceiptPdf": "Simpan PDF",
   "receiptSavedSuccess": "Struk berhasil disimpan di: {path}",
-  "@receiptSavedSuccess": {
-    "placeholders": {
-      "path": {}
-    }
-  },
+  "@receiptSavedSuccess": {"placeholders": {"path": {}}},
   "receiptSaveFailed": "Struk tidak dapat disimpan. Periksa akses penyimpanan lalu coba lagi.",
   "receiptPrintFailed": "Struk tidak dapat dicetak. Periksa printer lalu coba lagi.",
   "receiptDirectoryLabel": "Lokasi Folder Struk (Opsional)",
@@ -454,8 +445,6 @@
   "supplierUpdated": "Pemasok berhasil diperbarui.",
   "supplierDetailTitle": "Detail Pemasok",
   "editButton": "Edit",
-  "saveButton": "Simpan",
-  "cancelButton": "Batal",
   "supplierNameLabel": "Nama Pemasok *",
   "contactPersonLabel": "Penanggung Jawab / Kontak",
   "phoneLabel": "Telepon",
@@ -470,7 +459,6 @@
   "addSupplierButton": "Tambah Pemasok",
   "searchSuppliersHint": "Cari pemasok...",
   "activeOnlyToggle": "Hanya yang aktif",
-  "addFirstSupplier": "Tambah Pemasok Pertama",
   "statusInactive": "Nonaktif",
   "noSuppliersAdded": "Belum ada pemasok yang ditambahkan.",
   "noSuppliersMatchFilter": "Tidak ada pemasok yang cocok dengan filter Anda.",
@@ -502,7 +490,6 @@
   "transactionNotFound": "Transaksi tidak ditemukan.",
   "selectAtLeastOneItemReturn": "Silakan pilih minimal 1 item untuk dikembalikan.",
   "returnProcessedTitle": "Pengembalian Diproses",
-  "okButton": "OK",
   "returnsRefundsTitle": "Pengembalian & Pengembalian Dana",
   "enterTransactionNumberHint": "Masukkan Nomor Transaksi (cth. TXN-...)",
   "browseRecentSalesButton": "Lihat Penjualan Terakhir",
@@ -525,7 +512,6 @@
   "patientNameRequired": "Nama pasien wajib diisi.",
   "patientNameRequiredLabel": "Nama Pasien *",
   "dateOfBirthLabel": "Tanggal Lahir",
-  "addressLabel": "Alamat",
   "knownAllergiesLabel": "Alergi Diketahui",
   "allergiesHint": "cth. Penisilin, Sulfa",
   "chronicConditionsLabel": "Kondisi Kronis (Prolanis)",
@@ -555,5 +541,13 @@
   "historyTab": "Riwayat",
   "prescriptionsTab": "Resep",
   "editPatientTitle": "Ubah Pasien",
-  "addPatientTitle": "Tambah Pasien Baru"
+  "addPatientTitle": "Tambah Pasien Baru",
+  "baseUnitHint": "mis. tablet, kapsul",
+  "purchaseUnitHint": "mis. box, dus",
+  "costPricePerBaseUnitHint": "per 1 tablet / pcs",
+  "pricePerPurchaseUnitHint": "per 1 box / dus",
+  "editCartQuantityTooltip": "Ubah jumlah",
+  "increaseQuantityTooltip": "Tambah jumlah",
+  "decreaseQuantityTooltip": "Kurangi jumlah",
+  "removeCartItemTooltip": "Hapus dari keranjang"
 }
