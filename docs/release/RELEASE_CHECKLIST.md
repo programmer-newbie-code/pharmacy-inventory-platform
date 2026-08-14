@@ -32,6 +32,34 @@
 
 ## 🧪 4. Manual Smoke Test Protocol
 - [ ] Complete all steps in [`docs/release/SMOKE_TEST_CHECKLIST.md`](file:///c:/Users/Davit/Documents/Code/Pharmacy/pharmacy-inventory-platform/docs/release/SMOKE_TEST_CHECKLIST.md) on both Windows and Android test devices.
+- [ ] **Android release builds are shrunk and obfuscated (R8 + `--obfuscate`).**
+  `flutter test` never exercises the R8/AOT pipeline a release build goes
+  through, so a green CI run does **not** prove the shrunk binary works on a
+  device — only that it compiles and the existing test suite passes. Before
+  distributing an Android release, install the actual release APK/AAB on a
+  real device and specifically verify:
+  - Google Drive sign-in and backup (`google_sign_in`)
+  - Barcode/camera scanning (`mobile_scanner`)
+  - Any inventory/database screen (`sqlite3_flutter_libs`)
+
+  These three plugins touch native/JNI code and are the most likely to need
+  an explicit ProGuard keep rule that R8 could otherwise strip.
+
+---
+
+## 🗝️ 4a. Android Debug Symbols (for decoding crash reports)
+
+Each Android release build produces Dart obfuscation symbols
+(`--split-debug-info`). They are uploaded as a **private** CI artifact named
+`android-debug-symbols-<tag>`, retained for 90 days, and attached only to
+that build's GitHub Actions run — never to the public GitHub Release.
+
+- [ ] If a crash report ever needs decoding, download the matching
+  `android-debug-symbols-<tag>` artifact from that tag's Actions run and use
+  `flutter symbolize`.
+- [ ] If more than 90 days have passed and the artifact has expired,
+  re-run the build from the tagged commit to regenerate matching symbols
+  rather than assuming the artifact is still available.
 
 ---
 
