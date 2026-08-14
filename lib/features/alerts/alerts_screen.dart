@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/providers.dart';
 import '../../domain/alert_priority.dart';
+import '../../l10n/app_localizations.dart';
 
 final _allAlertsProvider = FutureProvider<List<AlertItem>>((ref) async {
   final repo = ref.read(alertRepositoryProvider);
@@ -48,18 +49,19 @@ class AlertsScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
     final alertsAsync = ref.watch(_allAlertsProvider);
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Pharmacy Alerts'),
+        title: Text(l10n.pharmacyAlertsTitle),
       ),
       body: alertsAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(child: Text('Failed to load alerts: $e')),
+        error: (e, _) => Center(child: Text(l10n.alertsLoadError('$e'))),
         data: (alerts) {
           if (alerts.isEmpty) {
-            return const Center(child: Text('No active alerts.'));
+            return Center(child: Text(l10n.noActiveAlerts));
           }
           return ListView.builder(
             itemCount: alerts.length,

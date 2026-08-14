@@ -116,14 +116,14 @@ class _PharmacyBrandingDialogState
                               child: Image.file(File(_logoPath!),
                                   fit: BoxFit.contain),
                             )
-                          : const Column(
+                          : Column(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                Icon(Icons.add_a_photo,
+                                const Icon(Icons.add_a_photo,
                                     size: 32, color: AppTheme.primaryColor),
-                                SizedBox(height: 4),
-                                Text('Upload Pharmacy Logo',
-                                    style: TextStyle(
+                                const SizedBox(height: 4),
+                                Text(l10n.uploadPharmacyLogo,
+                                    style: const TextStyle(
                                         fontWeight: FontWeight.bold,
                                         fontSize: 12)),
                               ],

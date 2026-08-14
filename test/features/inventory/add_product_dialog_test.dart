@@ -209,6 +209,82 @@ void main() {
     expect(find.text('Golongan Obat'), findsOneWidget);
   });
 
+  testWidgets('renders drug auto-lookup panel copy in English', (tester) async {
+    final db = AppDatabase(NativeDatabase.memory());
+    addTearDown(db.close);
+    final container = ProviderContainer(
+      overrides: [databaseProvider.overrideWithValue(db)],
+    );
+    addTearDown(container.dispose);
+
+    await tester.pumpWidget(
+      UncontrolledProviderScope(
+        container: container,
+        child: const MaterialApp(
+          locale: Locale('en'),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: Scaffold(body: AddProductDialog()),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(
+      find.text('Auto Drug Lookup (BPOM / Local Database)'),
+      findsOneWidget,
+    );
+    expect(
+      find.text('Data from local database of 600+ Indonesian drugs + BPOM (if connected)'),
+      findsOneWidget,
+    );
+    expect(
+      find.text('Cari Obat Otomatis (BPOM / Database Lokal)'),
+      findsNothing,
+    );
+  });
+
+  testWidgets('renders drug auto-lookup panel copy in Indonesian',
+      (tester) async {
+    final db = AppDatabase(NativeDatabase.memory());
+    addTearDown(db.close);
+    final container = ProviderContainer(
+      overrides: [databaseProvider.overrideWithValue(db)],
+    );
+    addTearDown(container.dispose);
+
+    await tester.pumpWidget(
+      UncontrolledProviderScope(
+        container: container,
+        child: const MaterialApp(
+          locale: Locale('id'),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: Scaffold(body: AddProductDialog()),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(
+      find.text('Cari Obat Otomatis (BPOM / Database Lokal)'),
+      findsOneWidget,
+    );
+
+    // Expand the panel and type a short (<2 char) query so the "no results"
+    // branch is unreachable, but the hint text is visible either way once
+    // expanded.
+    await tester.tap(
+      find.text('Cari Obat Otomatis (BPOM / Database Lokal)'),
+    );
+    await tester.pumpAndSettle();
+
+    expect(
+      find.text('Ketik nama obat (contoh: paracetamol, amoksisilin)...'),
+      findsOneWidget,
+    );
+  });
+
   group('narrow screen readability', () {
     Future<void> pumpDialog(WidgetTester tester, {double textScale = 1.0}) async {
       final db = AppDatabase(NativeDatabase.memory());

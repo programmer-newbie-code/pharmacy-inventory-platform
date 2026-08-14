@@ -1313,6 +1313,7 @@ class _NavCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final effectiveColor = isEnabled ? color : Colors.grey.shade400;
 
     Widget cardContent = Container(
@@ -1371,7 +1372,7 @@ class _NavCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 3),
                 Text(
-                  isEnabled ? subtitle : (restrictionTooltip ?? 'Restricted'),
+                  isEnabled ? subtitle : (restrictionTooltip ?? l10n.restrictedSubtitle),
                   style: TextStyle(
                     fontSize: 11,
                     color:
@@ -1392,7 +1393,7 @@ class _NavCard extends StatelessWidget {
             )
           else
             Tooltip(
-              message: restrictionTooltip ?? 'Restricted role',
+              message: restrictionTooltip ?? l10n.restrictedRoleTooltip,
               child: Container(
                 padding: const EdgeInsets.all(5),
                 decoration: BoxDecoration(

@@ -626,6 +626,7 @@ class _DrugLookupPanel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context)!;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -647,7 +648,7 @@ class _DrugLookupPanel extends StatelessWidget {
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    'Cari Obat Otomatis (BPOM / Database Lokal)',
+                    l10n.drugAutoLookupToggle,
                     style: TextStyle(
                       color: cs.primary,
                       fontWeight: FontWeight.w600,
@@ -678,8 +679,7 @@ class _DrugLookupPanel extends StatelessWidget {
               TextField(
                 controller: controller,
                 decoration: InputDecoration(
-                  hintText:
-                      'Ketik nama obat (contoh: paracetamol, amoksisilin)...',
+                  hintText: l10n.drugLookupHint,
                   prefixIcon: isSearching
                       ? const Padding(
                           padding: EdgeInsets.all(12),
@@ -737,7 +737,7 @@ class _DrugLookupPanel extends StatelessWidget {
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 8),
                   child: Text(
-                    'Tidak ditemukan. Coba nama generik (contoh: "paracetamol").',
+                    l10n.drugLookupNoResults,
                     style: TextStyle(color: cs.outline, fontSize: 12),
                     textAlign: TextAlign.center,
                   ),
@@ -750,7 +750,7 @@ class _DrugLookupPanel extends StatelessWidget {
                   const SizedBox(width: 4),
                   Expanded(
                     child: Text(
-                      'Data dari database lokal 600+ obat Indonesia + BPOM (jika ada koneksi)',
+                      l10n.drugLookupDataSourceNote,
                       style: TextStyle(color: cs.outline, fontSize: 11),
                     ),
                   ),

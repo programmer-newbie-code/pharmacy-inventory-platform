@@ -64,4 +64,51 @@ void main() {
     expect(pdfBytes, isNotEmpty);
     expect(pdfBytes.length, greaterThan(100));
   });
+
+  test('generateReceiptPdf accepts custom localized labels without error',
+      () async {
+    final txn = SaleTransaction(
+      id: 2,
+      txnNo: 'TXN-20260814-002',
+      cashierId: 1,
+      totalAmount: 5000,
+      paymentMethod: 'Cash',
+      hasPrescription: false,
+      createdAt: DateTime.now(),
+    );
+    final items = [
+      const SaleItem(
+        id: 201,
+        transactionId: 2,
+        productId: 11,
+        batchId: 1002,
+        qtySold: 1,
+        unitPrice: 5000,
+        subtotal: 5000,
+      ),
+    ];
+
+    // Overriding every label parameter must not throw and must still
+    // produce a non-empty PDF; this is the seam receipt_dialog.dart uses to
+    // pass localized (English/Indonesian) values without lib/data/
+    // importing localization directly.
+    final pdfBytes = await service.generateReceiptPdf(
+      transaction: txn,
+      items: items,
+      productsMap: const {},
+      txnNoLabel: 'Txn No',
+      dateLabel: 'Date',
+      cashierLabel: 'Cashier',
+      paymentMethodLabel: 'Payment Method',
+      doctorLabel: 'Doctor',
+      patientLabel: 'Patient',
+      itemColumnLabel: 'Item',
+      qtyColumnLabel: 'Qty',
+      totalRowLabel: 'TOTAL',
+      footerMessage: '-- Thank You --\nGet well soon!',
+    );
+
+    expect(pdfBytes, isNotEmpty);
+    expect(pdfBytes.length, greaterThan(100));
+  });
 }

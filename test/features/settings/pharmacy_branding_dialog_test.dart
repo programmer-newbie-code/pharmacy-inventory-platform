@@ -29,6 +29,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Pharmacy Branding & Logo'), findsOneWidget);
+    expect(find.text('Upload Pharmacy Logo'), findsOneWidget);
     expect(find.byKey(const Key('brandingNameInput')), findsOneWidget);
     expect(find.byKey(const Key('receiptDirInput')), findsOneWidget);
 
@@ -42,5 +43,26 @@ void main() {
     final prefs = await SharedPreferences.getInstance();
     expect(prefs.getString('pharmacy_name'), 'Apotek Utama Express');
     expect(prefs.getString('receipt_custom_base_dir'), 'C:/Pharmacy Receipts');
+  });
+
+  testWidgets('renders logo placeholder copy from ARB in Indonesian',
+      (tester) async {
+    await tester.pumpWidget(
+      const ProviderScope(
+        child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          locale: Locale('id'),
+          home: Scaffold(
+            body: PharmacyBrandingDialog(),
+          ),
+        ),
+      ),
+    );
+
+    await tester.pumpAndSettle();
+
+    expect(find.text('Unggah Logo Apotek'), findsOneWidget);
+    expect(find.text('Upload Pharmacy Logo'), findsNothing);
   });
 }
