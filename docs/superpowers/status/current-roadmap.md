@@ -2,9 +2,9 @@
 
 **Last updated:** 2026-08-13
 
-**Verified main:** `363812e` (`docs(release): prepare v1.8.0 and restore the changelog (#166)`)
+**Verified main:** `adccbdf` (`test(support): add narrow-screen layout harness (#169)`)
 
-**Verified main CI:** run `31671030356`, completed successfully.
+**Verified main CI:** run `31769921498`, completed successfully.
 
 **Released:** `v1.8.0`, published 2026-08-13 from `363812e`. Tag pipeline run
 `31671071229` passed every job including `create-release`. Artifacts attached:
@@ -17,7 +17,22 @@
 `features/reports` 4) per
 `docs/superpowers/plans/2026-08-12-feature-localization-sweep.md`. 22 plain and
 34 interpolated strings remain; none are user-visible defects, since all are
-English-only in an English build. Everything else on the roadmap is blocked on
+English-only in an English build.
+
+**Owner-reported narrow-screen readability fixed (#169):** on a Vivo V23e
+(~393x873dp), form-field labels truncated to `...`, Katalog Inventaris product
+names truncated, and the POS quantity dialog was undiscoverable (looked like a
+label, not a control). All three are fixed and covered by a reusable
+`test/support/layout_harness.dart` at 393x873. Three separate, pre-existing
+overflow defects were found and deliberately **not** fixed in the same PR
+(recorded in `docs/superpowers/plans/2026-08-13-narrow-screen-readability.md`'s
+Known Issues): the add/edit product dialog and the POS quantity dialog each
+overflow their own chrome at 2.0 text scale, and the whole `PosScreen`
+overflows at 2.0 text scale independent of the cart tile. **Owner verification
+on the Vivo V23e is still outstanding** - CI and the harness are the only
+automated gate; no Flutter toolchain or device exists in the agent environment.
+
+Everything else on the roadmap is blocked on
 owner approval, a physical device, or a Play account.
 
 **Versioning:** do not edit `pubspec.yaml`. CI derives the version from the tag
@@ -53,6 +68,7 @@ GitHub and implementation evidence overrides this file if it becomes stale.
 
 | PR | Shipped outcome |
 | --- | --- |
+| #169 | Narrow-screen readability, owner-reported from a Vivo V23e (~393x873dp): form-field label truncation (`Satuan Dasar...`), Katalog Inventaris product-name truncation, and an undiscoverable POS quantity dialog. Added a reusable `test/support/layout_harness.dart`. Three pre-existing, unrelated overflow defects found and deliberately deferred (dialog chrome at 2.0 text scale x2, whole-`PosScreen` text-scale overflow) — recorded in the plan's Known Issues, not fixed in this PR. Owner verification on the Vivo V23e still outstanding. 280 tests, coverage 81.2%. |
 | #164 | Localization slice 5 (patients, compounding). Review of the slice found the audit script reporting an area clean while a literal behind a ternary was still hard-coded; fixed the script's regex, localized the patient form title, and added the both-locale test the slice was missing. Dosage-form stored values (`puyer`, `kapsul`, `salep`, `sirup`) preserved. |
 | #162-#163 | Localization slices 3 and 4 (inventory, pos). |
 | #160-#161 | Localization slice 2 (suppliers) and roadmap record. |
@@ -81,7 +97,7 @@ GitHub and implementation evidence overrides this file if it becomes stale.
 | 0 | Durable cross-agent context | Shipped | PR #146 merged; post-merge main run `31555388676` is green. |
 | 1 | ProgrammerNewbie Studio branding and icon | Shipped | #156 delivered the owner-approved Option A canonical SVG, deterministic platform exports, adaptive Android icon, final size proof, and PharmaLoka naming hierarchy. Post-merge main run `31654201784` is green. |
 | 2 | Windows desktop modernization | Correctness shipped (#151); visual refinement pending | Sidebar chrome now owns navigation and global actions, with tests at 1366x768, 1920x1080, and the 1023/1024 boundary, plus `Tab` traversal and 2.0 text scale. Remaining: collapsible sidebar, top context bar, density, theme tokens — all need rendered comparison and owner approval. |
-| 3 | Android mobile modernization | Correctness shipped (#151); flow review pending | Bottom bar and More sheet now report selection correctly and expose the global actions. Remaining: task-frequency, one-handed reach, high-frequency POS/scanner flow, and real-device text-scale review. |
+| 3 | Android mobile modernization | Correctness shipped (#151); narrow-screen readability shipped (#169); flow review pending | Bottom bar and More sheet report selection correctly. #169 fixed owner-reported truncation in Katalog Inventaris and the add/edit product dialog, plus made the POS quantity dialog discoverable. Remaining: task-frequency, one-handed reach, high-frequency POS/scanner flow beyond the cart tile, real-device verification of #169 on the reporting Vivo V23e, and the three known 2.0-text-scale overflow defects #169 deferred (add/edit dialog chrome, POS quantity dialog chrome, whole-`PosScreen`). |
 | 4 | Accessibility/localization/docs | In progress (slices 1-5 of 7 shipped) | #153 added the audit scan and sliced plan; #154 fixed the mixed-language defect; #160, #162, #163, and #164 swept suppliers, inventory, pos, patients, and compounding. 22 hardcoded strings remain: users 10, reports 4, data 3, alerts 2, main 1, settings 1, home 1. Screen-reader, contrast, focus, and text-scale auditing plus docs-site responsive verification remain separate concerns. |
 | 5 | Google Play readiness | Partial / externally blocked | Application ID and release CI exist; final identity/signing/store/policy package remains. Owner account verification and publication are external. |
 | 6 | Critical correctness | Shipped (this instance); monitor for new evidence | PR #148 fixed the `purchase_receiving_screen.dart` `authSessionProvider?.id ?? 1` fallback and localized the screen. No other confirmed critical-correctness item is open — reopen this priority only if new evidence reproduces a defect. |
@@ -91,8 +107,16 @@ GitHub and implementation evidence overrides this file if it becomes stale.
 Do not reimplement report/export parity, Drive missing-session recovery, backup
 integrity, receipt recovery, shift supervisor review, purchase-receiving
 session/localization, shell global-action reachability, the single in-shell
-navigation model, negative-stock protection, price safeguards, or scanner
-lifecycle handling without a reproduced gap in current main.
+navigation model, negative-stock protection, price safeguards, scanner
+lifecycle handling, or the narrow-screen readability fixes in
+`add_product_dialog.dart`/`edit_product_dialog.dart`/`product_list_screen.dart`/`pos_screen.dart`
+without a reproduced gap in current main.
+
+`test/support/layout_harness.dart` is the reusable tool for any further
+narrow-screen work: `useSurface`, `expectNoOverflow`, `expectNotTruncated`
+(plain `Text` only — do not point it at an `InputDecoration` label, see the
+helper's own doc comment), and `textScaleBuilder`. Extend it rather than
+reinventing per-screen measurement.
 
 Drug-classification dropdown values (`Obat Bebas`, `Obat Bebas Terbatas`,
 `Obat Keras`) and compounding dosage-form values (`puyer`, `kapsul`, `salep`,
