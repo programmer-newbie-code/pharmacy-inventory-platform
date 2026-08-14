@@ -2,9 +2,9 @@
 
 **Last updated:** 2026-08-14
 
-**Verified main:** `f7a264b` (`fix(android): correct adaptive icon orbit ring rotation (#175)`)
+**Verified main:** `8fcab36` (`localize(users,reports): move strings to ARB (slice 6) (#177)`)
 
-**Verified main CI:** run `31796587044`, completed successfully.
+**Verified main CI:** run `31799560927`, completed successfully.
 
 **Released:** `v1.8.1`, published 2026-08-14 from `9687724`. Tag pipeline run
 `31789879886` passed every job including `create-release`. Artifacts attached:
@@ -49,11 +49,59 @@ home screen, only via rendered SVG/vector-drawable comparison.
 
 **Open PR at audit:** none
 
-**Next increment:** Localization sweep slice 6 (`features/users` 10 strings,
-`features/reports` 4) per
-`docs/superpowers/plans/2026-08-12-feature-localization-sweep.md`. 22 plain and
-34 interpolated strings remain; none are user-visible defects, since all are
-English-only in an English build.
+**⚠️ Known bug, root cause confirmed, fix deferred (owner-only signing decision):**
+Google Drive backup sign-in fails on Android after account selection (owner-
+reported). Root cause: `android/app/build.gradle` signs release builds with
+`signingConfigs.debug`, and CI never caches `~/.android/debug.keystore`, so
+every CI-built APK gets a **different, random signing certificate**. Google's
+`google_sign_in` Android OAuth client is matched by package name + SHA-1
+fingerprint (`USER_GUIDE.md` section 6.2), so a shifting fingerprint can never
+stay registered/matched, producing a native `DEVELOPER_ERROR`
+(`ApiException: 10`) that the app's error mapping
+(`lib/features/backup/backup_screen.dart` `_mapDriveError`) doesn't recognize,
+surfacing as a generic "Google Drive encountered a problem" message. Confirmed
+this is **not** a Google Play Console / Play App Signing issue — the app is
+distributed via GitHub Release APK/AAB artifacts built directly in CI
+(`.github/workflows/ci.yml` `create-release` job), with no Play Store upload
+path at all, so whatever keystore signs the GitHub Release artifact is the one
+that must be registered.
+
+Fix requires: (1) generate a real release keystore, (2) store its credentials
+as GitHub Actions secrets, (3) add a `signingConfigs.release` block to
+`android/app/build.gradle` sourced from those secrets, (4) update the
+`build-android` CI job to decode and sign with it, (5) **owner registers the
+new keystore's stable SHA-1 with the Android OAuth client in Google Cloud
+Console** (external, owner-only). This closes the existing "Decide
+package-ID/signing-key custody" open item below rather than opening a new
+one. Not started; owner indicated they will pursue this in a separate
+agent/session.
+
+**Separate, smaller finding (no owner blocker, not yet fixed):** the
+"Konfigurasi Google Drive" button/dialog
+(`lib/features/settings/drive_setup_dialog.dart`, launched from
+`lib/features/backup/backup_screen.dart`) is dead UI on Android — it collects
+a manual OAuth Client ID/Secret that only `DesktopGoogleAccountAuthorizer`
+(Windows-only, selected via `Platform.isWindows` in
+`lib/data/google_drive_backup_service.dart`) ever reads. Android always uses
+`GoogleSignInAuthorizer`, which never touches `DriveCredentialStore`. The
+button should be platform-gated to Windows only in `backup_screen.dart`
+(around the `configureDriveBtn` widget) — do not remove the dialog/feature
+entirely, since Windows dev/fork builds without the CI-embedded
+`GOOGLE_DRIVE_DESKTOP_CLIENT_ID/_SECRET` still rely on it as a fallback.
+
+**Next increment:** Localization sweep slice 7 (`data/receipt_pdf_service.dart`
++ `alerts` + `settings` + `main.dart`) per
+`docs/superpowers/plans/2026-08-12-feature-localization-sweep.md`. Slice 6
+(#177) also surfaced a blind spot in
+`scripts/audit_hardcoded_strings.py` (it only matched literals on the same
+line as a `Text(...)` call; fixed to catch multi-line calls too), which in
+turn surfaced **16 additional violations in already-shipped areas** not yet
+fixed: inventory 4, `data/receipt_pdf_service.dart` 4, pos 3, alerts 2,
+`main.dart` 1, settings 1, home 1. These overlap with slice 7's remaining
+scope but are more numerous than the plan's original slice-7 count (18) —
+re-run `python3 scripts/audit_hardcoded_strings.py lib` at the start of slice
+7 to get the current, accurate list rather than trusting the plan's original
+table.
 
 **Owner-reported narrow-screen readability fixed (#169):** on a Vivo V23e
 (~393x873dp), form-field labels truncated to `...`, Katalog Inventaris product
@@ -104,6 +152,7 @@ GitHub and implementation evidence overrides this file if it becomes stale.
 
 | PR | Shipped outcome |
 | --- | --- |
+| #177 | Localization sweep slice 6 (`features/users` 10 strings, `features/reports` 4). Also fixed a multi-line blind spot in `scripts/audit_hardcoded_strings.py` (it only matched literals on the same line as a `Text(...)` call), which surfaced and fixed one additional in-scope defect in `reports_screen.dart` plus 16 out-of-scope violations in already-shipped areas, left for slice 7 (see "Next increment" above). Both-locale widget assertions added for every changed string; ARB parity verified (524 keys). |
 | #175 | Fixed adaptive-icon (`ic_launcher_foreground.xml`) orbit-ring gap orientation, which had been hand-transcribed from the master SVG without its 28° rotation, making it visibly mismatched from all other branding surfaces on API 26+ launchers. Single-line diff; verified pixel-identical to the master SVG via headless-Chrome rendering (no device verification performed). |
 | #172-#173 | Android release build shrink and obfuscation (`minifyEnabled`, `shrinkResources`, baseline ProGuard rules, `--obfuscate --split-debug-info`), debug symbols uploaded as a private CI artifact, then `v1.8.1` tagged and published. Measured (not estimated) size change: APK -5.8% (82.41→77.60 MB), AAB -6.3% (73.93→69.30 MB). `--split-per-abi` was proposed and explicitly declined by the owner; the remaining size is mostly the three bundled CPU architectures in one universal APK, a known and accepted trade-off. |
 | #169 | Narrow-screen readability, owner-reported from a Vivo V23e (~393x873dp): form-field label truncation (`Satuan Dasar...`), Katalog Inventaris product-name truncation, and an undiscoverable POS quantity dialog. Added a reusable `test/support/layout_harness.dart`. Three pre-existing, unrelated overflow defects found and deliberately deferred (dialog chrome at 2.0 text scale x2, whole-`PosScreen` text-scale overflow) — recorded in the plan's Known Issues, not fixed in this PR. Owner verification on the Vivo V23e still outstanding. 280 tests, coverage 81.2%. |
@@ -136,8 +185,8 @@ GitHub and implementation evidence overrides this file if it becomes stale.
 | 1 | ProgrammerNewbie Studio branding and icon | Shipped | #156 delivered the owner-approved Option A canonical SVG, deterministic platform exports, adaptive Android icon, final size proof, and PharmaLoka naming hierarchy. Post-merge main run `31654201784` is green. |
 | 2 | Windows desktop modernization | Correctness shipped (#151); visual refinement pending | Sidebar chrome now owns navigation and global actions, with tests at 1366x768, 1920x1080, and the 1023/1024 boundary, plus `Tab` traversal and 2.0 text scale. Remaining: collapsible sidebar, top context bar, density, theme tokens — all need rendered comparison and owner approval. |
 | 3 | Android mobile modernization | Correctness shipped (#151); narrow-screen readability shipped (#169); flow review pending | Bottom bar and More sheet report selection correctly. #169 fixed owner-reported truncation in Katalog Inventaris and the add/edit product dialog, plus made the POS quantity dialog discoverable. Remaining: task-frequency, one-handed reach, high-frequency POS/scanner flow beyond the cart tile, real-device verification of #169 on the reporting Vivo V23e, and the three known 2.0-text-scale overflow defects #169 deferred (add/edit dialog chrome, POS quantity dialog chrome, whole-`PosScreen`). |
-| 4 | Accessibility/localization/docs | In progress (slices 1-5 of 7 shipped) | #153 added the audit scan and sliced plan; #154 fixed the mixed-language defect; #160, #162, #163, and #164 swept suppliers, inventory, pos, patients, and compounding. 22 hardcoded strings remain: users 10, reports 4, data 3, alerts 2, main 1, settings 1, home 1. Screen-reader, contrast, focus, and text-scale auditing plus docs-site responsive verification remain separate concerns. |
-| 5 | Google Play readiness | Partial / externally blocked | Application ID and release CI exist; final identity/signing/store/policy package remains. Owner account verification and publication are external. |
+| 4 | Accessibility/localization/docs | In progress (slices 1-6 of 7 shipped) | #153 added the audit scan and sliced plan; #154 fixed the mixed-language defect; #160, #162, #163, #164, and #177 swept suppliers, inventory, pos, patients, compounding, users, and reports. Slice 7 (data/receipt_pdf_service.dart, alerts, settings, main.dart) remains, now with an expanded scope of 16+ strings after #177's audit-script fix surfaced previously-invisible violations — re-scan before starting. Screen-reader, contrast, focus, and text-scale auditing plus docs-site responsive verification remain separate concerns. |
+| 5 | Google Play readiness | Partial / externally blocked | Application ID and release CI exist; final identity/signing/store/policy package remains. Owner account verification and publication are external. **Related, higher-priority finding:** the Android release build signs with the debug keystore (`android/app/build.gradle`), which breaks Google Sign-In for Drive backup because the signing SHA-1 changes every CI run — see the "Known bug" note near the top of this file. Resolving this is a prerequisite for stable Google Sign-In regardless of Play Store publication status. |
 | 6 | Critical correctness | Shipped (this instance); monitor for new evidence | PR #148 fixed the `purchase_receiving_screen.dart` `authSessionProvider?.id ?? 1` fallback and localized the screen. No other confirmed critical-correctness item is open — reopen this priority only if new evidence reproduces a defect. |
 
 ## Preserved shipped capabilities
