@@ -1,15 +1,35 @@
 # Current Pharmacy Platform Roadmap
 
-**Last updated:** 2026-08-13
+**Last updated:** 2026-08-14
 
-**Verified main:** `adccbdf` (`test(support): add narrow-screen layout harness (#169)`)
+**Verified main:** `9687724` (`docs(changelog): record 1.8.1 (#173)`)
 
-**Verified main CI:** run `31769921498`, completed successfully.
+**Verified main CI:** run `31789818949`, completed successfully.
 
-**Released:** `v1.8.0`, published 2026-08-13 from `363812e`. Tag pipeline run
-`31671071229` passed every job including `create-release`. Artifacts attached:
-`...-android-v1.8.0.apk`, `...-android-v1.8.0.aab`,
-`...-windows-v1.8.0.msix`, `...-windows-v1.8.0.zip`.
+**Released:** `v1.8.1`, published 2026-08-14 from `9687724`. Tag pipeline run
+`31789879886` passed every job including `create-release`. Artifacts attached:
+`...-android-v1.8.1.apk`, `...-android-v1.8.1.aab`,
+`...-windows-v1.8.1.msix`, `...-windows-v1.8.1.zip`.
+
+**Android size measurement (Task 6 of the shrink/obfuscate plan, #172), measured not estimated:**
+
+| Artifact | v1.8.0 | v1.8.1 | Change |
+| --- | --- | --- | --- |
+| APK | 86,415,778 B (82.41 MB) | 81,369,510 B (77.60 MB) | -4.81 MB (-5.8%) |
+| AAB | 77,524,842 B (73.93 MB) | 72,661,232 B (69.30 MB) | -4.64 MB (-6.3%) |
+
+R8 shrinking and obfuscation alone yield a modest ~6% reduction, not a dramatic
+one. This is expected and was flagged in the spec: the larger size driver is
+bundling all three CPU architectures (arm64, armv7, x86_64) in one APK, which
+`--split-per-abi` would address but the owner explicitly declined to keep a
+single universal APK for GitHub Releases distribution simplicity. Do not
+reopen that decision without a new owner request; it is not a bug.
+
+**⚠️ Owner action still outstanding:** device smoke-test of this build
+(Google Drive sign-in, barcode scanning, database access) before wider
+distribution, per `docs/release/RELEASE_CHECKLIST.md` section 4. Not
+performed in the agent environment — no Android device or Flutter toolchain
+exists here.
 
 **Open PR at audit:** none
 
@@ -62,12 +82,13 @@ GitHub and implementation evidence overrides this file if it becomes stale.
 | --- | --- | --- |
 | Branch/PR/CI workflow | Shipped | `AGENT.md`; PR #160 and main run `31657666877` are green. Continue enforcing it. |
 | Cross-agent handoff | Shipped | PR #146 added the canonical spec, plan, live status, and startup routing; main run `31555388676` is green. |
-| Release automation | Shipped for this cycle | `v1.8.0` published 2026-08-13 from `363812e`; tag run `31671071229` green with `create-release` executed and four artifacts attached. Version is tag-derived, so `pubspec.yaml` was not edited. **Manual Windows and Android smoke testing required by `docs/release/RELEASE_CHECKLIST.md` was not performed** (no Flutter toolchain or device in the agent environment) and remains an owner action before distributing the artifacts. |
+| Release automation | Shipped for this cycle | `v1.8.1` published 2026-08-14 from `9687724`; tag run `31789879886` green with `create-release` executed and four artifacts attached. Android artifacts are now R8-shrunk and obfuscated (#172). Version is tag-derived, so `pubspec.yaml` was not edited. **Manual Windows and Android smoke testing required by `docs/release/RELEASE_CHECKLIST.md` was not performed** (no Flutter toolchain or device in the agent environment) and remains an owner action before distributing the artifacts — this is now more important than for prior releases, since obfuscation can break native-plugin integration in ways invisible to `flutter test`. |
 
 ## Recently shipped evidence
 
 | PR | Shipped outcome |
 | --- | --- |
+| #172-#173 | Android release build shrink and obfuscation (`minifyEnabled`, `shrinkResources`, baseline ProGuard rules, `--obfuscate --split-debug-info`), debug symbols uploaded as a private CI artifact, then `v1.8.1` tagged and published. Measured (not estimated) size change: APK -5.8% (82.41→77.60 MB), AAB -6.3% (73.93→69.30 MB). `--split-per-abi` was proposed and explicitly declined by the owner; the remaining size is mostly the three bundled CPU architectures in one universal APK, a known and accepted trade-off. |
 | #169 | Narrow-screen readability, owner-reported from a Vivo V23e (~393x873dp): form-field label truncation (`Satuan Dasar...`), Katalog Inventaris product-name truncation, and an undiscoverable POS quantity dialog. Added a reusable `test/support/layout_harness.dart`. Three pre-existing, unrelated overflow defects found and deliberately deferred (dialog chrome at 2.0 text scale x2, whole-`PosScreen` text-scale overflow) — recorded in the plan's Known Issues, not fixed in this PR. Owner verification on the Vivo V23e still outstanding. 280 tests, coverage 81.2%. |
 | #164 | Localization slice 5 (patients, compounding). Review of the slice found the audit script reporting an area clean while a literal behind a ternary was still hard-coded; fixed the script's regex, localized the patient form title, and added the both-locale test the slice was missing. Dosage-form stored values (`puyer`, `kapsul`, `salep`, `sirup`) preserved. |
 | #162-#163 | Localization slices 3 and 4 (inventory, pos). |
