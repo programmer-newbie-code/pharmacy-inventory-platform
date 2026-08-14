@@ -46,6 +46,21 @@ PATTERNS = [
     ),
 ]
 
+# A `Text(` call or a text-rendering named parameter can also open on one
+# line and place its literal on the next, e.g.:
+#   Text(
+#     'Akses Ditolak',
+#     style: ...,
+#   )
+# PATTERNS above only looks within a single line, so it never sees that
+# literal. This tracks whether the *previous* line ended with an opener, and
+# if so, checks whether the *current* line starts with a bare literal.
+_OPENER_RE = re.compile(r"(?:Text\(|(?:" + _TEXT_PARAMS + r")\s*:)\s*$")
+_LEADING_LITERAL_PATTERNS = [
+    re.compile(r"^\s*(?:const\s+)?'([^']{2,})'"),
+    re.compile(r'^\s*(?:const\s+)?"([^"]{2,})"'),
+]
+
 # Words that mark a literal as Indonesian. Such strings render as Indonesian
 # even when the app is in English, which is the highest-severity case.
 INDONESIAN_MARKERS = (
@@ -79,15 +94,27 @@ def scan(root: str):
                 continue
             path = os.path.join(dirpath, filename)
             with open(path, encoding='utf-8') as handle:
-                for number, line in enumerate(handle, 1):
-                    if 'l10n.' in line:
-                        continue
-                    for pattern in PATTERNS:
-                        for match in pattern.finditer(line):
+                lines = handle.readlines()
+            previous_was_opener = False
+            for number, line in enumerate(lines, 1):
+                has_l10n = 'l10n.' in line
+                if previous_was_opener and not has_l10n:
+                    for pattern in _LEADING_LITERAL_PATTERNS:
+                        match = pattern.match(line)
+                        if match:
                             text = match.group(1)
-                            if is_technical(text) or '$' in text:
-                                continue
-                            yield path, number, text
+                            if not is_technical(text) and '$' not in text:
+                                yield path, number, text
+                            break
+                previous_was_opener = bool(_OPENER_RE.search(line))
+                if has_l10n:
+                    continue
+                for pattern in PATTERNS:
+                    for match in pattern.finditer(line):
+                        text = match.group(1)
+                        if is_technical(text) or '$' in text:
+                            continue
+                        yield path, number, text
 
 
 def main() -> int:

@@ -71,4 +71,50 @@ void main() {
 
     expect(find.text('SIPNAP Excel report generated!'), findsOneWidget);
   });
+
+  testWidgets('renders header and filter copy from ARB in Indonesian',
+      (tester) async {
+    final db = AppDatabase(NativeDatabase.memory());
+    addTearDown(db.close);
+
+    final container = ProviderContainer(overrides: [
+      databaseProvider.overrideWithValue(db),
+    ]);
+    addTearDown(container.dispose);
+
+    await tester.pumpWidget(
+      UncontrolledProviderScope(
+        container: container,
+        child: const MaterialApp(
+          locale: Locale('id'),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: SipnapReportScreen(),
+        ),
+      ),
+    );
+
+    await tester.pumpAndSettle();
+
+    // These strings render from ARB in the pumped locale (id); assert the
+    // English literals do not leak through.
+    expect(find.text('Laporan Bulanan SIPNAP (Kemenkes RI)'), findsOneWidget);
+    expect(find.text('SIPNAP Monthly Report (Kemenkes RI)'), findsNothing);
+
+    expect(find.text('Periode: '), findsOneWidget);
+    expect(find.text('Period: '), findsNothing);
+
+    expect(find.text('Ekspor Excel'), findsOneWidget);
+    expect(find.text('Export Excel'), findsNothing);
+
+    expect(find.text('Bulan ${DateTime.now().month}'), findsOneWidget);
+    expect(find.text('Month ${DateTime.now().month}'), findsNothing);
+
+    expect(
+      find.text(
+        'Tidak ada obat golongan Narkotika/Psikotropika ditemukan.',
+      ),
+      findsOneWidget,
+    );
+  });
 }

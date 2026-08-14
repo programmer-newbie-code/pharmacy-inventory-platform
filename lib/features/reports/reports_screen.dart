@@ -292,9 +292,7 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
                         foregroundColor: Colors.white,
                       ),
                       icon: const Icon(Icons.shopping_cart_checkout),
-                      label: const Text(
-                        'Laporan Pembelian & Stok (Procurement)',
-                      ),
+                      label: Text(l10n.procurementReportTitle),
                       onPressed: () {
                         Navigator.of(context).push(
                           MaterialPageRoute(
