@@ -2,9 +2,9 @@
 
 **Last updated:** 2026-08-14
 
-**Verified main:** `9687724` (`docs(changelog): record 1.8.1 (#173)`)
+**Verified main:** `f7a264b` (`fix(android): correct adaptive icon orbit ring rotation (#175)`)
 
-**Verified main CI:** run `31789818949`, completed successfully.
+**Verified main CI:** run `31796587044`, completed successfully.
 
 **Released:** `v1.8.1`, published 2026-08-14 from `9687724`. Tag pipeline run
 `31789879886` passed every job including `create-release`. Artifacts attached:
@@ -30,6 +30,22 @@ reopen that decision without a new owner request; it is not a bug.
 distribution, per `docs/release/RELEASE_CHECKLIST.md` section 4. Not
 performed in the agent environment — no Android device or Flutter toolchain
 exists here.
+
+**Adaptive icon orbit-ring rotation bug fixed (#175):** the modern-launcher
+adaptive icon (`android/app/src/main/res/drawable/ic_launcher_foreground.xml`,
+introduced in #156) had its orbit-ring gap open at the top instead of on the
+right like the master SVG, because the hand-transcribed arc path never
+applied the master's `rotate(28 512 512)` transform. Legacy
+`mipmap-*/ic_launcher.png` files were unaffected (script-generated from the
+rotated master), so only devices using the adaptive-icon path (API 26+) ever
+showed the defect. Fixed by recomputing the arc endpoints with the missing
+rotation applied and verifying pixel-identical to the master SVG via headless
+Chrome renders (no Flutter/Android toolchain available in this environment).
+Confirmed via `git log`/full-repo sweep that no other hand-authored asset has
+the same defect — every other icon file is script-generated or a direct copy
+of the rotated master. **This will still need owner verification on a real
+device/launcher** since it wasn't visually confirmed on an actual Android
+home screen, only via rendered SVG/vector-drawable comparison.
 
 **Open PR at audit:** none
 
@@ -88,6 +104,7 @@ GitHub and implementation evidence overrides this file if it becomes stale.
 
 | PR | Shipped outcome |
 | --- | --- |
+| #175 | Fixed adaptive-icon (`ic_launcher_foreground.xml`) orbit-ring gap orientation, which had been hand-transcribed from the master SVG without its 28° rotation, making it visibly mismatched from all other branding surfaces on API 26+ launchers. Single-line diff; verified pixel-identical to the master SVG via headless-Chrome rendering (no device verification performed). |
 | #172-#173 | Android release build shrink and obfuscation (`minifyEnabled`, `shrinkResources`, baseline ProGuard rules, `--obfuscate --split-debug-info`), debug symbols uploaded as a private CI artifact, then `v1.8.1` tagged and published. Measured (not estimated) size change: APK -5.8% (82.41→77.60 MB), AAB -6.3% (73.93→69.30 MB). `--split-per-abi` was proposed and explicitly declined by the owner; the remaining size is mostly the three bundled CPU architectures in one universal APK, a known and accepted trade-off. |
 | #169 | Narrow-screen readability, owner-reported from a Vivo V23e (~393x873dp): form-field label truncation (`Satuan Dasar...`), Katalog Inventaris product-name truncation, and an undiscoverable POS quantity dialog. Added a reusable `test/support/layout_harness.dart`. Three pre-existing, unrelated overflow defects found and deliberately deferred (dialog chrome at 2.0 text scale x2, whole-`PosScreen` text-scale overflow) — recorded in the plan's Known Issues, not fixed in this PR. Owner verification on the Vivo V23e still outstanding. 280 tests, coverage 81.2%. |
 | #164 | Localization slice 5 (patients, compounding). Review of the slice found the audit script reporting an area clean while a literal behind a ternary was still hard-coded; fixed the script's regex, localized the patient form title, and added the both-locale test the slice was missing. Dosage-form stored values (`puyer`, `kapsul`, `salep`, `sirup`) preserved. |
