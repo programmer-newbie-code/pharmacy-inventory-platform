@@ -236,17 +236,19 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen> {
                                     color: AppTheme.primaryColor)
                                 : null,
                           ),
-                          // The name gets the tile's full width and can wrap to
-                          // two lines instead of truncating. The 'Obat Keras'
-                          // badge and edit icon previously left only ~179dp for
-                          // a name that can need ~175dp or more, so it broke
-                          // with any longer name or text scaling. The badge
-                          // moves into the subtitle row instead of sharing the
-                          // title's width.
+                          // The name gets the tile's full width and wraps to
+                          // however many lines it needs, with no cap and no
+                          // ellipsis. A fixed maxLines: 2 was tried first, but
+                          // even after moving both the 'Obat Keras' badge and
+                          // the trailing action icons out of this row, the
+                          // longest real catalog entry ('Polymyxin B +
+                          // Neomycin Tetes Mata', 33 characters) still did not
+                          // fit in 2 lines at the measured 277px width. The
+                          // owner chose correctness over a fixed row height: a
+                          // dispensed medicine's name must never be partially
+                          // hidden.
                           title: Text(
                             prod.name,
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
                             style: const TextStyle(
                               fontWeight: FontWeight.bold,
                               fontSize: 15,
