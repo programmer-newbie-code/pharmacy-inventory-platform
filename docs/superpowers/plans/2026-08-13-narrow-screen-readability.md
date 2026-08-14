@@ -183,6 +183,11 @@ arithmetic one may already pass, which is fine, it guards a regression.
 
 ## Known issues found during implementation
 
+- **The POS quantity dialog's total row overflows by 70px on a 393dp phone.**
+  `pos_screen.dart:166` has no width constraint, unlike `AddProductDialog`'s
+  explicit `width: 480`. Pre-existing, unrelated to the cart-tile row this
+  increment restructured; consumed in the discoverability test rather than
+  expanding this PR into fixing the dialog's own layout.
 - **The whole `PosScreen` overflows at 2.0 text scale, independent of the cart
   tile this increment touched.** The 'Shopping Cart' header `Row`
   (`pos_screen.dart:504`), a `Column` (`pos_screen.dart:539`), and a
