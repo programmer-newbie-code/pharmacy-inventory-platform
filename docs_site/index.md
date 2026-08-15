@@ -96,7 +96,7 @@ When launching the application for the first time on Windows or Android:
 ### 7. Google Cloud OAuth & Google Drive Setup
 1. Enable **Google Drive API** in Google Cloud Console.
 2. Configure **OAuth Consent Screen** with scope `https://www.googleapis.com/auth/drive.file`.
-3. Set up **Android OAuth Client ID** with package name `com.programmernewbiecode.pharmacy_inventory_platform` and SHA-1 signing certificate fingerprint.
+3. Set up **Android OAuth Client ID** with package name `com.programmernewbiecode.pharmaloka` and SHA-1 signing certificate fingerprint.
 4. Set up a **Desktop OAuth Client** for Windows. Do not commit its credentials.
 5. Build the Windows app with the desktop credentials supplied only at build time:
 

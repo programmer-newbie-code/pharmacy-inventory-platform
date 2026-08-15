@@ -72,7 +72,7 @@ To enable cloud backup and restore to Google Drive:
 ### 2. Android Client Credentials
 1. In **APIs & Services > Credentials**, click **Create Credentials > OAuth client ID**.
 2. Select Application Type: **Android**.
-3. Package Name: `com.programmernewbiecode.pharmacy_inventory_platform`.
+3. Package Name: `com.programmernewbiecode.pharmaloka`.
 4. SHA-1 Fingerprint:
    - For debug builds: Get via `keytool -list -v -keystore ~/.android/debug.keystore -alias androiddebugkey`.
    - For release builds: Get SHA-1 and SHA-256 fingerprints from your release keystore or Play Console App Signing.

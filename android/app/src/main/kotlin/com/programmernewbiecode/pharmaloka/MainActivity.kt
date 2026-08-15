@@ -1,4 +1,4 @@
-package com.programmernewbiecode.pharmacy_inventory_platform
+package com.programmernewbiecode.pharmaloka
 
 import io.flutter.embedding.android.FlutterActivity
 

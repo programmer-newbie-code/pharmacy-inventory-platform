@@ -10,7 +10,7 @@ void main() {
   setUp(() {
     PackageInfo.setMockInitialValues(
       appName: 'Pharmacy Inventory',
-      packageName: 'com.programmernewbiecode.pharmacy_inventory_platform',
+      packageName: 'com.programmernewbiecode.pharmaloka',
       version: '1.2.0',
       buildNumber: '3',
       buildSignature: '',
