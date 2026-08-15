@@ -243,124 +243,136 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  children: [
-                    Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
-                      alignment: WrapAlignment.center,
-                      children: [
-                        ElevatedButton.icon(
-                          key: const Key('createBackupBtn'),
-                          icon: const Icon(Icons.backup),
-                          label: Text(l10n.createBackupButton),
-                          onPressed: _isLoading ? null : _handleCreateBackup,
-                        ),
-                        ElevatedButton.icon(
-                          key: const Key('googleDriveBackupBtn'),
-                          style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.indigo,
-                              foregroundColor: Colors.white),
-                          icon: const Icon(Icons.cloud_upload),
-                          label: Text(l10n.googleDriveBackup),
-                          onPressed:
-                              _isLoading ? null : _handleGoogleDriveBackup,
-                        ),
-                        if (Platform.isWindows)
-                          OutlinedButton.icon(
-                            key: const Key('configureDriveBtn'),
-                            icon: const Icon(Icons.settings),
-                            label: Text(l10n.driveSetupButton),
-                            onPressed: _isLoading
-                                ? null
-                                : () => showDialog(
-                                      context: context,
-                                      builder: (_) => const DriveSetupDialog(),
-                                    ),
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    children: [
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        alignment: WrapAlignment.center,
+                        children: [
+                          ElevatedButton.icon(
+                            key: const Key('createBackupBtn'),
+                            icon: const Icon(Icons.backup),
+                            label: Text(l10n.createBackupButton),
+                            onPressed: _isLoading ? null : _handleCreateBackup,
                           ),
-                        OutlinedButton.icon(
-                          key: const Key('restoreBackupBtn'),
-                          icon: const Icon(Icons.restore),
-                          label: Text(l10n.restoreBackupButton),
-                          onPressed: _isLoading ? null : _selectRestoreBackup,
+                          ElevatedButton.icon(
+                            key: const Key('googleDriveBackupBtn'),
+                            style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.indigo,
+                                foregroundColor: Colors.white),
+                            icon: const Icon(Icons.cloud_upload),
+                            label: Text(l10n.googleDriveBackup),
+                            onPressed:
+                                _isLoading ? null : _handleGoogleDriveBackup,
+                          ),
+                          if (Platform.isWindows)
+                            OutlinedButton.icon(
+                              key: const Key('configureDriveBtn'),
+                              icon: const Icon(Icons.settings),
+                              label: Text(l10n.driveSetupButton),
+                              onPressed: _isLoading
+                                  ? null
+                                  : () => showDialog(
+                                        context: context,
+                                        builder: (_) => const DriveSetupDialog(),
+                                      ),
+                            ),
+                          OutlinedButton.icon(
+                            key: const Key('restoreBackupBtn'),
+                            icon: const Icon(Icons.restore),
+                            label: Text(l10n.restoreBackupButton),
+                            onPressed: _isLoading ? null : _selectRestoreBackup,
+                          ),
+                        ],
+                      ),
+                      if (_statusMessage != null) ...[
+                        const SizedBox(height: 12),
+                        Text(
+                          _statusMessage!,
+                          style: const TextStyle(fontWeight: FontWeight.bold),
+                          textAlign: TextAlign.center,
                         ),
                       ],
-                    ),
-                    if (_statusMessage != null) ...[
-                      const SizedBox(height: 12),
-                      Text(
-                        _statusMessage!,
-                        style: const TextStyle(fontWeight: FontWeight.bold),
-                        textAlign: TextAlign.center,
-                      ),
-                    ],
-                    if (_preview != null) ...[
-                      const SizedBox(height: 12),
-                      Text(l10n.backupPreviewLabel(
-                          _preview!.createdAt.toLocal().toString())),
-                      Text(
-                        l10n.backupPreviewCounts(
-                          _preview!.counts['products'] ?? 0,
-                          _preview!.counts['stockBatches'] ?? 0,
-                          _preview!.counts['saleTransactions'] ?? 0,
+                      if (_preview != null) ...[
+                        const SizedBox(height: 12),
+                        Text(l10n.backupPreviewLabel(
+                            _preview!.createdAt.toLocal().toString())),
+                        Text(
+                          l10n.backupPreviewCounts(
+                            _preview!.counts['products'] ?? 0,
+                            _preview!.counts['stockBatches'] ?? 0,
+                            _preview!.counts['saleTransactions'] ?? 0,
+                          ),
                         ),
-                      ),
+                      ],
                     ],
-                  ],
+                  ),
                 ),
               ),
-            ),
-            const SizedBox(height: 16),
-            _AutoBackupCard(isLoading: _isLoading),
-            const SizedBox(height: 16),
-            Text(
-              l10n.backupHistoryTitle,
-              style: Theme.of(context).textTheme.titleLarge,
-            ),
-            const SizedBox(height: 8),
-            Expanded(
-              child: logsAsync.when(
+              const SizedBox(height: 16),
+              _AutoBackupCard(isLoading: _isLoading),
+              const SizedBox(height: 16),
+              Text(
+                l10n.backupHistoryTitle,
+                style: Theme.of(context).textTheme.titleLarge,
+              ),
+              const SizedBox(height: 8),
+              logsAsync.when(
                 data: (logs) {
                   if (logs.isEmpty) {
-                    return Center(
-                      child: Text(l10n.noBackupLogs),
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 24.0),
+                      child: Center(
+                        child: Text(l10n.noBackupLogs),
+                      ),
                     );
                   }
                   return ListView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
                     itemCount: logs.length,
                     itemBuilder: (context, index) {
                       final log = logs[index];
                       final sizeKb = (log.fileSize ?? 0) / 1024;
                       return ListTile(
                         leading: Icon(
-                          log.destination == 'restore'
-                              ? Icons.restore
-                              : Icons.storage,
+                          log.destination == 'drive'
+                              ? Icons.cloud
+                              : Icons.folder,
                           color: log.status == 'Success'
                               ? Colors.green
                               : Colors.red,
                         ),
-                        title: Text(
-                          '${l10n.backupLogDestination}: ${log.destination} (${log.status})',
-                        ),
+                        title: Text('${log.destination.toUpperCase()} Backup'),
                         subtitle: Text(
-                          '${log.timestamp.toIso8601String().split('.').first} • ${sizeKb.toStringAsFixed(1)} KB',
+                          '${log.timestamp.toLocal()} • ${sizeKb.toStringAsFixed(1)} KB',
+                        ),
+                        trailing: Text(
+                          log.status,
+                          style: TextStyle(
+                            color: log.status == 'Success'
+                                ? Colors.green
+                                : Colors.red,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       );
                     },
                   );
                 },
                 loading: () => const Center(child: CircularProgressIndicator()),
-                error: (err, stack) => Center(child: Text(l10n.backupLogError)),
+                error: (error, _) => Center(child: Text(error.toString())),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

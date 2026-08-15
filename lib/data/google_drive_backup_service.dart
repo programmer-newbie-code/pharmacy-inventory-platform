@@ -168,11 +168,13 @@ class GoogleDriveBackupService {
     DriveCredentialStore? credentialStore,
   })  : _driveUploadClient = driveUploadClient ?? HttpDriveUploadClient(),
         _accountAuthorizer = accountAuthorizer ??
-            createGoogleAccountAuthorizer(credentialStore: credentialStore);
+            createGoogleAccountAuthorizer(credentialStore: credentialStore),
+        _credentialStore = credentialStore ?? DriveCredentialStore();
 
   final AppDatabase _db;
   final DriveUploadClient _driveUploadClient;
   final GoogleAccountAuthorizer _accountAuthorizer;
+  final DriveCredentialStore _credentialStore;
 
   GoogleAccountUser? _currentUser;
   GoogleAccountUser? get currentUser => _currentUser;
@@ -218,6 +220,7 @@ class GoogleDriveBackupService {
   Future<GoogleDriveBackupResult> uploadBackupToDrive({
     required String accessToken,
     String? customFileName,
+    String? customFolderName,
   }) async {
     try {
       final backupService = BackupService(_db);
@@ -225,11 +228,13 @@ class GoogleDriveBackupService {
       final bytes = utf8.encode(jsonPayload);
       final fileName = customFileName ??
           'pharmacy_backup_${DateTime.now().toIso8601String().replaceAll(':', '-')}.json';
+      final folderName = customFolderName ?? await _credentialStore.getBackupFolderName();
 
       final fileId = await _driveUploadClient.upload(
         accessToken: accessToken,
         fileName: fileName,
         bytes: bytes,
+        folderName: folderName,
       );
 
       await _db.into(_db.backupLogs).insert(

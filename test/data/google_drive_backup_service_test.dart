@@ -4,16 +4,25 @@ import 'package:pharmacy_inventory_platform/data/database.dart';
 import 'package:pharmacy_inventory_platform/data/drive_upload_client.dart';
 import 'package:pharmacy_inventory_platform/data/google_drive_backup_service.dart';
 
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:pharmacy_inventory_platform/data/drive_credential_store.dart';
+
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
   late AppDatabase db;
   late GoogleDriveBackupService service;
 
-  setUp(() {
+  setUp(() async {
+    SharedPreferences.setMockInitialValues({});
+    final prefs = await SharedPreferences.getInstance();
+    final store = DriveCredentialStore(prefs: prefs);
+
     db = AppDatabase(NativeDatabase.memory());
     service = GoogleDriveBackupService(
       db,
       driveUploadClient: _SuccessfulDriveUploadClient(),
       accountAuthorizer: _AccountAuthorizer(),
+      credentialStore: store,
     );
   });
 
@@ -91,6 +100,25 @@ void main() {
     );
   });
 
+  test(
+      'uploadBackupToDrive passes configured folderName to upload client',
+      () async {
+    final uploadClient = _SuccessfulDriveUploadClient();
+    final customService = GoogleDriveBackupService(
+      db,
+      driveUploadClient: uploadClient,
+      accountAuthorizer: _AccountAuthorizer(),
+    );
+
+    final result = await customService.uploadBackupToDrive(
+      accessToken: 'access-token',
+      customFolderName: 'My_Custom_Folder',
+    );
+
+    expect(result.success, isTrue);
+    expect(uploadClient.lastFolderName, equals('My_Custom_Folder'));
+  });
+
   test('DesktopGoogleAccountAuthorizer.openBrowser does not throw on valid uri', () {
     expect(
       () => DesktopGoogleAccountAuthorizer.openBrowser('https://accounts.google.com/o/oauth2/auth'),
@@ -104,13 +132,18 @@ void main() {
 }
 
 class _SuccessfulDriveUploadClient implements DriveUploadClient {
+  String? lastFolderName;
+
   @override
   Future<String> upload({
     required String accessToken,
     required String fileName,
     required List<int> bytes,
-  }) async =>
-      'drive-file-id';
+    String? folderName,
+  }) async {
+    lastFolderName = folderName;
+    return 'drive-file-id';
+  }
 }
 
 class _AccountAuthorizer implements GoogleAccountAuthorizer {

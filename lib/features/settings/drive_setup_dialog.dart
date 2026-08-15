@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/providers.dart';
+import '../../data/drive_credential_store.dart';
 import '../../l10n/app_localizations.dart';
 
 class DriveSetupDialog extends ConsumerStatefulWidget {
@@ -14,6 +15,7 @@ class DriveSetupDialog extends ConsumerStatefulWidget {
 class _DriveSetupDialogState extends ConsumerState<DriveSetupDialog> {
   final _idController = TextEditingController();
   final _secretController = TextEditingController();
+  final _folderController = TextEditingController();
   bool _isLoading = true;
   bool _hasSavedCredentials = false;
   String? _statusMessage;
@@ -28,12 +30,14 @@ class _DriveSetupDialogState extends ConsumerState<DriveSetupDialog> {
     final store = ref.read(driveCredentialStoreProvider);
     final id = await store.getClientId();
     final secret = await store.getClientSecret();
+    final folder = await store.getBackupFolderName();
     final hasBoth = await store.hasCredentials();
 
     if (mounted) {
       setState(() {
         if (id != null) _idController.text = id;
         if (secret != null) _secretController.text = secret;
+        _folderController.text = folder;
         _hasSavedCredentials = hasBoth;
         _isLoading = false;
       });
@@ -44,6 +48,7 @@ class _DriveSetupDialogState extends ConsumerState<DriveSetupDialog> {
   void dispose() {
     _idController.dispose();
     _secretController.dispose();
+    _folderController.dispose();
     super.dispose();
   }
 
@@ -51,6 +56,7 @@ class _DriveSetupDialogState extends ConsumerState<DriveSetupDialog> {
     final l10n = AppLocalizations.of(context)!;
     final id = _idController.text.trim();
     final secret = _secretController.text.trim();
+    final folder = _folderController.text.trim();
 
     if (id.isEmpty || secret.isEmpty) {
       setState(() {
@@ -63,6 +69,7 @@ class _DriveSetupDialogState extends ConsumerState<DriveSetupDialog> {
     try {
       final store = ref.read(driveCredentialStoreProvider);
       await store.saveCredentials(clientId: id, clientSecret: secret);
+      await store.setBackupFolderName(folder);
       if (mounted) {
         setState(() {
           _hasSavedCredentials = true;
@@ -86,9 +93,11 @@ class _DriveSetupDialogState extends ConsumerState<DriveSetupDialog> {
     try {
       final store = ref.read(driveCredentialStoreProvider);
       await store.clearCredentials();
+      await store.setBackupFolderName(DriveCredentialStore.defaultBackupFolderName);
       if (mounted) {
         _idController.clear();
         _secretController.clear();
+        _folderController.text = DriveCredentialStore.defaultBackupFolderName;
         setState(() {
           _hasSavedCredentials = false;
           _statusMessage = l10n.driveSetupClearedSuccess;
@@ -143,6 +152,17 @@ class _DriveSetupDialogState extends ConsumerState<DriveSetupDialog> {
                     decoration: InputDecoration(
                       labelText: l10n.driveClientSecretLabel,
                       border: const OutlineInputBorder(),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  TextField(
+                    key: const Key('driveFolderNameInput'),
+                    controller: _folderController,
+                    decoration: InputDecoration(
+                      labelText: l10n.driveFolderNameLabel,
+                      hintText: l10n.driveFolderNameHint,
+                      border: const OutlineInputBorder(),
+                      prefixIcon: const Icon(Icons.folder_outlined),
                     ),
                   ),
                   if (_statusMessage != null) ...[
