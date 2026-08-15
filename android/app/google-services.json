@@ -1,0 +1,38 @@
+{
+  "project_info": {
+    "project_number": "182468270506",
+    "project_id": "pharmaloka-505008",
+    "storage_bucket": "pharmaloka-505008.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:182468270506:android:823049e8b3d91edc0c33d3",
+        "android_client_info": {
+          "package_name": "com.programmernewbiecode.pharmaloka"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "182468270506-ubf3rd40nu1767n3or6fs1kab67otlnv.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.programmernewbiecode.pharmaloka",
+            "certificate_hash": "286ad67803eb92cc869cf4429bede4161d9d4b6c"
+          }
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBuITBVoWkMcT3azRj5sup5ZhJKWXgQV3I"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
