@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.9.0
+
+- Platform-gates Google Drive manual setup dialog to Windows only, keeping Android UI clean and native.
+- Configures stable release signing configuration for Android release builds with upload keystore support.
+- Adds comprehensive Google Play Store Console Release Guide and Play App Signing instructions.
+- Completes full localization sweep across all remaining modules (receipt PDF, alerts, settings, users, and reports).
+
 ## 1.8.1
 
 - Fixes truncated field labels and product names that were hard to read on

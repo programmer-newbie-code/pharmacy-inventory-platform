@@ -272,17 +272,18 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
                           onPressed:
                               _isLoading ? null : _handleGoogleDriveBackup,
                         ),
-                        OutlinedButton.icon(
-                          key: const Key('configureDriveBtn'),
-                          icon: const Icon(Icons.settings),
-                          label: Text(l10n.driveSetupButton),
-                          onPressed: _isLoading
-                              ? null
-                              : () => showDialog(
-                                    context: context,
-                                    builder: (_) => const DriveSetupDialog(),
-                                  ),
-                        ),
+                        if (Platform.isWindows)
+                          OutlinedButton.icon(
+                            key: const Key('configureDriveBtn'),
+                            icon: const Icon(Icons.settings),
+                            label: Text(l10n.driveSetupButton),
+                            onPressed: _isLoading
+                                ? null
+                                : () => showDialog(
+                                      context: context,
+                                      builder: (_) => const DriveSetupDialog(),
+                                    ),
+                          ),
                         OutlinedButton.icon(
                           key: const Key('restoreBackupBtn'),
                           icon: const Icon(Icons.restore),

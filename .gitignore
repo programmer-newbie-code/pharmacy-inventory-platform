@@ -23,3 +23,8 @@ lib/l10n/app_localizations*.dart
 .idea/
 .vscode/
 *.iml
+
+# Keystores & Credentials
+*.jks
+*.keystore
+key.properties
