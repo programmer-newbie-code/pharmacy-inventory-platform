@@ -90,6 +90,17 @@ void main() {
       throwsA(isA<GoogleDriveConfigurationException>()),
     );
   });
+
+  test('DesktopGoogleAccountAuthorizer.openBrowser does not throw on valid uri', () {
+    expect(
+      () => DesktopGoogleAccountAuthorizer.openBrowser('https://accounts.google.com/o/oauth2/auth'),
+      returnsNormally,
+    );
+    expect(
+      () => DesktopGoogleAccountAuthorizer.openBrowser('invalid uri'),
+      returnsNormally,
+    );
+  });
 }
 
 class _SuccessfulDriveUploadClient implements DriveUploadClient {

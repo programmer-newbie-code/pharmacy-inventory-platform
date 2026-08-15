@@ -122,7 +122,7 @@ class DesktopGoogleAccountAuthorizer implements GoogleAccountAuthorizer {
         ClientId(activeId, activeSecret),
         const ['email', 'https://www.googleapis.com/auth/drive.file'],
         client,
-        _openBrowser,
+        openBrowser,
       );
       return GoogleAccountUser(
         email: 'Google Drive desktop account',
@@ -134,7 +134,7 @@ class DesktopGoogleAccountAuthorizer implements GoogleAccountAuthorizer {
     }
   }
 
-  static void _openBrowser(String uri) {
+  static void openBrowser(String uri) {
     final parsedUri = Uri.tryParse(uri);
     if (parsedUri != null) {
       launchUrl(parsedUri, mode: LaunchMode.externalApplication).catchError((_) {
