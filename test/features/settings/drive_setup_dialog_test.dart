@@ -44,10 +44,11 @@ void main() {
       expect(find.text('Google Drive OAuth Setup'), findsOneWidget);
       expect(find.byKey(const Key('driveClientIdInput')), findsOneWidget);
       expect(find.byKey(const Key('driveClientSecretInput')), findsOneWidget);
+      expect(find.byKey(const Key('driveFolderNameInput')), findsOneWidget);
       expect(find.byKey(const Key('saveDriveCredentialsBtn')), findsOneWidget);
     });
 
-    testWidgets('saves entered credentials when save is tapped', (tester) async {
+    testWidgets('saves entered credentials and folder name when save is tapped', (tester) async {
       SharedPreferences.setMockInitialValues({});
       final prefs = await SharedPreferences.getInstance();
       final store = DriveCredentialStore(prefs: prefs);
@@ -63,6 +64,10 @@ void main() {
         find.byKey(const Key('driveClientSecretInput')),
         'test_secret_123',
       );
+      await tester.enterText(
+        find.byKey(const Key('driveFolderNameInput')),
+        'Custom_Pharmacy_Backups',
+      );
       await tester.tap(find.byKey(const Key('saveDriveCredentialsBtn')));
       await tester.pumpAndSettle();
 
@@ -71,13 +76,15 @@ void main() {
         equals('test_client_id.apps.googleusercontent.com'),
       );
       expect(await store.getClientSecret(), equals('test_secret_123'));
-      expect(find.text('Google Drive credentials saved successfully.'), findsOneWidget);
+      expect(await store.getBackupFolderName(), equals('Custom_Pharmacy_Backups'));
+      expect(find.text('Google Drive configuration saved successfully.'), findsOneWidget);
     });
 
     testWidgets('clears saved credentials when clear button is tapped', (tester) async {
       SharedPreferences.setMockInitialValues({
         'google_drive_client_id': 'old_id',
         'google_drive_client_secret': 'old_secret',
+        'google_drive_backup_folder_name': 'Old_Folder',
       });
       final prefs = await SharedPreferences.getInstance();
       final store = DriveCredentialStore(prefs: prefs);
@@ -91,7 +98,8 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(await store.hasCredentials(), isFalse);
-      expect(find.text('Google Drive credentials cleared.'), findsOneWidget);
+      expect(await store.getBackupFolderName(), equals(DriveCredentialStore.defaultBackupFolderName));
+      expect(find.text('Google Drive configuration cleared.'), findsOneWidget);
     });
   });
 }

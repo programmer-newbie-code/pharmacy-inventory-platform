@@ -11,22 +11,33 @@ import 'package:pharmacy_inventory_platform/data/google_drive_backup_service.dar
 import 'package:pharmacy_inventory_platform/features/backup/backup_screen.dart';
 import 'package:pharmacy_inventory_platform/l10n/app_localizations.dart';
 
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:pharmacy_inventory_platform/data/drive_credential_store.dart';
+
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+
   testWidgets('renders BackupScreen with localized title and buttons', (
     tester,
   ) async {
+    SharedPreferences.setMockInitialValues({});
+    final prefs = await SharedPreferences.getInstance();
+    final store = DriveCredentialStore(prefs: prefs);
+
     final db = AppDatabase(NativeDatabase.memory());
     addTearDown(db.close);
     final driveService = GoogleDriveBackupService(
       db,
       accountAuthorizer: _AccountAuthorizer(),
       driveUploadClient: _DriveUploadClient(),
+      credentialStore: store,
     );
     await driveService.signInWithGoogle();
     final container = ProviderContainer(
       overrides: [
         databaseProvider.overrideWithValue(db),
         googleDriveBackupServiceProvider.overrideWithValue(driveService),
+        driveCredentialStoreProvider.overrideWithValue(store),
       ],
     );
     addTearDown(container.dispose);
@@ -67,18 +78,23 @@ void main() {
   testWidgets('shows Windows setup guidance instead of a plugin exception', (
     tester,
   ) async {
+    final prefs = await SharedPreferences.getInstance();
+    final store = DriveCredentialStore(prefs: prefs);
+
     final db = AppDatabase(NativeDatabase.memory());
     addTearDown(db.close);
     final driveService = GoogleDriveBackupService(
       db,
       accountAuthorizer: _AccountAuthorizer(),
       driveUploadClient: _FailingDriveUploadClient(),
+      credentialStore: store,
     );
     await driveService.signInWithGoogle();
     final container = ProviderContainer(
       overrides: [
         databaseProvider.overrideWithValue(db),
         googleDriveBackupServiceProvider.overrideWithValue(driveService),
+        driveCredentialStoreProvider.overrideWithValue(store),
       ],
     );
     addTearDown(container.dispose);
@@ -124,6 +140,7 @@ class _DriveUploadClient implements DriveUploadClient {
     required String accessToken,
     required String fileName,
     required List<int> bytes,
+    String? folderName,
   }) async =>
       'drive-file-id';
 }
@@ -134,6 +151,7 @@ class _FailingDriveUploadClient implements DriveUploadClient {
     required String accessToken,
     required String fileName,
     required List<int> bytes,
+    String? folderName,
   }) {
     throw StateError(
       'MissingPluginException(No implementation found for init)',
