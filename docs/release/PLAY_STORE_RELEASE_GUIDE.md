@@ -10,7 +10,7 @@ This document is the step-by-step guide for releasing **PharmaLoka** (Pharmacy I
 | --- | --- |
 | **Developer Account** | `<your-developer-email>` |
 | **Google Cloud Project** | `<your-gcp-project-id>` |
-| **Android Package Name** | `com.programmernewbiecode.pharmacy_inventory_platform` |
+| **Android Package Name** | `com.programmernewbiecode.pharmaloka` |
 | **Upload Keystore SHA-1** | `<your-upload-keystore-sha1>` |
 | **Upload Keystore SHA-256** | `<your-upload-keystore-sha256>` |
 

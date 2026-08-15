@@ -172,7 +172,7 @@ void main() {
     expect(
       _text('android/app/build.gradle'),
       contains(
-        'applicationId "com.programmernewbiecode.pharmacy_inventory_platform"',
+        'applicationId "com.programmernewbiecode.pharmaloka"',
       ),
     );
     expect(

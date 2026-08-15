@@ -5,6 +5,7 @@ import 'package:drift/drift.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:googleapis_auth/auth_io.dart';
 import 'package:http/http.dart' as http;
+import 'package:url_launcher/url_launcher.dart';
 import 'backup_service.dart';
 import 'database.dart';
 import 'drive_credential_store.dart';
@@ -134,8 +135,20 @@ class DesktopGoogleAccountAuthorizer implements GoogleAccountAuthorizer {
   }
 
   static void _openBrowser(String uri) {
+    final parsedUri = Uri.tryParse(uri);
+    if (parsedUri != null) {
+      launchUrl(parsedUri, mode: LaunchMode.externalApplication).catchError((_) {
+        _fallbackOpenBrowser(uri);
+        return false;
+      });
+    } else {
+      _fallbackOpenBrowser(uri);
+    }
+  }
+
+  static void _fallbackOpenBrowser(String uri) {
     if (Platform.isWindows) {
-      unawaited(Process.start('explorer.exe', [uri]));
+      unawaited(Process.start('cmd.exe', ['/c', 'start', '', uri]));
     } else if (Platform.isMacOS) {
       unawaited(Process.start('open', [uri]));
     } else {
