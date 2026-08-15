@@ -5,6 +5,12 @@ plugins {
     id "dev.flutter.flutter-gradle-plugin"
 }
 
+def keystoreProperties = new Properties()
+def keystorePropertiesFile = rootProject.file('key.properties')
+if (keystorePropertiesFile.exists()) {
+    keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
+}
+
 android {
     namespace "com.programmernewbiecode.pharmacy_inventory_platform"
     compileSdk flutter.compileSdkVersion
@@ -27,9 +33,30 @@ android {
         versionName flutter.versionName
     }
 
+    signingConfigs {
+        release {
+            def keyFile = keystoreProperties['storeFile'] ? file(keystoreProperties['storeFile']) : file('upload-keystore.jks')
+            def storePass = keystoreProperties['storePassword'] ?: System.getenv("KEYSTORE_PASSWORD")
+            def keyPass = keystoreProperties['keyPassword'] ?: System.getenv("KEY_PASSWORD")
+            def alias = keystoreProperties['keyAlias'] ?: System.getenv("KEY_ALIAS") ?: "upload"
+
+            if (keyFile.exists() && storePass) {
+                storeFile keyFile
+                storePassword storePass
+                keyAlias alias
+                keyPassword keyPass ?: storePass
+            }
+        }
+    }
+
     buildTypes {
         release {
-            signingConfig signingConfigs.debug
+            def releaseSigningConfig = signingConfigs.release
+            if (releaseSigningConfig.storeFile?.exists()) {
+                signingConfig releaseSigningConfig
+            } else {
+                signingConfig signingConfigs.debug
+            }
             minifyEnabled true
             shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'

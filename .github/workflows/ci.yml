@@ -156,13 +156,25 @@ jobs:
       - uses: subosito/flutter-action@v2
         with:
           channel: stable
-      - name: Backfill platform folders
-        run: flutter create --platforms=android --org com.programmernewbiecode .
+      - name: Decode Android Keystore
+        if: env.ANDROID_KEYSTORE_BASE64 != ''
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+        run: |
+          echo "$ANDROID_KEYSTORE_BASE64" | base64 --decode > android/app/upload-keystore.jks
       - run: flutter pub get
       - name: Generate drift code
         run: dart run build_runner build --delete-conflicting-outputs
       - run: flutter build apk --release --build-name=${{ env.BUILD_VER }} --build-number=${{ github.run_number }} --obfuscate --split-debug-info=build/symbols
+        env:
+          KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
       - run: flutter build appbundle --release --build-name=${{ env.BUILD_VER }} --build-number=${{ github.run_number }} --obfuscate --split-debug-info=build/symbols
+        env:
+          KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
       - name: Upload APK Release Artifact
         uses: actions/upload-artifact@v4
         with:

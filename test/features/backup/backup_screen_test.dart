@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -46,6 +48,11 @@ void main() {
     expect(find.text('Pencadangan & Pemulihan Data'), findsOneWidget);
     expect(find.byKey(const Key('createBackupBtn')), findsOneWidget);
     expect(find.byKey(const Key('googleDriveBackupBtn')), findsOneWidget);
+    if (Platform.isWindows) {
+      expect(find.byKey(const Key('configureDriveBtn')), findsOneWidget);
+    } else {
+      expect(find.byKey(const Key('configureDriveBtn')), findsNothing);
+    }
     expect(find.text('Riwayat Log Cadangan'), findsOneWidget);
 
     await tester.tap(find.byKey(const Key('googleDriveBackupBtn')));
