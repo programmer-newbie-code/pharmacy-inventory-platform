@@ -283,94 +283,274 @@
       margin-bottom: 0.4rem;
     }
 
-    /* Platform Gallery (Desktop + Mobile overview) */
-    .platform-gallery {
-      display: grid;
-      grid-template-columns: 1.6fr 1fr;
-      gap: 1.5rem;
-      align-items: start;
-      margin: 1.5rem 0 3rem;
+    /* Platform Switcher Tabs */
+    .platform-tabs {
+      display: flex;
+      justify-content: center;
+      gap: 0.75rem;
+      margin: 1.5rem 0 2.5rem;
     }
 
-    /* Mobile Feature Gallery (Vertical Phone Cards) */
-    .mobile-feature-gallery {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 1.25rem;
-      margin: 1.5rem 0 3rem;
-    }
-
-    .platform-gallery__item {
-      min-width: 0;
-      margin: 0;
-      overflow: hidden;
-      background: rgba(15, 23, 42, 0.85);
-      border: 1px solid rgba(255, 255, 255, 0.12);
-      border-radius: 14px;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
-      transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
-    }
-
-    .platform-gallery__item:hover {
-      transform: translateY(-4px);
-      border-color: rgba(99, 102, 241, 0.5);
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
-    }
-
-    .platform-gallery__item figcaption {
-      padding: 0.75rem 1rem;
-      color: #f1f5f9;
-      font-family: 'Outfit', sans-serif;
-      font-size: 0.95rem;
-      font-weight: 600;
+    .tab-btn {
       background: rgba(30, 41, 59, 0.7);
-      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: #94a3b8;
+      font-family: 'Outfit', sans-serif;
+      font-size: 1rem;
+      font-weight: 600;
+      padding: 0.75rem 1.75rem;
+      border-radius: 9999px;
+      cursor: pointer;
+      transition: all 0.25s ease;
+    }
+
+    .tab-btn:hover {
+      color: #ffffff;
+      border-color: rgba(99, 102, 241, 0.4);
+      background: rgba(51, 65, 85, 0.8);
+      transform: translateY(-2px);
+    }
+
+    .tab-btn.active {
+      background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+      color: #ffffff;
+      border-color: rgba(255, 255, 255, 0.2);
+      box-shadow: 0 4px 20px rgba(99, 102, 241, 0.4);
+    }
+
+    .platform-panel {
+      display: none;
+      margin-bottom: 3.5rem;
+    }
+
+    .platform-panel.active {
+      display: block;
+      animation: fadeIn 0.35s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Desktop Window Device Frame */
+    .device-desktop {
+      max-width: 960px;
+      margin: 0 auto;
+      background: #0f172a;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+    }
+
+    .device-header {
+      background: rgba(30, 41, 59, 0.9);
+      padding: 0.75rem 1.25rem;
       display: flex;
       align-items: center;
-      gap: 0.4rem;
+      gap: 0.5rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
     }
 
-    .platform-gallery__item a {
+    .device-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+    .dot-red { background: #ef4444; }
+    .dot-yellow { background: #f59e0b; }
+    .dot-green { background: #10b981; }
+
+    .device-title {
+      font-size: 0.85rem;
+      color: #94a3b8;
+      margin-left: 0.75rem;
+      font-weight: 500;
+    }
+
+    .device-body a {
       display: block;
       line-height: 0;
       background: #020617;
-      overflow: hidden;
     }
 
-    .platform-gallery__item a:focus-visible {
-      outline: 3px solid var(--cyan-accent);
-      outline-offset: -3px;
-    }
-
-    .platform-gallery__item img {
-      display: block;
+    .device-body img {
       width: 100%;
       height: auto;
-      object-fit: contain;
-      transition: transform 0.3s ease;
+      display: block;
     }
 
-    .platform-gallery__item:hover img {
-      transform: scale(1.02);
+    /* Mobile Slider Container */
+    .mobile-slider-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 3rem;
+      max-width: 900px;
+      margin: 0 auto;
+      flex-wrap: wrap;
     }
 
-    @media (max-width: 900px) {
-      .mobile-feature-gallery {
-        grid-template-columns: repeat(2, 1fr);
-      }
+    /* Phone Mockup Frame */
+    .device-phone {
+      width: 330px;
+      background: #0f172a;
+      border: 3px solid rgba(255, 255, 255, 0.18);
+      border-radius: 36px;
+      padding: 10px;
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.6);
+      position: relative;
+    }
+
+    .phone-notch {
+      width: 80px;
+      height: 16px;
+      background: #020617;
+      border-radius: 0 0 10px 10px;
+      margin: 0 auto 6px;
+    }
+
+    .phone-screen {
+      border-radius: 26px;
+      overflow: hidden;
+      position: relative;
+      background: #020617;
+    }
+
+    .phone-screen .slide {
+      display: none;
+      text-align: center;
+    }
+
+    .phone-screen .slide.active {
+      display: block;
+      animation: fadeIn 0.3s ease;
+    }
+
+    .phone-screen .slide img {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    .slide-caption {
+      background: rgba(15, 23, 42, 0.95);
+      padding: 1rem 1.25rem;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      text-align: left;
+    }
+
+    .slide-caption h4 {
+      font-family: 'Outfit', sans-serif;
+      color: #ffffff;
+      font-size: 1rem;
+      margin-bottom: 0.25rem;
+    }
+
+    .slide-caption p {
+      color: #94a3b8;
+      font-size: 0.85rem;
+      line-height: 1.4;
+      margin: 0;
+    }
+
+    /* Slider Controls & Thumbnail Strip */
+    .slider-controls-card {
+      flex: 1;
+      min-width: 280px;
+      max-width: 400px;
+      background: rgba(30, 41, 59, 0.7);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 20px;
+      padding: 1.75rem;
+      backdrop-filter: blur(12px);
+    }
+
+    .slider-indicator-text {
+      color: #94a3b8;
+      font-size: 0.95rem;
+      margin-bottom: 1.25rem;
+      font-weight: 500;
+    }
+
+    .slider-indicator-text span {
+      color: #ffffff;
+      font-weight: 700;
+    }
+
+    .slider-nav-btns {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .slider-btn {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0.75rem;
+      background: rgba(15, 23, 42, 0.8);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: #ffffff;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .slider-btn:hover {
+      background: var(--primary-accent);
+      border-color: var(--primary-light);
+      transform: translateY(-2px);
+    }
+
+    .slider-thumbnails {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0.5rem;
+    }
+
+    .thumb-btn {
+      background: #0f172a;
+      border: 2px solid rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      overflow: hidden;
+      cursor: pointer;
+      padding: 0;
+      line-height: 0;
+      transition: all 0.2s ease;
+    }
+
+    .thumb-btn:hover {
+      border-color: rgba(99, 102, 241, 0.6);
+      transform: scale(1.05);
+    }
+
+    .thumb-btn.active {
+      border-color: var(--primary-accent);
+      box-shadow: 0 0 10px rgba(99, 102, 241, 0.6);
+    }
+
+    .thumb-btn img {
+      width: 100%;
+      height: 60px;
+      object-fit: cover;
+      object-position: top;
+      display: block;
     }
 
     @media (max-width: 650px) {
       .content-box {
         padding: 1.25rem;
       }
-
-      .platform-gallery {
-        grid-template-columns: 1fr;
+      .device-phone {
+        width: 100%;
+        max-width: 320px;
       }
-
-      .mobile-feature-gallery {
-        grid-template-columns: 1fr;
+      .mobile-slider-container {
+        gap: 1.5rem;
       }
     }
 
@@ -507,66 +687,159 @@
       </div>
     </div>
 
-    <!-- Visual Showcase Gallery -->
-    <h2 class="section-title">Multi-Platform Experience</h2>
-    <p class="section-subtitle">Consistent, responsive UI engineered for desktop workstations and touch handhelds.</p>
+    <!-- Visual Showcase: Desktop & Mobile Tabs -->
+    <h2 class="section-title">Experience PharmaLoka</h2>
+    <p class="section-subtitle">A unified, precision-engineered interface built for desktop counters and touch devices.</p>
 
-    <div class="platform-gallery">
-      <figure class="platform-gallery__item">
-        <figcaption>💻 Windows Desktop Dashboard</figcaption>
-        <a href="{{ '/assets/images/desktop_ui.png' | relative_url }}" target="_blank">
-          <img src="{{ '/assets/images/desktop_ui.png' | relative_url }}" alt="PharmaLoka Windows Desktop Dashboard" loading="lazy">
-        </a>
-      </figure>
-      <figure class="platform-gallery__item">
-        <figcaption>📱 Android Mobile Dashboard</figcaption>
-        <a href="{{ '/assets/images/android_ui.png' | relative_url }}" target="_blank">
-          <img src="{{ '/assets/images/android_ui.png' | relative_url }}" alt="PharmaLoka Android Mobile Dashboard" loading="lazy">
-        </a>
-      </figure>
+    <!-- Platform Switcher Tabs -->
+    <div class="platform-tabs">
+      <button class="tab-btn active" onclick="switchPlatform('desktop')" id="tab-btn-desktop">
+        💻 Windows Desktop
+      </button>
+      <button class="tab-btn" onclick="switchPlatform('mobile')" id="tab-btn-mobile">
+        📱 Android Mobile Tour
+      </button>
     </div>
 
-    <h2 class="section-title">Android Mobile Feature Tour</h2>
-    <p class="section-subtitle">Full pharmacy point-of-sale workflow right in the palm of your hand.</p>
-
-    <div class="mobile-feature-gallery">
-      <figure class="platform-gallery__item">
-        <figcaption>📦 Inventory Catalog</figcaption>
-        <a href="{{ '/assets/images/android_inventory.png' | relative_url }}" target="_blank">
-          <img src="{{ '/assets/images/android_inventory.png' | relative_url }}" alt="Android Inventory Catalog" loading="lazy">
-        </a>
-      </figure>
-      <figure class="platform-gallery__item">
-        <figcaption>🔍 BPOM & Drug Lookup</figcaption>
-        <a href="{{ '/assets/images/android_drug_lookup.png' | relative_url }}" target="_blank">
-          <img src="{{ '/assets/images/android_drug_lookup.png' | relative_url }}" alt="Android Drug Suggestion Lookup" loading="lazy">
-        </a>
-      </figure>
-      <figure class="platform-gallery__item">
-        <figcaption>🛒 Kasir POS Checkout</figcaption>
-        <a href="{{ '/assets/images/android_pos.png' | relative_url }}" target="_blank">
-          <img src="{{ '/assets/images/android_pos.png' | relative_url }}" alt="Android POS Sales Counter" loading="lazy">
-        </a>
-      </figure>
-      <figure class="platform-gallery__item">
-        <figcaption>🧾 In-App Receipt</figcaption>
-        <a href="{{ '/assets/images/android_receipt.png' | relative_url }}" target="_blank">
-          <img src="{{ '/assets/images/android_receipt.png' | relative_url }}" alt="Android In-App Receipt" loading="lazy">
-        </a>
-      </figure>
-      <figure class="platform-gallery__item">
-        <figcaption>📊 Financial Analytics</figcaption>
-        <a href="{{ '/assets/images/android_report.png' | relative_url }}" target="_blank">
-          <img src="{{ '/assets/images/android_report.png' | relative_url }}" alt="Android Financial Reports" loading="lazy">
-        </a>
-      </figure>
-      <figure class="platform-gallery__item">
-        <figcaption>🔒 Google Drive Backup</figcaption>
-        <a href="{{ '/assets/images/android_backup.png' | relative_url }}" target="_blank">
-          <img src="{{ '/assets/images/android_backup.png' | relative_url }}" alt="Android Google Drive Backup" loading="lazy">
-        </a>
-      </figure>
+    <!-- Desktop View Panel -->
+    <div class="platform-panel active" id="panel-desktop">
+      <div class="device-frame device-desktop">
+        <div class="device-header">
+          <span class="device-dot dot-red"></span>
+          <span class="device-dot dot-yellow"></span>
+          <span class="device-dot dot-green"></span>
+          <span class="device-title">PharmaLoka Desktop — Windows 11</span>
+        </div>
+        <div class="device-body">
+          <a href="{{ '/assets/images/desktop_ui.png' | relative_url }}" target="_blank" title="Click to view full image">
+            <img src="{{ '/assets/images/desktop_ui.png' | relative_url }}" alt="PharmaLoka Windows Desktop Dashboard" loading="lazy">
+          </a>
+        </div>
+      </div>
     </div>
+
+    <!-- Mobile Slideshow Panel -->
+    <div class="platform-panel" id="panel-mobile">
+      <div class="mobile-slider-container">
+        <!-- Phone Device Frame -->
+        <div class="device-phone">
+          <div class="phone-notch"></div>
+          <div class="phone-screen">
+            <!-- Slides -->
+            <div class="slide active">
+              <img src="{{ '/assets/images/android_ui.png' | relative_url }}" alt="Dashboard" loading="lazy">
+              <div class="slide-caption">
+                <h4>📊 Dashboard Overview</h4>
+                <p>Real-time daily sales, revenue KPIs, and quick module navigation.</p>
+              </div>
+            </div>
+            <div class="slide">
+              <img src="{{ '/assets/images/android_inventory.png' | relative_url }}" alt="Inventory Catalog" loading="lazy">
+              <div class="slide-caption">
+                <h4>📦 Inventory Catalog</h4>
+                <p>Stock monitoring, drug classification badges, and unit management.</p>
+              </div>
+            </div>
+            <div class="slide">
+              <img src="{{ '/assets/images/android_drug_lookup.png' | relative_url }}" alt="Drug Lookup" loading="lazy">
+              <div class="slide-caption">
+                <h4>🔍 600+ Indonesian Drug Lookup</h4>
+                <p>Offline auto-suggest with BPOM registration support.</p>
+              </div>
+            </div>
+            <div class="slide">
+              <img src="{{ '/assets/images/android_pos.png' | relative_url }}" alt="POS Sales Counter" loading="lazy">
+              <div class="slide-caption">
+                <h4>🛒 Kasir POS Checkout</h4>
+                <p>Unit conversions (Box/Sachet/Tablet) and FEFO batch deduction.</p>
+              </div>
+            </div>
+            <div class="slide">
+              <img src="{{ '/assets/images/android_receipt.png' | relative_url }}" alt="Receipt" loading="lazy">
+              <div class="slide-caption">
+                <h4>🧾 Receipts & Printing</h4>
+                <p>Digital PDF invoices and Bluetooth 58mm/80mm thermal printing.</p>
+              </div>
+            </div>
+            <div class="slide">
+              <img src="{{ '/assets/images/android_report.png' | relative_url }}" alt="Financial Analytics" loading="lazy">
+              <div class="slide-caption">
+                <h4>📈 Financial Analytics</h4>
+                <p>Gross profit margin, COGS (HPP), and monthly revenue breakdown.</p>
+              </div>
+            </div>
+            <div class="slide">
+              <img src="{{ '/assets/images/android_backup.png' | relative_url }}" alt="Cloud Backup" loading="lazy">
+              <div class="slide-caption">
+                <h4>🔒 Google Drive Backup</h4>
+                <p>Automated cloud sync and atomic single-transaction recovery.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Slider Controls & Details -->
+        <div class="slider-controls-card">
+          <div class="slider-indicator-text">
+            <span id="current-slide-num">1</span> of <span>7</span> Screens
+          </div>
+          <div class="slider-nav-btns">
+            <button class="slider-btn" onclick="prevSlide()" aria-label="Previous Slide">
+              <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M15 19l-7-7 7-7"></path></svg>
+            </button>
+            <button class="slider-btn" onclick="nextSlide()" aria-label="Next Slide">
+              <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"></path></svg>
+            </button>
+          </div>
+
+          <!-- Thumbnail Strip -->
+          <div class="slider-thumbnails">
+            <button class="thumb-btn active" onclick="goToSlide(0)"><img src="{{ '/assets/images/android_ui.png' | relative_url }}" alt="Dashboard"></button>
+            <button class="thumb-btn" onclick="goToSlide(1)"><img src="{{ '/assets/images/android_inventory.png' | relative_url }}" alt="Inventory"></button>
+            <button class="thumb-btn" onclick="goToSlide(2)"><img src="{{ '/assets/images/android_drug_lookup.png' | relative_url }}" alt="Lookup"></button>
+            <button class="thumb-btn" onclick="goToSlide(3)"><img src="{{ '/assets/images/android_pos.png' | relative_url }}" alt="POS"></button>
+            <button class="thumb-btn" onclick="goToSlide(4)"><img src="{{ '/assets/images/android_receipt.png' | relative_url }}" alt="Receipt"></button>
+            <button class="thumb-btn" onclick="goToSlide(5)"><img src="{{ '/assets/images/android_report.png' | relative_url }}" alt="Reports"></button>
+            <button class="thumb-btn" onclick="goToSlide(6)"><img src="{{ '/assets/images/android_backup.png' | relative_url }}" alt="Backup"></button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      function switchPlatform(platform) {
+        document.getElementById('panel-desktop').classList.toggle('active', platform === 'desktop');
+        document.getElementById('panel-mobile').classList.toggle('active', platform === 'mobile');
+        document.getElementById('tab-btn-desktop').classList.toggle('active', platform === 'desktop');
+        document.getElementById('tab-btn-mobile').classList.toggle('active', platform === 'mobile');
+      }
+
+      let currentSlide = 0;
+      const slides = document.querySelectorAll('.phone-screen .slide');
+      const thumbBtns = document.querySelectorAll('.thumb-btn');
+      const counter = document.getElementById('current-slide-num');
+
+      function updateSlideView() {
+        slides.forEach((s, i) => s.classList.toggle('active', i === currentSlide));
+        thumbBtns.forEach((t, i) => t.classList.toggle('active', i === currentSlide));
+        if (counter) counter.innerText = currentSlide + 1;
+      }
+
+      function nextSlide() {
+        currentSlide = (currentSlide + 1) % slides.length;
+        updateSlideView();
+      }
+
+      function prevSlide() {
+        currentSlide = (currentSlide - 1 + slides.length) % slides.length;
+        updateSlideView();
+      }
+
+      function goToSlide(index) {
+        currentSlide = index;
+        updateSlideView();
+      }
+    </script>
 
     <!-- User Guide Content -->
     <div class="content-box">
