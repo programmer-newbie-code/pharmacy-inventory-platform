@@ -35,7 +35,8 @@ android {
 
     signingConfigs {
         release {
-            def keyFile = keystoreProperties['storeFile'] ? file(keystoreProperties['storeFile']) : file('upload-keystore.jks')
+            def keyFilePath = keystoreProperties['storeFile'] ?: 'upload-keystore.jks'
+            def keyFile = file(keyFilePath)
             def storePass = keystoreProperties['storePassword'] ?: System.getenv("KEYSTORE_PASSWORD")
             def keyPass = keystoreProperties['keyPassword'] ?: System.getenv("KEY_PASSWORD")
             def alias = keystoreProperties['keyAlias'] ?: System.getenv("KEY_ALIAS") ?: "upload"
@@ -51,9 +52,8 @@ android {
 
     buildTypes {
         release {
-            def releaseSigningConfig = signingConfigs.release
-            if (releaseSigningConfig.storeFile?.exists()) {
-                signingConfig releaseSigningConfig
+            if (signingConfigs.release.storeFile != null && signingConfigs.release.storeFile.exists()) {
+                signingConfig signingConfigs.release
             } else {
                 signingConfig signingConfigs.debug
             }
