@@ -26,7 +26,7 @@ class _UpdateBannerState extends ConsumerState<UpdateBanner> {
 
   @override
   Widget build(BuildContext context) {
-    if (_dismissed) return const SizedBox.shrink();
+    if (_dismissed || Platform.isAndroid || Platform.isIOS) return const SizedBox.shrink();
 
     final updateAsync = ref.watch(appUpdateCheckFutureProvider);
     final l10n = AppLocalizations.of(context)!;
