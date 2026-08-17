@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../data/audit_logger.dart';
@@ -191,6 +193,9 @@ final appUpdateServiceProvider = Provider<AppUpdateService>(
 );
 
 final appUpdateCheckFutureProvider = FutureProvider.autoDispose<AppUpdateInfo?>((ref) async {
+  // Mobile app updates (Android / iOS) are managed by the App Store / Play Store.
+  if (Platform.isAndroid || Platform.isIOS) return null;
+
   final service = ref.watch(appUpdateServiceProvider);
   final info = await PackageInfo.fromPlatform();
   if (info.version.isEmpty) return null;
