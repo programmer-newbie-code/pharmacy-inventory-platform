@@ -290,6 +290,13 @@
       margin: 1.5rem 0 2.5rem;
     }
 
+    .mobile-feature-gallery {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1.25rem;
+      margin: 1.5rem 0 2.5rem;
+    }
+
     .platform-gallery__item {
       min-width: 0;
       margin: 0;
@@ -297,6 +304,12 @@
       background: rgba(9, 13, 22, 0.72);
       border: 1px solid var(--card-border);
       border-radius: 12px;
+      transition: transform 0.2s ease, border-color 0.2s ease;
+    }
+
+    .platform-gallery__item:hover {
+      transform: translateY(-2px);
+      border-color: var(--card-hover-border);
     }
 
     .platform-gallery__item figcaption {
