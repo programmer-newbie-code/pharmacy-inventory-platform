@@ -49,6 +49,17 @@
       text-align: center;
       position: relative;
       border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .hero-mark {
+      width: 96px;
+      height: 96px;
+      display: block;
+      margin: 0 auto 1.5rem;
+      filter: drop-shadow(0 8px 24px rgba(99, 102, 241, 0.35));
     }
 
     .badge-pill {
@@ -58,11 +69,11 @@
       background: rgba(99, 102, 241, 0.15);
       border: 1px solid rgba(99, 102, 241, 0.3);
       color: #a5b4fc;
-      padding: 0.4rem 1rem;
+      padding: 0.4rem 1.1rem;
       border-radius: 9999px;
       font-size: 0.875rem;
       font-weight: 600;
-      margin-bottom: 1.5rem;
+      margin: 0 auto 1.5rem;
       letter-spacing: 0.025em;
     }
 
@@ -85,12 +96,6 @@
       max-width: 900px;
       margin: 0 auto 1.25rem;
       letter-spacing: -0.02em;
-    }
-
-    .hero-mark {
-      width: 104px;
-      height: 104px;
-      margin: 0 auto 1.25rem;
     }
 
     .hero-subtitle {
@@ -386,7 +391,7 @@
     .mobile-slider-container {
       display: flex;
       justify-content: center;
-      align-items: center;
+      align-items: flex-start;
       gap: 3rem;
       max-width: 900px;
       margin: 0 auto;
@@ -429,6 +434,12 @@
       animation: fadeIn 0.3s ease;
     }
 
+    .phone-screen .slide a {
+      display: block;
+      line-height: 0;
+      cursor: zoom-in;
+    }
+
     .phone-screen .slide img {
       width: 100%;
       height: auto;
@@ -460,7 +471,7 @@
     .slider-controls-card {
       flex: 1;
       min-width: 280px;
-      max-width: 400px;
+      max-width: 420px;
       background: rgba(30, 41, 59, 0.7);
       border: 1px solid rgba(255, 255, 255, 0.12);
       border-radius: 20px;
@@ -500,7 +511,7 @@
       transition: all 0.2s ease;
     }
 
-    .slider-btn:hover {
+    .slider-btn:hover, .slider-btn:focus-visible {
       background: var(--primary-accent);
       border-color: var(--primary-light);
       transform: translateY(-2px);
@@ -509,7 +520,7 @@
     .slider-thumbnails {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
-      gap: 0.5rem;
+      gap: 0.6rem;
     }
 
     .thumb-btn {
@@ -535,7 +546,7 @@
 
     .thumb-btn img {
       width: 100%;
-      height: 60px;
+      height: 62px;
       object-fit: cover;
       object-position: top;
       display: block;
@@ -596,6 +607,7 @@
 
   <!-- Hero Header -->
   <header class="hero">
+    <img class="hero-mark" src="/pharmacy-inventory-platform/assets/images/pharmaloka-icon.svg" alt="PharmaLoka icon">
     <div class="badge-pill">
       <span class="badge-pulse"></span>
       <span id="latest-release-tag">Latest Release — Production Ready</span>
@@ -609,7 +621,6 @@
           }
         }).catch(function() {});
     </script>
-    <img class="hero-mark" src="/pharmacy-inventory-platform/assets/images/pharmaloka-icon.svg" alt="PharmaLoka icon">
     <h1 class="hero-title">PharmaLoka — Pharmacy Inventory Platform</h1>
     <p class="hero-subtitle">
       Offline-first inventory management and Point-of-Sale counter system designed specifically for pharmacies, clinics, and drugstores.
@@ -727,49 +738,63 @@
           <div class="phone-screen">
             <!-- Slides -->
             <div class="slide active">
-              <img src="/pharmacy-inventory-platform/assets/images/android_ui.png" alt="Dashboard" loading="lazy">
+              <a href="/pharmacy-inventory-platform/assets/images/android_ui.png" target="_blank" title="Click to view full image">
+                <img src="/pharmacy-inventory-platform/assets/images/android_ui.png" alt="Dashboard" loading="lazy">
+              </a>
               <div class="slide-caption">
                 <h4>📊 Dashboard Overview</h4>
                 <p>Real-time daily sales, revenue KPIs, and quick module navigation.</p>
               </div>
             </div>
             <div class="slide">
-              <img src="/pharmacy-inventory-platform/assets/images/android_inventory.png" alt="Inventory Catalog" loading="lazy">
+              <a href="/pharmacy-inventory-platform/assets/images/android_inventory.png" target="_blank" title="Click to view full image">
+                <img src="/pharmacy-inventory-platform/assets/images/android_inventory.png" alt="Inventory Catalog" loading="lazy">
+              </a>
               <div class="slide-caption">
                 <h4>📦 Inventory Catalog</h4>
                 <p>Stock monitoring, drug classification badges, and unit management.</p>
               </div>
             </div>
             <div class="slide">
-              <img src="/pharmacy-inventory-platform/assets/images/android_drug_lookup.png" alt="Drug Lookup" loading="lazy">
+              <a href="/pharmacy-inventory-platform/assets/images/android_drug_lookup.png" target="_blank" title="Click to view full image">
+                <img src="/pharmacy-inventory-platform/assets/images/android_drug_lookup.png" alt="Drug Lookup" loading="lazy">
+              </a>
               <div class="slide-caption">
                 <h4>🔍 600+ Indonesian Drug Lookup</h4>
                 <p>Offline auto-suggest with BPOM registration support.</p>
               </div>
             </div>
             <div class="slide">
-              <img src="/pharmacy-inventory-platform/assets/images/android_pos.png" alt="POS Sales Counter" loading="lazy">
+              <a href="/pharmacy-inventory-platform/assets/images/android_pos.png" target="_blank" title="Click to view full image">
+                <img src="/pharmacy-inventory-platform/assets/images/android_pos.png" alt="POS Sales Counter" loading="lazy">
+              </a>
               <div class="slide-caption">
                 <h4>🛒 Kasir POS Checkout</h4>
                 <p>Unit conversions (Box/Sachet/Tablet) and FEFO batch deduction.</p>
               </div>
             </div>
             <div class="slide">
-              <img src="/pharmacy-inventory-platform/assets/images/android_receipt.png" alt="Receipt" loading="lazy">
+              <a href="/pharmacy-inventory-platform/assets/images/android_receipt.png" target="_blank" title="Click to view full image">
+                <img src="/pharmacy-inventory-platform/assets/images/android_receipt.png" alt="Receipt" loading="lazy">
+              </a>
               <div class="slide-caption">
                 <h4>🧾 Receipts & Printing</h4>
                 <p>Digital PDF invoices and Bluetooth 58mm/80mm thermal printing.</p>
               </div>
             </div>
             <div class="slide">
-              <img src="/pharmacy-inventory-platform/assets/images/android_report.png" alt="Financial Analytics" loading="lazy">
+              <a href="/pharmacy-inventory-platform/assets/images/android_report.png" target="_blank" title="Click to view full image">
+                <img src="/pharmacy-inventory-platform/assets/images/android_report.png" alt="Financial Analytics" loading="lazy">
+              </a>
               <div class="slide-caption">
                 <h4>📈 Financial Analytics</h4>
                 <p>Gross profit margin, COGS (HPP), and monthly revenue breakdown.</p>
               </div>
             </div>
             <div class="slide">
-              <img src="/pharmacy-inventory-platform/assets/images/android_backup.png" alt="Cloud Backup" loading="lazy">
+              <a href="/pharmacy-inventory-platform/assets/images/android_backup.png" target="_blank" title="Click to view full image">
+                <img src="/pharmacy-inventory-platform/assets/images/android_backup.png" alt="Cloud Backup" loading="lazy">
+              </a>
               <div class="slide-caption">
                 <h4>🔒 Google Drive Backup</h4>
                 <p>Automated cloud sync and atomic single-transaction recovery.</p>
