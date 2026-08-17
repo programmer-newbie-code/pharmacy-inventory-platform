@@ -283,45 +283,58 @@
       margin-bottom: 0.4rem;
     }
 
+    /* Platform Gallery (Desktop + Mobile overview) */
     .platform-gallery {
       display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
+      grid-template-columns: 1.6fr 1fr;
       gap: 1.5rem;
-      margin: 1.5rem 0 2.5rem;
+      align-items: start;
+      margin: 1.5rem 0 3rem;
     }
 
+    /* Mobile Feature Gallery (Vertical Phone Cards) */
     .mobile-feature-gallery {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      grid-template-columns: repeat(3, 1fr);
       gap: 1.25rem;
-      margin: 1.5rem 0 2.5rem;
+      margin: 1.5rem 0 3rem;
     }
 
     .platform-gallery__item {
       min-width: 0;
       margin: 0;
       overflow: hidden;
-      background: rgba(9, 13, 22, 0.72);
-      border: 1px solid var(--card-border);
-      border-radius: 12px;
-      transition: transform 0.2s ease, border-color 0.2s ease;
+      background: rgba(15, 23, 42, 0.85);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 14px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+      transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
     }
 
     .platform-gallery__item:hover {
-      transform: translateY(-2px);
-      border-color: var(--card-hover-border);
+      transform: translateY(-4px);
+      border-color: rgba(99, 102, 241, 0.5);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
     }
 
     .platform-gallery__item figcaption {
-      padding: 0.9rem 1rem;
-      color: #e2e8f0;
+      padding: 0.75rem 1rem;
+      color: #f1f5f9;
       font-family: 'Outfit', sans-serif;
+      font-size: 0.95rem;
       font-weight: 600;
+      background: rgba(30, 41, 59, 0.7);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
     }
 
     .platform-gallery__item a {
       display: block;
       line-height: 0;
+      background: #020617;
+      overflow: hidden;
     }
 
     .platform-gallery__item a:focus-visible {
@@ -333,15 +346,31 @@
       display: block;
       width: 100%;
       height: auto;
+      object-fit: contain;
+      transition: transform 0.3s ease;
     }
 
-    @media (max-width: 700px) {
+    .platform-gallery__item:hover img {
+      transform: scale(1.02);
+    }
+
+    @media (max-width: 900px) {
+      .mobile-feature-gallery {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 650px) {
       .content-box {
-        padding: 1.5rem;
+        padding: 1.25rem;
       }
 
       .platform-gallery {
-        grid-template-columns: minmax(0, 1fr);
+        grid-template-columns: 1fr;
+      }
+
+      .mobile-feature-gallery {
+        grid-template-columns: 1fr;
       }
     }
 
@@ -478,67 +507,70 @@
       </div>
     </div>
 
+    <!-- Visual Showcase Gallery -->
+    <h2 class="section-title">Multi-Platform Experience</h2>
+    <p class="section-subtitle">Consistent, responsive UI engineered for desktop workstations and touch handhelds.</p>
+
+    <div class="platform-gallery">
+      <figure class="platform-gallery__item">
+        <figcaption>💻 Windows Desktop Dashboard</figcaption>
+        <a href="/assets/images/desktop_ui.png" target="_blank">
+          <img src="/assets/images/desktop_ui.png" alt="PharmaLoka Windows Desktop Dashboard" loading="lazy">
+        </a>
+      </figure>
+      <figure class="platform-gallery__item">
+        <figcaption>📱 Android Mobile Dashboard</figcaption>
+        <a href="/assets/images/android_ui.png" target="_blank">
+          <img src="/assets/images/android_ui.png" alt="PharmaLoka Android Mobile Dashboard" loading="lazy">
+        </a>
+      </figure>
+    </div>
+
+    <h2 class="section-title">Android Mobile Feature Tour</h2>
+    <p class="section-subtitle">Full pharmacy point-of-sale workflow right in the palm of your hand.</p>
+
+    <div class="mobile-feature-gallery">
+      <figure class="platform-gallery__item">
+        <figcaption>📦 Inventory Catalog</figcaption>
+        <a href="/assets/images/android_inventory.png" target="_blank">
+          <img src="/assets/images/android_inventory.png" alt="Android Inventory Catalog" loading="lazy">
+        </a>
+      </figure>
+      <figure class="platform-gallery__item">
+        <figcaption>🔍 BPOM & Drug Lookup</figcaption>
+        <a href="/assets/images/android_drug_lookup.png" target="_blank">
+          <img src="/assets/images/android_drug_lookup.png" alt="Android Drug Suggestion Lookup" loading="lazy">
+        </a>
+      </figure>
+      <figure class="platform-gallery__item">
+        <figcaption>🛒 Kasir POS Checkout</figcaption>
+        <a href="/assets/images/android_pos.png" target="_blank">
+          <img src="/assets/images/android_pos.png" alt="Android POS Sales Counter" loading="lazy">
+        </a>
+      </figure>
+      <figure class="platform-gallery__item">
+        <figcaption>🧾 In-App Receipt</figcaption>
+        <a href="/assets/images/android_receipt.png" target="_blank">
+          <img src="/assets/images/android_receipt.png" alt="Android In-App Receipt" loading="lazy">
+        </a>
+      </figure>
+      <figure class="platform-gallery__item">
+        <figcaption>📊 Financial Analytics</figcaption>
+        <a href="/assets/images/android_report.png" target="_blank">
+          <img src="/assets/images/android_report.png" alt="Android Financial Reports" loading="lazy">
+        </a>
+      </figure>
+      <figure class="platform-gallery__item">
+        <figcaption>🔒 Google Drive Backup</figcaption>
+        <a href="/assets/images/android_backup.png" target="_blank">
+          <img src="/assets/images/android_backup.png" alt="Android Google Drive Backup" loading="lazy">
+        </a>
+      </figure>
+    </div>
+
     <!-- User Guide Content -->
     <div class="content-box">
-      <h3 id="-multi-platform-interface-overview">📱 Multi-Platform Interface Overview</h3>
-
-<div class="platform-gallery">
-  <figure class="platform-gallery__item">
-    <figcaption>💻 Windows Desktop Dashboard</figcaption>
-    <a href="assets/images/desktop_ui.png">
-      <img src="assets/images/desktop_ui.png" alt="PharmaLoka dashboard on Windows desktop" />
-    </a>
-  </figure>
-  <figure class="platform-gallery__item">
-    <figcaption>📱 Android Mobile Dashboard</figcaption>
-    <a href="assets/images/android_ui.png">
-      <img src="assets/images/android_ui.png" alt="PharmaLoka dashboard on Android mobile" />
-    </a>
-  </figure>
-</div>
-
-<h3 id="-android-mobile-workflow--feature-tour">📸 Android Mobile Workflow &amp; Feature Tour</h3>
-
-<div class="mobile-feature-gallery">
-  <figure class="platform-gallery__item">
-    <figcaption>📦 Inventory Catalog</figcaption>
-    <a href="assets/images/android_inventory.png">
-      <img src="assets/images/android_inventory.png" alt="Android inventory catalog" />
-    </a>
-  </figure>
-  <figure class="platform-gallery__item">
-    <figcaption>🔍 BPOM &amp; Drug Lookup</figcaption>
-    <a href="assets/images/android_drug_lookup.png">
-      <img src="assets/images/android_drug_lookup.png" alt="Android drug suggestion lookup" />
-    </a>
-  </figure>
-  <figure class="platform-gallery__item">
-    <figcaption>🛒 Kasir POS Checkout</figcaption>
-    <a href="assets/images/android_pos.png">
-      <img src="assets/images/android_pos.png" alt="Android POS sales screen" />
-    </a>
-  </figure>
-  <figure class="platform-gallery__item">
-    <figcaption>🧾 In-App Receipt</figcaption>
-    <a href="assets/images/android_receipt.png">
-      <img src="assets/images/android_receipt.png" alt="Android receipt view" />
-    </a>
-  </figure>
-  <figure class="platform-gallery__item">
-    <figcaption>📊 Financial Analytics</figcaption>
-    <a href="assets/images/android_report.png">
-      <img src="assets/images/android_report.png" alt="Android monthly report" />
-    </a>
-  </figure>
-  <figure class="platform-gallery__item">
-    <figcaption>🔒 Google Drive Backup</figcaption>
-    <a href="assets/images/android_backup.png">
-      <img src="assets/images/android_backup.png" alt="Android backup and sync" />
-    </a>
-  </figure>
-</div>
-
-<h2 id="-installation--setup-guide">📥 Installation &amp; Setup Guide</h2>
+      <h2 id="-installation--setup-guide">📥 Installation &amp; Setup Guide</h2>
 
 <h3 id="windows-installation">Windows Installation</h3>
 <ol>
