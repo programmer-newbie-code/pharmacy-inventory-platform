@@ -120,3 +120,18 @@ flutter test --coverage
 flutter run -d windows
 ```
 
+---
+
+<a id="privacy"></a>
+## 🔒 Privacy Policy & Data Transparency
+
+**PharmaLoka** is committed to protecting your privacy and ensuring 100% data ownership for pharmacy operators:
+
+1. **100% Offline-First Data Storage**: All your pharmacy data—including drug catalogs, stock quantities, sales history, employee credentials, and thermal receipt records—is stored strictly on your local device in an encrypted SQLite database.
+2. **Zero Telemetry & Third-Party Tracking**: PharmaLoka does not collect, track, or transmit any personal information, location data, or usage telemetry to third-party advertising or analytics networks.
+3. **Optional Google Drive Cloud Backups**: If you choose to enable Google Drive Auto-Sync, backup files are encrypted and sent directly to your personal Google Drive account under the `drive.file` scope. Programmer Newbie Studio has zero access to your Google account or backup files.
+4. **Safe Data Erasure**: Uninstalling the application or selecting "Reset Database" inside Administrator Settings permanently removes all local app data from your device.
+
+For privacy inquiries or technical support, contact us at: **`support@programmer-newbie.dev`**
+```
+
