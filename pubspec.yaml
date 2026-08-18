@@ -1,7 +1,7 @@
 name: pharmacy_inventory_platform
 description: PharmaLoka — Pharmacy Inventory Platform for offline-first inventory and POS.
 publish_to: 'none'
-version: 1.7.0+11
+version: 1.9.4+12
 
 environment:
   sdk: '>=3.4.0 <4.0.0'
