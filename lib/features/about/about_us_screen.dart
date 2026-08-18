@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../core/app_theme.dart';
@@ -123,14 +124,20 @@ class AboutUsScreen extends StatelessWidget {
           const SizedBox(height: 28),
 
           // ── App Info ──
-          Center(
-            child: Text(
-              l10n.aboutUsAppInfo,
-              style: theme.textTheme.bodySmall?.copyWith(
-                color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.6),
-              ),
-              textAlign: TextAlign.center,
-            ),
+          FutureBuilder<PackageInfo>(
+            future: PackageInfo.fromPlatform(),
+            builder: (context, snapshot) {
+              final version = snapshot.data?.version ?? '1.9.4';
+              return Center(
+                child: Text(
+                  'PharmaLoka v$version\n© 2026 Programmer Newbie Studio',
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.6),
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              );
+            },
           ),
         ],
       ),
