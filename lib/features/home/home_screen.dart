@@ -12,6 +12,7 @@ import '../../domain/permission_checker.dart';
 import '../../l10n/app_localizations.dart';
 import '../auth/auth_session.dart';
 
+import '../about/about_us_screen.dart';
 import '../alerts/alerts_screen.dart';
 import '../backup/backup_screen.dart';
 import '../inventory/product_list_screen.dart';
@@ -229,6 +230,14 @@ class _PharmacyShellState extends ConsumerState<PharmacyShell> {
           label: l10n.userManagementTitle,
           build: () => const UserManagementScreen(),
         ),
+      _ShellDestination(
+        id: 'about',
+        navKey: const Key('desktopNavAbout'),
+        group: _ShellGroup.management,
+        icon: Icons.info_outline_rounded,
+        label: l10n.aboutUsTitle,
+        build: () => const AboutUsScreen(),
+      ),
     ];
   }
 
@@ -832,6 +841,19 @@ class HomeScreen extends ConsumerWidget {
                               onTap: () => showDialog(
                                 context: context,
                                 builder: (_) => const PharmacyBrandingDialog(),
+                              ),
+                            ),
+                            _NavCard(
+                              key: const Key('navAboutBtn'),
+                              icon: Icons.info_outline_rounded,
+                              color: Colors.blueGrey,
+                              title: l10n.aboutUsTitle,
+                              subtitle: l10n.aboutUsSubtitle,
+                              isEnabled: true,
+                              onTap: () => _navigate(
+                                context,
+                                'about',
+                                const AboutUsScreen(),
                               ),
                             ),
                           ],

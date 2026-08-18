@@ -602,5 +602,14 @@
   "editCartQuantityTooltip": "Edit quantity",
   "increaseQuantityTooltip": "Increase quantity",
   "decreaseQuantityTooltip": "Decrease quantity",
-  "removeCartItemTooltip": "Remove from cart"
+  "removeCartItemTooltip": "Remove from cart",
+  "aboutUsTitle": "About Us",
+  "aboutUsSubtitle": "Developer studio",
+  "aboutUsStudioTagline": "Learn · Build · Ship",
+  "aboutUsDescription": "PharmaLoka is crafted by Programmer Newbie — a software studio focused on building practical, offline-first tools for Indonesian pharmacies, clinics, and healthcare professionals.\n\nWe believe every pharmacy deserves reliable, modern software — no internet dependency, no subscription fees.",
+  "aboutUsVisitWebsite": "Visit Studio Website",
+  "aboutUsContactEmail": "Contact Email",
+  "aboutUsSourceCode": "Source Code",
+  "aboutUsWebsite": "Studio Website",
+  "aboutUsAppInfo": "PharmaLoka v1.7.0\n© 2026 Programmer Newbie Studio"
 }

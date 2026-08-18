@@ -602,5 +602,14 @@
   "editCartQuantityTooltip": "Ubah jumlah",
   "increaseQuantityTooltip": "Tambah jumlah",
   "decreaseQuantityTooltip": "Kurangi jumlah",
-  "removeCartItemTooltip": "Hapus dari keranjang"
+  "removeCartItemTooltip": "Hapus dari keranjang",
+  "aboutUsTitle": "Tentang Kami",
+  "aboutUsSubtitle": "Studio pengembang",
+  "aboutUsStudioTagline": "Belajar · Bangun · Rilis",
+  "aboutUsDescription": "PharmaLoka dibuat oleh Programmer Newbie — studio perangkat lunak yang fokus membangun alat praktis dan offline-first untuk apotek, klinik, dan tenaga kesehatan di Indonesia.\n\nKami percaya setiap apotek berhak mendapatkan perangkat lunak yang andal dan modern — tanpa ketergantungan internet, tanpa biaya langganan.",
+  "aboutUsVisitWebsite": "Kunjungi Website Studio",
+  "aboutUsContactEmail": "Email Kontak",
+  "aboutUsSourceCode": "Kode Sumber",
+  "aboutUsWebsite": "Website Studio",
+  "aboutUsAppInfo": "PharmaLoka v1.7.0\n© 2026 Programmer Newbie Studio"
 }
